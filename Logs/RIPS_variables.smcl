@@ -1,0 +1,490 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\RIPS_variables.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}13 Jun 2024, 06:58:52
+{txt}
+{com}.         
+. ********************************************************************************
+. **#                   1. Append annual datasets          
+. ********************************************************************************
+. 
+. /*
+> clear all
+> gen aux = .
+> save "$data\Merge_individual_RIPS.dta", replace
+>  
+> forval y = 2009/2022 {c -(}
+>                 
+>         dis as err "RIPS `y'"
+>         use "${c -(}data{c )-}\RIPS\sample_`y'_RIPS.dta", clear
+>         cap destring yearmode, replace
+>         
+>         *merge m:1 personabasicaid using "${c -(}data{c )-}\Master_sample", keep(3) nogen
+>         
+>         * Unify diagnosis code
+>         replace diag_prin = diag_prin_ingre if (mi(diag_prin) & !mi(diag_prin_ingre))
+>         
+>         replace diag_prin = cod_diag_prin       if (mi(diag_prin) & !mi(cod_diag_prin))
+>         
+>         append using "${c -(}data{c )-}\Merge_individual_RIPS.dta", force
+>         
+>         cap drop aux
+>         
+>         compress
+> 
+>         save "${c -(}data{c )-}\Merge_individual_RIPS.dta", replace
+>         
+>         erase "${c -(}data{c )-}\RIPS\sample_`y'_RIPS.dta"
+> {c )-}
+> */
+. 
+. use "${c -(}data{c )-}\Merge_individual_RIPS.dta", clear
+{txt}
+{com}. 
+. drop diag_prin_ingre fecha_ingreso cod_diag_prin fecha_consul
+{txt}
+{com}. 
+. gen year_RIPS = yofd(date)
+{txt}(1 missing value generated)
+
+{com}. 
+. drop date
+{txt}
+{com}. 
+. ********************************************************************************
+. **#                   2. Variable creation          
+. ********************************************************************************
+. 
+. * Create variables by looping over diagnosis codes
+. local i = 1
+{txt}
+{com}. foreach d in diag_prin diag_r1 diag_r2 diag_r3 {c -(}
+{txt}  2{com}. 
+.         *Pregnancy
+.         gen     pregnancy_`i'   = (inlist(substr(`d',1,4),"Z340","Z348","Z349") | ///
+>         inlist(substr(`d',1,2),"O1","O2","O3","O4","O5","O6","O7","O8","O9"))
+{txt}  3{com}.         
+.         *Depression
+.         gen     depresion_`i'   = (inlist(substr(`d',1,3),"F32","F33"))
+{txt}  4{com}.         
+.         *Anxiety
+.         gen     ansiedad_`i'    = (inlist(substr(`d',1,3),"F40","F41"))
+{txt}  5{com}. 
+.         *Stress
+.         gen     estres_`i'              = ((substr(`d',1,2)=="F3")   | (substr(`d',1,4)=="Z563") | ///
+>                                                            (substr(`d',1,4)=="Z637") | (substr(`d',1,4)=="Z733") )
+{txt}  6{com}. 
+.         *Mental diagnosis: complete chapter of mental diagnosis
+.         gen     diag_mental_`i'  = (substr(substr(`d', 1, 3),1,1) == "F")
+{txt}  7{com}.         
+.         *Mental diagnosis: only for depression, anxiety and stress
+.         gen     diag_mental2_`i' = (depresion_`i' == 1 | ansiedad_`i' == 1 | estres_`i' == 1)
+{txt}  8{com}. 
+.         *Stroke
+.         gen stroke_`i' = (substr(`d', 1, 3) == "I61"                                    ///
+>         | substr(`d', 1, 3) == "I60" | substr(`d', 1, 3) == "I64"               ///
+>         | substr(`d', 1, 3) == "I63" |`d' == "G934" |`d' == "G935"              ///
+>         | `d' == "G936" | `d' == "S062" | `d' == "S065" | `d' == "E104" ///
+>         | `d' == "G412" | `d' == "I638" | `d' == "S066" | `d' == "P294" ///
+>         | `d' == "G464" |`d' == "G407" | `d' == "R568")
+{txt}  9{com}. 
+.         *Infarcts
+.         gen infarct_`i' = (substr(`d', 1, 3) == "I20"                                   ///
+>         | substr(`d', 1, 3) == "I21" | substr(`d', 1, 3) == "I22"               ///
+>         | substr(`d', 1, 3) == "I23" | substr(`d', 1, 3) == "I24"               ///
+>         | substr(`d', 1, 3) == "I25")
+{txt} 10{com}. 
+.         *Cardiovascular
+.         gen cardiovascular_`i' = (substr(`d', 1, 3)== "I46" | substr(`d', 1, 3) == "I50")       
+{txt} 11{com}.         
+.         *Digestive 
+.         gen digestive_`i' = (substr(`d', 1, 3) == "K35" | `d' == "K922" ///
+>         | `d' == "K353" | `d' == "A542" | `d' == "K441" | `d' == "N835" ///
+>         | `d' == "I713")
+{txt} 12{com}.         
+.         *Diag laboral
+.         gen diag_laboral_`i' = ((substr(`d',1,3)=="R53")                                ///
+>         | (substr(`d',1,3)=="Y96") | (substr(`d',1,3)=="Z56")                   ///
+>         | (substr(`d',1,3)=="Z57") | (substr(`d',1,4)=="Z732"))
+{txt} 13{com}. 
+.         *Stress laboral
+.         gen estres_laboral_`i' = ((substr(`d',1,4)=="F480")                     ///
+>         | (substr(`d',1,4)=="F488") | (substr(`d',1,4)=="Z563"))
+{txt} 14{com}. 
+. 
+. 
+.         local i = `i' + 1
+{txt} 15{com}. 
+. {c )-}
+{txt}
+{com}. 
+. foreach var in pregnancy diag_mental diag_mental2 depresion ansiedad estres diag_laboral stroke infarct cardiovascular digestive estres_laboral {c -(}
+{txt}  2{com}.         
+.         egen `var' = rowmax(`var'_1 `var'_2 `var'_3 `var'_4)    
+{txt}  3{com}.         drop `var'_1 `var'_2 `var'_3 `var'_4
+{txt}  4{com}.         
+. {c )-}
+{txt}
+{com}. 
+. drop depresion ansiedad estres
+{txt}
+{com}. 
+. * Mental health variables
+. 
+. gen accidente_laboral   = (causa_externa==1)
+{txt}
+{com}. 
+. gen enfermedad_laboral  = (causa_externa==14)
+{txt}
+{com}. 
+. gen acc_enf_laboral             = (accidente_laboral == 1 | enfermedad_laboral == 1)
+{txt}
+{com}. 
+. 
+. global t_sensitive pregnancy stroke infarct cardiovascular digestive 
+{txt}
+{com}. global work diag_mental diag_mental2 diag_laboral estres_laboral                        ///
+>                         accidente_laboral enfermedad_laboral acc_enf_laboral
+{txt}
+{com}. 
+. 
+. * Intensive margin
+. gen contador                            = 1
+{txt}
+{com}. gen contador_nopreg                     = 1 if (substr(substr(diag_prin, 1, 3),1,1) != "O")
+{txt}(347,308 missing values generated)
+
+{com}. gen contador_mental             = 1 if (diag_mental   == 1)
+{txt}(20,413,943 missing values generated)
+
+{com}. gen contador_mental2            = 1 if (diag_mental2  == 1)
+{txt}(20,482,168 missing values generated)
+
+{com}. 
+. compress
+  {txt}variable {bf}{res}year_RIPS{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}pregnancy{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}diag_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}diag_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}diag_laboral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}stroke{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}infarct{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}cardiovascular{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}digestive{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}estres_laboral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}accidente_laboral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}enfermedad_laboral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}acc_enf_laboral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}contador{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}contador_nopreg{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}contador_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}contador_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+{txt}  (1,033,792,950 bytes saved)
+
+{com}. 
+. 
+. * Count number of health services by month and keep one observation per person and date
+. bys personabasicaid year_RIPS service: gegen nro_servicios              = total(contador)
+{txt}performance warning: -by- prefix may be slower than -by()-
+{res}{txt}{res}{txt}
+{com}. bys personabasicaid year_RIPS service: gegen nro_servicios_np   = total(contador_nopreg)
+{txt}performance warning: -by- prefix may be slower than -by()-
+{res}{txt}{res}{txt}
+{com}. 
+. bys personabasicaid year_RIPS service: gegen nro_serv_mental    = total(contador_mental)
+{txt}performance warning: -by- prefix may be slower than -by()-
+{res}{txt}{res}{txt}
+{com}. bys personabasicaid year_RIPS service: gegen nro_serv_mental2   = total(contador_mental2)
+{txt}performance warning: -by- prefix may be slower than -by()-
+{res}{txt}{res}{txt}
+{com}. 
+. 
+. * Replace all values for each person in a single year with the maximum value (1 if happens that year)
+. foreach variable in $t_sensitive $work {c -(}
+{txt}  2{com}.         
+.     dis as err "Creating variable for `variable'"
+{txt}  3{com}.         bys personabasicaid year_RIPS: ereplace `variable' = max(`variable')
+{txt}  4{com}.         
+. {c )-}
+{err}Creating variable for pregnancy
+{txt}(1,834,645 real changes made)
+{err}Creating variable for stroke
+{txt}(174,754 real changes made)
+{err}Creating variable for infarct
+{txt}(447,302 real changes made)
+{err}Creating variable for cardiovascular
+{txt}(154,470 real changes made)
+{err}Creating variable for digestive
+{txt}(173,356 real changes made)
+{err}Creating variable for diag_mental
+{txt}(1,470,073 real changes made)
+{err}Creating variable for diag_mental2
+{txt}(1,136,939 real changes made)
+{err}Creating variable for diag_laboral
+{txt}(179,402 real changes made)
+{err}Creating variable for estres_laboral
+{txt}(16,624 real changes made)
+{err}Creating variable for accidente_laboral
+{txt}(570,054 real changes made)
+{err}Creating variable for enfermedad_laboral
+{txt}(156,409 real changes made)
+{err}Creating variable for acc_enf_laboral
+{txt}(714,214 real changes made)
+
+{com}. 
+. 
+. keep    personabasicaid year_RIPS service rethus_sexo nro_servicios nro_servicios_np                            ///
+>                 nro_serv_mental* $t_sensitive $work 
+{txt}
+{com}. 
+. 
+. compress
+  {txt}variable {bf}{res}nro_servicios{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}nro_servicios_np{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}nro_serv_mental{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}nro_serv_mental2{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
+{txt}  (496,220,616 bytes saved)
+
+{com}. 
+. ********************************************************************************
+. **#           3. Duplicates removal and data reshape        
+. ********************************************************************************
+. 
+. * Keep a single observation per person-year-module
+. gduplicates drop personabasicaid year_RIPS service, force
+
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid year_RIPS service{p_end}
+{txt}{res}
+{txt}(17,147,521 observations deleted)
+
+{com}. 
+. * Reshape the dataset to get an individual-year panel
+. greshape wide   nro_servicios nro_servicios_np nro_serv_mental nro_serv_mental2                                         ///
+>                                 , i(personabasicaid year_RIPS rethus_sexo) j(service) string
+{txt}Option -string- ignored with {cmd:greshape wide}
+{res}{txt}{res}{txt}(note: j = Hospitalizacion consultas procedimientos urgencias)
+{res}{txt}{res}{txt}
+Data{col 36}long{col 43}->{col 48}wide
+{hline 77}
+Number of obs.{col 19}{res}            3,528,338{txt}{col 43}->   {res}1,999,355            
+{txt}Number of variables{col 19}{res}                   20{txt}{col 43}->   {res}31                   
+{txt}j (4 values)        {col 33}{res}service{txt}{col 43}->{col 48}(dropped)
+xij variables:
+                          {res}nro_servicios{col 43}{txt}->{res}{col 48}nro_serviciosHospitalizacion nro_serviciosconsultas ... nro_serviciosurgencias
+                       nro_servicios_np{col 43}{txt}->{res}{col 48}nro_servicios_npHospitalizacion nro_servicios_npconsultas ... nro_servicios_npurgencias
+                        nro_serv_mental{col 43}{txt}->{res}{col 48}nro_serv_mentalHospitalizacion nro_serv_mentalconsultas ... nro_serv_mentalurgencias
+                       nro_serv_mental2{col 43}{txt}->{res}{col 48}nro_serv_mental2Hospitalizacion nro_serv_mental2consultas ... nro_serv_mental2urgencias
+{txt}{hline 77}
+{res}{txt}
+{com}. 
+. foreach var of varlist nro* {c -(}
+{txt}  2{com}.         
+.         replace `var' = 0 if mi(`var')
+{txt}  3{com}.         
+. {c )-}
+{txt}(1,901,169 real changes made)
+(291,632 real changes made)
+(587,208 real changes made)
+(1,689,073 real changes made)
+(1,901,169 real changes made)
+(291,632 real changes made)
+(587,208 real changes made)
+(1,689,073 real changes made)
+(1,901,169 real changes made)
+(291,632 real changes made)
+(587,208 real changes made)
+(1,689,073 real changes made)
+(1,901,169 real changes made)
+(291,632 real changes made)
+(587,208 real changes made)
+(1,689,073 real changes made)
+
+{com}. 
+. tempfile temp
+{txt}
+{com}. save `temp', replace
+{txt}{p 0 4 2}
+(file {bf}
+C:\Users\pmede1\AppData\Local\Temp\ST_4df8_000001.tmp{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+C:\Users\pmede1\AppData\Local\Temp\ST_4df8_000001.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. 
+. ********************************************************************************
+. **#                             4. Balance the panel     
+. ********************************************************************************
+. 
+. use "${c -(}data{c )-}\master_rethus.dta", clear
+{txt}
+{com}. 
+. expand 14 // 14 years between 2009 and 2022
+{txt}(4,284,163 observations created)
+
+{com}. bys personabasicaid: gen year_RIPS = (_n - 1) + 2009
+{txt}
+{com}. merge 1:1 personabasicaid year_RIPS using `temp', nogen keep(1 3)
+{res}{txt}(label {bf:{txt}order5} already defined)
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}       2,614,360
+{txt}{col 9}from master{col 30}{res}       2,614,360{txt}  
+{col 9}from using{col 30}{res}               0{txt}  
+
+{col 5}Matched{col 30}{res}       1,999,354{txt}  
+{col 5}{hline 41}
+
+{com}. 
+. * Replace unmatched observations with zeroes
+. foreach var of varlist nro* $t_sensitive $work {c -(}
+{txt}  2{com}.         
+.         replace `var' = 0 if mi(`var')
+{txt}  3{com}.         
+. {c )-}
+{txt}(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+(2,614,360 real changes made)
+
+{com}. 
+. ********************************************************************************
+. **#             5. Additional variable creation
+. ********************************************************************************
+. 
+. gen proce                       = (nro_serviciosprocedimientos          > 0)
+{txt}
+{com}. gen consul                      = (nro_serviciosconsultas                       > 0)
+{txt}
+{com}. gen urg                         = (nro_serviciosurgencias                       > 0) 
+{txt}
+{com}. gen hosp                        = (nro_serviciosHospitalizacion         > 0)
+{txt}
+{com}. 
+. gen urg_np                      = (nro_servicios_npurgencias            > 0) 
+{txt}
+{com}. gen hosp_np                     = (nro_servicios_npHospitalizacion      > 0)
+{txt}
+{com}. 
+. gen consul_mental       = (nro_serv_mentalconsultas             > 0)
+{txt}
+{com}. gen consul_mental2      = (nro_serv_mental2consultas            > 0)
+{txt}
+{com}. gen proce_mental        = (nro_serv_mentalprocedimientos    > 0) 
+{txt}
+{com}. gen urg_mental          = (nro_serv_mentalurgencias             > 0) 
+{txt}
+{com}. gen hosp_mental         = (nro_serv_mentalHospitalizacion       > 0)
+{txt}
+{com}. 
+. gen service             = (nro_serviciosprocedimientos              >  0 | nro_serviciosconsultas              >  0| ///
+>                                            nro_serviciosurgencias                           >  0 | nro_serviciosHospitalizacion    >  0)                                           
+{txt}
+{com}. gen service_mental      = (proce_mental  == 1 | consul_mental   == 1 | urg_mental  == 1 | hosp_mental  == 1)
+{txt}
+{com}. gen service_mental2     = (proce_mental  == 1 | consul_mental2  == 1 | urg_mental  == 1 | hosp_mental  == 1)
+{txt}
+{com}. 
+. /*
+> gen     year_mental = year_RIPS if consul_mental == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     consul_mental_forever = 0
+> replace consul_mental_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> 
+> gen     year_mental = year_RIPS if consul_mental2 == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     consul_mental2_forever = 0
+> replace consul_mental2_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> 
+> gen     year_mental = year_RIPS if service_mental == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     service_mental_forever = 0
+> replace service_mental_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> 
+> gen     year_mental = year_RIPS if service_mental2 == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     service_mental2_forever = 0
+> replace service_mental2_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> */
+. 
+. compress
+  {txt}variable {bf}{res}year_RIPS{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}nro_serviciosHospitalizacion{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_serviciosurgencias{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_servicios_npHospitalizacion{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_servicios_npurgencias{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_serv_mentalHospitalizacion{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_serv_mentalurgencias{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_serv_mental2Hospitalizacion{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_serv_mental2consultas{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_serv_mental2urgencias{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}proce{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}consul{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}urg{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}hosp{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}urg_np{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}hosp_np{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}consul_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}consul_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}proce_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}urg_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}hosp_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}service{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}service_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}service_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+{txt}  (244,526,842 bytes saved)
+
+{com}. 
+. * Save the final balanced RIPS panel
+. save "${c -(}data{c )-}\Individual_balanced_all_RIPS.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+C:\Proyectos\Banrep research\PhysiciansPosgraduates\Data\Individual_balanced_all_RIPS.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}C:\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\RIPS_variables.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}13 Jun 2024, 07:08:10
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

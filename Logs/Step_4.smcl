@@ -1,0 +1,196 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\Step_4.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}13 Jun 2024, 10:33:24
+{txt}
+{com}. 
+. ****************************************************************************
+. **#                             1. Process each occupation's dataset
+. ****************************************************************************
+. 
+. * Balancing with rethus sample
+. use personabasicaid fechapregrado rethus_codigoperfilpre1 rethus_sexo if rethus_codigoperfilpre1 == "P07" using "${c -(}data{c )-}\master_rethus", clear
+{txt}
+{com}. drop rethus_codigoperfilpre1
+{txt}
+{com}. 
+. * Balancear panel
+. bys personabasicaid: egen temp = min(fechapregrado)
+{txt}(1,635 missing values generated)
+
+{com}. drop if temp == .
+{txt}(1,635 observations deleted)
+
+{com}. 
+. expand 176 // 176 months between 2008 and 2022m8
+{txt}(27,520,850 observations created)
+
+{com}. bys personabasicaid: gen fecha_pila = _n + 575
+{txt}
+{com}. format fecha_pila %tm
+{txt}
+{com}. 
+. merge 1:1 personabasicaid fecha_pila using "${c -(}data{c )-}\\P07_PILA_monthly", keep(1 3)
+{res}{txt}(label {bf:{txt}order5} already defined)
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}      11,479,490
+{txt}{col 9}from master{col 30}{res}      11,479,490{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}      16,198,622{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. gen formal = (_merge == 3)
+{txt}
+{com}. drop _merge
+{txt}
+{com}. replace pila_dependientes       = 0 if mi(pila_dependientes)
+{txt}(11,479,490 real changes made)
+
+{com}. replace pila_independientes = 0 if mi(pila_independientes)
+{txt}(11,479,490 real changes made)
+
+{com}. 
+. bys personabasicaid: ereplace fechapregrado = max(fechapregrado)
+{txt}(0 real changes made)
+
+{com}. drop if mi(fechapregrado)
+{txt}(0 observations deleted)
+
+{com}. replace year_grado = year(dofm(fechapregrado))
+{txt}(11,479,490 real changes made)
+
+{com}. 
+. * Postgraduate PILA
+. gen     posgrado_salud                  = (tipo_cotiz == 21)
+{txt}
+{com}. replace posgrado_salud                  = 0 if (fecha_pila < fechapregrado)
+{txt}(5,217 real changes made)
+
+{com}. 
+. * Postgraduate starting date
+. gen     posgrado_start                  = fecha_pila if posgrado_salud == 1
+{txt}(27,008,370 missing values generated)
+
+{com}. bys     personabasicaid:                ereplace posgrado_start = min(posgrado_start)
+{txt}(23,534,896 missing values generated)
+(23534896 missing values generated)
+(4,119,675 real changes made)
+
+{com}. 
+. * Postgraduate RETHUS
+. gen     month_posgrado                  = mofd(rethus_fechagradopos1)
+{txt}(22,226,859 missing values generated)
+
+{com}. bys     personabasicaid:                ereplace month_posgrado = min(month_posgrado)
+{txt}(20,785,248 missing values generated)
+(20785248 missing values generated)
+(1,441,611 real changes made)
+
+{com}. gen     posgrado_rethus                 = 0
+{txt}
+{com}. replace posgrado_rethus                 = 1  if (month_posgrado == fecha_pila)
+{txt}(23,904 real changes made)
+
+{com}. 
+. replace rethus_perfilpos1               = "" if (month_posgrado > fecha_pila)
+{txt}(1,335,561 real changes made)
+
+{com}. replace rethus_codigoperfilpos1 = "" if (month_posgrado > fecha_pila)
+{txt}(1,335,561 real changes made)
+
+{com}. 
+. gen auxiliar      = substr(rethus_perfilpos1, 1, 1)
+{txt}(23,562,420 missing values generated)
+
+{com}. gen posgrado_clin = 1 if auxiliar == "M" & rethus_codigoperfilpre1 == "P07" & rethus_codigoperfilpos1 != "MA99"
+{txt}(25,469,614 missing values generated)
+
+{com}. gen posgrado_quir = 1 if auxiliar == "Q" & rethus_codigoperfilpre1 == "P07"
+{txt}(26,095,520 missing values generated)
+
+{com}. gen posgrado_otro = 1 if posgrado_clin != 1 & posgrado_quir != 1 & !mi(rethus_perfilpos1)
+{txt}(27,353,510 missing values generated)
+
+{com}. drop auxiliar
+{txt}
+{com}. 
+. * PILA variables
+. rename  pila_salario_max_r pila_salario_r_max
+{res}{txt}
+{com}. 
+. replace pila_salario_r                  = 0 if mi(pila_salario_r)
+{txt}(11,479,490 real changes made)
+
+{com}. replace pila_salario_r_max              = 0 if mi(pila_salario_r_max)   
+{txt}(12,090,576 real changes made)
+
+{com}. replace sal_dias_cot                    = 0 if mi(sal_dias_cot)
+{txt}(11,479,491 real changes made)
+
+{com}. replace nro_cotizaciones                = 0 if mi(nro_cotizaciones)     
+{txt}(11,479,490 real changes made)
+
+{com}. 
+. * Annualize
+. replace fecha_pila                              = yofd(dofm(fecha_pila))
+{txt}(27,678,112 real changes made)
+
+{com}. replace fechapregrado                   = yofd(dofm(fechapregrado))
+{txt}(27,678,112 real changes made)
+
+{com}. replace month_posgrado                  = yofd(dofm(month_posgrado))
+{txt}(6,892,864 real changes made)
+
+{com}. replace posgrado_start                  = yofd(dofm(posgrado_start))
+{txt}(4,143,216 real changes made)
+
+{com}. 
+. format fecha_pila %ty
+{txt}
+{com}. format fechapregrado %ty
+{txt}
+{com}. format month_posgrado %ty
+{txt}
+{com}. format posgrado_start %ty
+{txt}
+{com}. 
+. collapse        (median) sal_dias_cot pila_salario_r pila_salario_r_max                                                 ///                             
+>                         (max) nro_cotizaciones formal incap_dias incap_gral licen_mat                                   ///
+>                         posgrado_salud posgrado_start posgrado_rethus posgrado_clin                                             ///
+>                         posgrado_quir posgrado_otro pila_independientes pila_dependientes,                              ///
+>                         by(personabasicaid fecha_pila fechapregrado year_grado rethus_sexo)
+{res}{txt}
+{com}. 
+. * Last variables
+. gen     l_pila_salario_r                = log(pila_salario_r)
+{txt}(975,854 missing values generated)
+
+{com}. gen             p_cotizaciones                  = (nro_cotizaciones > 1)
+{txt}
+{com}. 
+. * Identify occupation
+. gen     rethus_codigoperfilpre1 = "P07"
+{txt}
+{com}. 
+. save "${c -(}data{c )-}\Individual_balanced_all_PILA.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+C:\Proyectos\Banrep research\PhysiciansPosgraduates\Data\Individual_balanced_all_PILA.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}C:\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\Step_4.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}13 Jun 2024, 10:36:14
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
