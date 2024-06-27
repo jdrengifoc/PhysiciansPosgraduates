@@ -20,18 +20,10 @@
 *Globals
 ****************************************************************************
 
-* Working directory
-if "`c(hostname)'" == "SM201439"{
-	global pc "C:"
-}
+global FOLDER_PROYECTO "//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates"
 
-else {
-	global pc "\\sm093119"
-}
-
-global data 	 "${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Data"
-global logs 	 "${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Logs"
-global urgencias "${pc}\Proyectos\Banrep research\More_than_a_Healing\Data"
+global data "${FOLDER_PROYECTO}\Data"
+global logs "${FOLDER_PROYECTO}\Logs"
 
 
 cap log close
