@@ -1,3 +1,5 @@
+source('Code/requirements.R')
+library(dataRC)
 
 # Get RIPS history --------------------------------------------------------
 
@@ -102,29 +104,6 @@ df %>%
   write_parquet(file.path(FOLDER_PROYECTO, 'Data/history_PILA.parquet'))
 
 sprintf('\n\t Completed in %f mins\n', get_values_tic_msg('min')) %>% cat
-
-# To Stata ----------------------------------------------------------------
-real_project_folder <- '../../PhysiciansPosgraduates/Data/new'
-# RIPS
-open_dataset(sprintf('%s/data/history_RIPS.parquet', private_folder)) %>% 
-  collect %>% 
-  write_dta(sprintf('%s/Merge_individual_RIPS.dta', real_project_folder))
-# PILA
-open_dataset(sprintf('%s/data/history_PILA.parquet', private_folder)) %>% 
-  collect %>% 
-  write_dta(sprintf('%s/P07_PILA_monthly.dta', real_project_folder))
-# DESIGN
-open_dataset('../New Methodology/PhysiciansPostgraduates/data/treated_samples.parquet') %>% 
-  right_join(
-    x = open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_demographics.parquet') %>% 
-      rename_with(tolower, everything()) %>% select(personabasicaid, sexo)
-  ) %>% 
-  rename(
-    rethus_sexo = sexo, fechapregrado = fecha_grado_pregrado
-  ) %>% 
-  collect %>% 
-  write_dta(sprintf('%s/master_rethus.dta', real_project_folder))
-
 
 # salario -----------------------------------------------------------------
 

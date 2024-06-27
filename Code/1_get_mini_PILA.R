@@ -1,6 +1,6 @@
-# Get PILA's mini history -----------------------------------------------------
 source('Code/requirements.R')
 library(dataRC)
+
 tic()
 folder <- file.path(FOLDER_DATOS, '_PILA')
 files <- list.files(folder, pattern = '200[89]|20[12][0-9]')
