@@ -1,5 +1,3 @@
-
-source('../auxiliar_functions.R')
 source('Code/requirements.R')
 
 folder <- '//wmedesrv/gamma/Christian Posso/_banrep_research/datos_originales/'

@@ -7,11 +7,11 @@ requirements <- function(required_libs) {
   cat('\014')
 }
 
-required_libs <- c('haven', 'arrow', 'writexl', 'readxl', 'openxlsx',
-                   'dplyr', 'lubridate', 'ggplot2', 'stringr', 'tidyr', 'purrr',
-                   #'sf', 'ggnewscale',
-                   'modelsummary', 'fixest',
-                   'beepr', 'tictoc', 'ggthemes',
-                   'stringi', 'forcats', 'gsubfn')
+required_libs <- c(
+  'haven', 'arrow', 'writexl', 'readxl', 'openxlsx', 'tictoc',
+  'dplyr', 'lubridate', 'ggplot2', 'stringr', 'tidyr', 'purrr',
+  # 'sf', 'ggnewscale', 'beepr', 'ggthemes', 'stringi', 'forcats', 'gsubfn',
+  # 'modelsummary', 'fixest'
+  )
 requirements(required_libs)
 rm(requirements, required_libs)
