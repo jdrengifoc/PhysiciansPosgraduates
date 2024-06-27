@@ -1,6 +1,12 @@
+source('Code/requirements.R')
 
-# Readable ----------------------------------------------------------------
-df_rethus <- open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
+# Input Paths.
+file_rethus_studies <- file.path(FOLDER_PROYECTO, 'data/RETHUS_studies.parquet')
+file_minipila <- file.path(FOLDER_PROYECTO, 'data/mini_history_PILA.parquet')
+# Output Paths.
+file_treated <- file.path(FOLDER_PROYECTO, 'data/treated_samples.parquet')
+
+df_rethus <- open_dataset(file_rethus_studies) %>% 
   group_by(PERSONABASICAID) %>% 
   # Pregrado nacional, tiene especialidad
   summarise(
@@ -9,9 +15,9 @@ df_rethus <- open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parq
     POSGRADO = any(POSGRADO)) %>%
   # Primera especialidad nacional.
   left_join(
-    open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
+    open_dataset(file_rethus_studies) %>% 
       left_join(
-        open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
+        open_dataset(file_rethus_studies) %>% 
           filter(ESPECIALIDAD) %>% 
           group_by(PERSONABASICAID) %>% 
           summarise(
@@ -36,7 +42,7 @@ df_rethus <- open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parq
 ids_rethus <- df_rethus %>% filter(ESPECIALIDAD) %>% 
   collect %>% select(personabasicaid) %>% unlist %>% unname
 
-df_aux <- open_dataset('../New Methodology/PhysiciansPostgraduates/mini_history_PILA.parquet') %>%
+df_aux <- open_dataset(file_minipila) %>%
   filter(personabasicaid %in% ids_rethus, tipo_cotiz == 21) %>% 
   select(-tipo_cotiz) %>% distinct
 
@@ -83,7 +89,7 @@ get_date_dist <- function(df, var1, var2, unit) {
 # Treatment sample.
 df_pila %>% 
   left_join(
-    open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
+    open_dataset(file_rethus_studies) %>% 
       filter(PREGRADO) %>% distinct(PERSONABASICAID, FECHA_GRADO) %>% 
       rename(personabasicaid = PERSONABASICAID,
              fecha_grado_pregrado = FECHA_GRADO)
@@ -112,7 +118,7 @@ df_pila %>%
     x = df_rethus %>% 
       select(personabasicaid, ESPECIALIDAD, POSGRADO) %>% 
       left_join(
-        open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
+        open_dataset(file_rethus_studies) %>% 
           filter(PREGRADO) %>% distinct(PERSONABASICAID, FECHA_GRADO) %>% 
           rename(personabasicaid = PERSONABASICAID,
                  fecha_grado_pregrado = FECHA_GRADO)
@@ -120,14 +126,12 @@ df_pila %>%
     ) %>% 
   mutate(control = is.na(date_start_especializacion) & !ESPECIALIDAD & !POSGRADO) %>% 
   filter(treated_1a | control) %>% 
-  write_parquet('../New Methodology/PhysiciansPostgraduates/data/treated_samples.parquet')
+  write_parquet(file_treated)
 
-library(arrow)
-library(dplyr)
-open_dataset('../Temp JuanRengifo/New Methodology/PhysiciansPostgraduates/data/treated_samples.parquet') %>% glimpse
-  summarise(across(matches('control|treated'), ~ sum(., na.rm = T))) %>% collect %>% View
 
 # Descriptive statistics --------------------------------------------------
+open_dataset(file_treated) %>% glimpse
+  summarise(across(matches('control|treated'), ~ sum(., na.rm = T))) %>% collect %>% View
 df_rethus %>% group_by(especialidad_en_periodo_pila) %>% summarise(n()) %>% collect
 
 ## {begin} No están en PILA
@@ -160,94 +164,3 @@ open_dataset(rethus_file) %>%
   # distinct(PERSONABASICAID) %>% 
   collect %>% View
 # {end} Titulos que tienen los de Rethus (algunos son maestrias).
-
-# old ---------------------------------------------------------------------
-
-
-
-
-df_aux <- open_dataset('../New Methodology/PhysiciansPostgraduates/mini_history_PILA.parquet') %>% 
-  ## filter with ReTHUS.
-  left_join(x = df_rethus %>% select(personabasicaid)) %>% 
-  ##
-  filter(tipo_cotiz == 21) %>% select(-tipo_cotiz) %>% distinct
-df_pila <- df_aux %>% 
-  # ## Correcci[on]
-  # distinct %>%
-  # left_join(
-  #   open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>%
-  #     filter(PREGRADO) %>% distinct(PERSONABASICAID, FECHA_GRADO) %>%
-  #     rename(personabasicaid = PERSONABASICAID,
-  #            fecha_grado_pregrado = FECHA_GRADO)
-  # ) %>%
-  # filter(!is.na(fecha_cobertura),
-  #        fecha_grado_pregrado < fecha_cobertura | is.na(fecha_grado_pregrado)) %>%
-  ##
-group_by(personabasicaid) %>% 
-  summarise(date_start_especializacion = min(fecha_cobertura)) %>% ungroup %>% 
-  filter(
-    between(date_start_especializacion, ymd('2011-01-01'), ymd('2017-12-31'))
-  )
-
-
-
-
-df_pila <- df_pila %>% 
-  left_join(
-    open_dataset('temp.parquet') %>% 
-      filter(between(dist_start, 0, 5)) %>%
-      group_by(personabasicaid) %>% summarise(n_cotizaciones_5years = n())
-  )
-
-df_pila %>% 
-  left_join(
-    open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
-      rename(personabasicaid = PERSONABASICAID)
-  ) %>% 
-  mutate(dist = FECHA_GRADO - date_start_especializacion) %>% 
-  arrange(personabasicaid, dist) %>% collect %>% View
-pp %>% filter(n_ == 4) %>% collect
-pp %>% collect
-pp_id <- 21792345
-open_dataset('../../PhysiciansPosgraduates/Data/RETHUS_studies.parquet') %>% 
-  filter(PERSONABASICAID == pp_id) %>%
-  collect
-df_aux %>% 
-  filter(personabasicaid == pp_id) %>% collect
-df_pila %>%   
-  mutate(year = year(date_start_especializacion)) %>% 
-  group_by(year) %>% summarise(n_ = n()) %>% arrange(year) %>% 
-  collect
-
-df_aux <- df_pila %>% mutate(PILA = T) %>% 
-  full_join(
-    df_rethus %>% filter(especialidad_en_periodo_pila), by = 'personabasicaid'
-  ) %>% 
-  mutate(PILA = !is.na(PILA), ReTHUS = !is.na(ReTHUS))
-
-df_aux %>% 
-  summarise(
-    n_only_ReTHUS = sum(ReTHUS & !PILA), 
-    n_only_PILA = sum(PILA & !ReTHUS), 
-    n_both = sum(PILA & ReTHUS),
-    n_total = n()
-  ) %>% collect
-
-df_aux %>% 
-  mutate(year = year(date_start_especializacion),
-         only_PILA = PILA & !ReTHUS) %>% 
-  group_by(year, only_PILA) %>% summarise(n_ = n()) %>% 
-  arrange(year) %>% 
-  collect %>% 
-  group_by(year) %>% 
-  mutate(total = sum(n_)) %>% 
-  filter(only_PILA) %>% 
-  mutate(prop = n_ / total) %>% View
-
-
-df_rethus %>% 
-  group_by(
-    pregrado_nacional, ESPECIALIDAD, especialidad_en_periodo_pila,
-    primera_especialidad_nacional) %>% 
-  summarise(n_ = n()) %>% collect
-  

@@ -9,7 +9,7 @@ requirements <- function(required_libs) {
 
 required_libs <- c(
   'haven', 'arrow', 'writexl', 'readxl', 'openxlsx', 'tictoc',
-  'dplyr', 'lubridate', 'ggplot2', 'stringr', 'tidyr', 'purrr',
+  'dplyr', 'lubridate', 'ggplot2', 'stringr', 'tidyr', 'purrr'
   # 'sf', 'ggnewscale', 'beepr', 'ggthemes', 'stringi', 'forcats', 'gsubfn',
   # 'modelsummary', 'fixest'
   )
@@ -18,5 +18,5 @@ requirements(required_libs)
 rm(requirements, required_libs)
 
 # GLOBALS
-FOLDER_DATOS <- '//wmedesrv/gamma/Christian Posso/_banrep_research/datos_originales/'
-FOLDER_PROYECTO <- '//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/'
+FOLDER_DATOS <- '//wmedesrv/gamma/Christian Posso/_banrep_research/datos_originales'
+FOLDER_PROYECTO <- '//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos'
