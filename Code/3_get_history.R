@@ -33,7 +33,6 @@ for (file in files) {
     
     dataRC::unify_classes(dict, file, selected_columns) %>% 
     collect
-  
   df <- bind_rows(df, df0)
   
   sprintf('\n\t Completed in %f secs.\n', get_values_tic_msg()) %>% cat
@@ -53,10 +52,10 @@ sprintf('\n\t Completed in %f mins\n', get_values_tic_msg('min')) %>% cat
  
 # Get PILA history --------------------------------------------------------
 tic()
-folder <- 'Z:/Christian Posso/_banrep_research/datos_originales/_PILA/'
+folder <- file.path(FOLDER_DATOS, '_PILA')
 files <- list.files(folder, pattern = '2009|20[12][0-9]')
 
-dict_path <- '../Data/PILA_dictionary.xlsx'
+dict_path <- file.path(FOLDER_DATOS, 'unidicts/PILA_dictionary.xlsx')
 dict <- read_excel(dict_path, sheet = 'colnames')
 names(dict) <- sapply(str_split(names(dict), '\\.'),
                       function(x) paste(tail(x, 2), collapse = '.'))
@@ -69,7 +68,7 @@ selected_columns <- c(
   'incap_trab')
 
 ids <- open_dataset(
-  sprintf('%s/data/treated_samples.parquet', private_folder)
+  file.path(FOLDER_PROYECTO, 'Data/treated_samples.parquet')
 ) %>% 
   distinct(personabasicaid) %>% 
   collect %>% unlist %>% unname %>% sort
@@ -79,42 +78,30 @@ tic()
 for (file in files) {
   cat(paste('Began', file))
   tic()
-  # Auxiliary variables to select proper names and get the desired types. 
-  (df_selected <- filter(dict, uniname %in% selected_columns) %>% 
-      select(uniname, uniclass, file) %>% drop_na(file) %>% 
-      replace(is.na(.), ''))
-  (selected_columns_file <- df_selected[[file]])
-  (selected_columns1 <- df_selected$uniname)
-  (desired_classes <- df_selected$uniclass)
   
-  df0 <- open_dataset(sprintf('%s/%s', folder, file)) %>%
-    # Select variables and rename.
-    select(all_of(selected_columns_file)) %>%
-    rename_at(vars(selected_columns_file), function(x) selected_columns1) %>%
+  df0 <- open_dataset(file.path(folder, file)) %>%
+    dataRC::unify_colnames(dict, file, selected_columns) %>% 
+    
+    # MODIFY: PROCESS THE DATA AS NEEDED.
     filter(personabasicaid %in% ids) %>%
-    # Unify column types.
-    mutate(
-      across(all_of(selected_columns1[desired_classes == 'numeric']), as.numeric),
-      across(all_of(selected_columns1[desired_classes == 'character']), as.character)
-    ) %>% collect
-  
+    
+    dataRC::unify_classes(dict, file, selected_columns) %>%
+    collect
   df <- bind_rows(df, df0)
   
   sprintf('\n\t Completed in %f secs.\n', get_values_tic_msg()) %>% cat
 }
 # MODIFY: PROCESS AND SAVE THE REQUIRED DATA.
-
 df %>% 
-  # fechas
+  dataRC::relocate_columns(selected_columns) %>% 
   mutate(
     fecha_pila = ymd(str_sub(fecha_cobertura, 1L, 10L)),
     year = str_sub(fecha_cobertura, 1L, 4L) %>% as.integer,
     month = str_sub(fecha_cobertura, 6L, 7L) %>% as.integer
     ) %>% select(-fecha_cobertura) %>% 
-  write_parquet(sprintf('%s/data/history_PILA.parquet', private_folder))
+  write_parquet(file.path(FOLDER_PROYECTO, 'Data/history_PILA.parquet'))
 
 sprintf('\n\t Completed in %f mins\n', get_values_tic_msg('min')) %>% cat
-
 
 # To Stata ----------------------------------------------------------------
 real_project_folder <- '../../PhysiciansPosgraduates/Data/new'
