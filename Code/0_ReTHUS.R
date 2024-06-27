@@ -1,6 +1,6 @@
 source('Code/requirements.R')
 
-folder <- '//wmedesrv/gamma/Christian Posso/_banrep_research/datos_originales/'
+folder <- file.path(FOLDER_DATOS, 'RETHUS')
 rethus_file <- list.files(folder, recursive = T, full.names = T,
                           pattern = 'RETHUS_reduced') %>% tail(1L)
 
