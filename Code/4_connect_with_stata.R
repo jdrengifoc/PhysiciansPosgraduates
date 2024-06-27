@@ -1,5 +1,5 @@
 source('Code/requirements.R')
-library(dataRC)
+
 folder <- file.path(FOLDER_PROYECTO, 'Data')
 
 # RIPS
@@ -9,7 +9,7 @@ read_parquet(file.path(folder, 'history_RIPS.parquet')) %>%
 read_parquet(file.path(folder, 'history_PILA.parquet')) %>% 
   write_dta(file.path(folder, 'P07_PILA_monthly.dta'))
 # DESIGN
-open_dataset(file.path(folder, 'Data/treated_samples.parquet')) %>% 
+open_dataset(file.path(folder, 'treated_samples.parquet')) %>% 
   right_join(
     x = open_dataset(file.path(folder, 'RETHUS_demographics.parquet')) %>% 
       rename_with(tolower, everything()) %>% select(personabasicaid, sexo)
