@@ -21,7 +21,7 @@ tic()
 for (file in files) {
   cat(paste('Began', file))
   tic()
-  df0 <- open_dataset(sprintf('%s/%s', folder, file)) %>%
+  df0 <- open_dataset(file.path(folder, file)) %>%
     dataRC::unify_colnames(dict, file, selected_columns) %>% 
     filter(personabasicaid %in% ids) %>%
     dataRC::unify_classes(dict, file, selected_columns) %>% 

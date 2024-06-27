@@ -1,11 +1,10 @@
-private_folder <- '../New Methodology/PhysiciansPostgraduates'
+
 # Get RIPS history --------------------------------------------------------
 
-folder <- 'Z:/Christian Posso/_banrep_research/datos_originales/_RIPS'
-files <- list.files(folder, pattern = 'proc|urg|hos|cons', 
-                    recursive = T)
+folder <- file.path(FOLDER_DATOS, '_RIPS')
+files <- list.files(folder, pattern = 'proc|urg|hos|cons', recursive = T)
 
-dict_path <- '../Data/RIPS_dictionary.xlsx'
+dict_path <- file.path(FOLDER_DATOS, 'unidicts/RIPS_dictionary.xlsx')
 dict <- read_excel(dict_path, sheet = 'colnames')
 names(dict) <- sapply(str_split(names(dict), '\\.'),
                       function(x) paste(tail(x, 2), collapse = '.'))
@@ -14,9 +13,7 @@ names(dict) <- sapply(str_split(names(dict), '\\.'),
 selected_columns <- c('PERSONABASICAID', 'DATE_JUAN',
                       'DIAG_PRIN', 'DIAG_R1', 'COD_DIAG_R2', 'COD_DIAG_R3',
                       'CAUSA_EXTERNA')
-ids <- open_dataset(
-  sprintf('%s/data/treated_samples.parquet', private_folder)
-  ) %>% 
+ids <- open_dataset(file.path(FOLDER_PROYECTO, 'Data/treated_samples.parquet')) %>% 
   distinct(personabasicaid) %>% 
   collect %>% unlist %>% unname %>% sort
 
@@ -25,27 +22,17 @@ tic()
 for (file in files) {
   cat(paste('Began', file))
   tic()
-  # Auxiliary variables to select proper names and get the desired types. 
-  (df_selected <- filter(dict, uniname %in% selected_columns) %>% 
-      select(uniname, uniclass, file) %>% drop_na(file) %>% 
-      replace(is.na(.), ''))
-  (selected_columns_file <- df_selected[[file]])
-  (selected_columns1 <- df_selected$uniname)
-  (desired_classes <- df_selected$uniclass)
   
-  df0 <- open_dataset(sprintf('%s/%s', folder, file)) %>%
-    # Select variables and rename.
-    select(all_of(selected_columns_file)) %>%
-    rename_at(vars(selected_columns_file), function(x) selected_columns1) %>%
+  df0 <- open_dataset(file.path(folder, file)) %>%
+    dataRC::unify_colnames(dict, file, selected_columns) %>% 
+    
     # MODIFY: PROCESS THE DATA AS NEEDED.
     filter(PERSONABASICAID %in% ids) %>%
     mutate(SERVICE = str_sub(
       str_match(file, 'cons|proc|hosp|urg'), end = 1L)) %>% 
-    # Unify column types.
-    mutate(
-      across(all_of(selected_columns1[desired_classes == 'numeric']), as.numeric),
-      across(all_of(selected_columns1[desired_classes == 'character']), as.character)
-    ) %>% collect
+    
+    dataRC::unify_classes(dict, file, selected_columns) %>% 
+    collect
   
   df <- bind_rows(df, df0)
   
@@ -53,14 +40,15 @@ for (file in files) {
 }
 # MODIFY: PROCESS AND SAVE THE REQUIRED DATA.
 df %>% 
+  dataRC::relocate_columns(selected_columns) %>% 
   mutate(DATE = ymd(str_sub(DATE_JUAN, 1L, 10L))) %>% select(-DATE_JUAN) %>% 
   mutate(across(
     all_of(selected_columns[str_detect(selected_columns, 'DIAG')]), ~toupper(.)
   )) %>%
-  # Igual a ellos.
+  # Stata equivalent.
   rename(DIAG_R2 = COD_DIAG_R2, DIAG_R3 = COD_DIAG_R3) %>% 
   rename_with(tolower, everything()) %>% 
-  write_parquet(sprintf('%s/data/history_RIPS.parquet', private_folder))
+  write_parquet(file.path(FOLDER_PROYECTO, 'Data/history_RIPS.parquet'))
 sprintf('\n\t Completed in %f mins\n', get_values_tic_msg('min')) %>% cat
  
 # Get PILA history --------------------------------------------------------
