@@ -19,4 +19,4 @@ rm(requirements, required_libs)
 
 # GLOBALS
 FOLDER_DATOS <- '//wmedesrv/gamma/Christian Posso/_banrep_research/datos_originales'
-FOLDER_PROYECTO <- '//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos'
+FOLDER_PROYECTO <- '//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates/'

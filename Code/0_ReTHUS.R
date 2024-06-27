@@ -32,7 +32,7 @@ df_aux <- open_dataset('temp.parquet') %>%
 # Get demographics (constant per physician). We assume that are current values.
 df_aux %>% 
   distinct(PERSONABASICAID, SEXO, EDAD, DPTO_RESIDENCIA, MPIO_RESIDENCIA) %>% 
-  write_parquet('../../PhysiciansPosgraduates/Data/ReTHUS_demographics.parquet')
+  write_parquet(file.path(FOLDER_PROYECTO, 'Data/ReTHUS_demographics.parquet'))
 
 # Get studies. 
 # 1. We determine the dates as the minimum date per degree.
@@ -61,7 +61,7 @@ df_aux %>%
     ) %>% collect %>% 
   group_by(PERSONABASICAID) %>% 
   mutate(id_TITULO = row_number()) %>% 
-  write_parquet('../../PhysiciansPosgraduates/Data/ReTHUS_studies.parquet')
+  write_parquet(file.path(FOLDER_PROYECTO, 'Data/ReTHUS_studies.parquet'))
 
 unlink('temp.parquet')
 rm(df_aux)
