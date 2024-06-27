@@ -127,7 +127,7 @@ df_pila %>%
   mutate(control = is.na(date_start_especializacion) & !ESPECIALIDAD & !POSGRADO) %>% 
   filter(treated_1a | control) %>% 
   write_parquet(file_treated)
-
+unlink('temp.parquet')
 
 # Descriptive statistics --------------------------------------------------
 open_dataset(file_treated) %>% glimpse
