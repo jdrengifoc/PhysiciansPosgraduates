@@ -2,16 +2,27 @@
  *************************************************************************			       	
 	        RIPS variables creation
 			 
-1) Created by: Pablo Uribe						Daniel Márquez
-			   World Bank						Harvard Business School
-			   puribebotero@worldbank.org		dmarquezm20@gmail.com
-				
+1) Created by: Juan David Rengifo Castro
+               Banco de la República
+               jdrengifoc@eafit.edu.co
+               
+               Pablo Uribe						      
+			         World Bank						        
+			         puribebotero@worldbank.org		
+			         
+			         Daniel Márquez
+			         Harvard Business School
+				       dmarquezm20@gmail.com
+				       
 2) Date: December 2023
 
 3) Objective: Retrieves the RIPS variables across modules and years for our sample
 			  This do file can only be ran at BanRep's servers.
 
-4) Output:	- Individual_balanced_all_RIPS.dta
+4) Input: - Merge_individual_RIPS.dta
+          - master_rethus.dta
+
+5) Output:	- Individual_balanced_all_RIPS.dta
 *************************************************************************
 *************************************************************************/	
 

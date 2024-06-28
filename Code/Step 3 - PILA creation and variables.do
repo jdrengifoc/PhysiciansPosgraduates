@@ -2,10 +2,18 @@
  *************************************************************************			       	
 	        PILA dataset creation by month
 			 
-1) Created by: Pablo Uribe						Daniel Márquez
-			   World Bank						Harvard Business School
-			   puribebotero@worldbank.org		dmarquezm20@gmail.com
-				
+1) Created by: Juan David Rengifo Castro
+               Banco de la República
+               jdrengifoc@eafit.edu.co
+               
+               Pablo Uribe						      
+			         World Bank						        
+			         puribebotero@worldbank.org		
+			         
+			         Daniel Márquez
+			         Harvard Business School
+				       dmarquezm20@gmail.com
+				       
 2) Date: December 2023
 
 3) Objective: Create the PILA panel with our main sample for each of the
