@@ -11,7 +11,10 @@
 3) Objective: Retrieves the RIPS variables across modules and years for our sample
 			  This do file can only be ran at BanRep's servers.
 
-4) Output:	- Individual_balanced_all_RIPS.dta
+4) Input: - Merge_individual_RIPS.dta
+          - master_rethus.dta
+
+5) Output:	- Individual_balanced_all_RIPS.dta
 *************************************************************************
 *************************************************************************/	
 
