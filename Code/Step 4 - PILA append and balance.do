@@ -2,9 +2,17 @@
  *************************************************************************			       	
 	        PILA balancing and appending
 			 
-1) Created by: Pablo Uribe						Daniel Márquez
-			   World Bank						Harvard Business School
-			   puribebotero@worldbank.org		dmarquezm20@gmail.com
+1) Created by: Juan David Rengifo Castro
+               Banco de la República
+               jdrengifoc@eafit.edu.co
+               
+               Pablo Uribe						      
+			         World Bank						        
+			         puribebotero@worldbank.org		
+			         
+			         Daniel Márquez
+			         Harvard Business School
+				       dmarquezm20@gmail.com
 				
 2) Date: December 2023
 
@@ -13,6 +21,9 @@
 			  This do file can only be ran at BanRep's servers.
 
 4) Output:	- Individual_balanced_all_PILA.dta
+
+5) Notes: 
+   - Comment replace posgrado_salud  	= 0 if (fecha_pila < fechapregrado)
 *************************************************************************
 *************************************************************************/	
 
@@ -26,27 +37,19 @@
 *Globals
 ****************************************************************************
 
-* Working directory
-if "`c(hostname)'" == "SM201439"{
-	global pc "C:"
-}
-
-else {
-	global pc "\\sm093119"
-}
-
-global data 		"${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Data"
+global FOLDER_PROYECTO "//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates"
+global logs "${FOLDER_PROYECTO}\Logs"
+global data "${FOLDER_PROYECTO}\Data"
 
 cap log close
-log using "${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\Step_4.smcl", replace
+log using "${logs}\Step_4.smcl", replace
 
 ****************************************************************************
 **#				1. Process each occupation's dataset
 ****************************************************************************
 
 * Balancing with rethus sample
-use personabasicaid fechapregrado rethus_codigoperfilpre1 rethus_sexo if rethus_codigoperfilpre1 == "P07" using "${data}\master_rethus", clear
-drop rethus_codigoperfilpre1
+use personabasicaid fechapregrado rethus_sexo using "${data}\master_rethus", clear
 
 * Balancear panel
 bys personabasicaid: egen temp = min(fechapregrado)
@@ -62,29 +65,26 @@ gen formal = (_merge == 3)
 drop _merge
 replace pila_dependientes 	= 0 if mi(pila_dependientes)
 replace pila_independientes = 0 if mi(pila_independientes)
-
-bys personabasicaid: ereplace fechapregrado = max(fechapregrado)
-drop if mi(fechapregrado)
 replace year_grado = year(dofm(fechapregrado))
 
 * Postgraduate PILA
-gen 	posgrado_salud 			= (tipo_cotiz == 21)
-replace posgrado_salud 			= 0 if (fecha_pila < fechapregrado)
+gen 	posgrado_salud 			= (tipo_cotizante == 21)
+* replace posgrado_salud  	= 0 if (fecha_pila < fechapregrado)
 
 * Postgraduate starting date
 gen 	posgrado_start			= fecha_pila if posgrado_salud == 1
-bys 	personabasicaid:		ereplace posgrado_start = min(posgrado_start)
+bys 	personabasicaid:	  ereplace posgrado_start = min(posgrado_start)
 
 * Postgraduate RETHUS
 gen 	month_posgrado 			= mofd(rethus_fechagradopos1)
 bys 	personabasicaid:		ereplace month_posgrado = min(month_posgrado)
 gen 	posgrado_rethus 		= 0
-replace posgrado_rethus 		= 1  if (month_posgrado == fecha_pila)
+replace posgrado_rethus 	= 1  if (month_posgrado == fecha_pila)
 
-replace rethus_perfilpos1		= "" if (month_posgrado > fecha_pila)
+replace rethus_perfilpos1		    = "" if (month_posgrado > fecha_pila)
 replace rethus_codigoperfilpos1 = "" if (month_posgrado > fecha_pila)
 
-gen auxiliar 	  = substr(rethus_perfilpos1, 1, 1)
+gen auxiliar 	    = substr(rethus_perfilpos1, 1, 1)
 gen posgrado_clin = 1 if auxiliar == "M" & rethus_codigoperfilpre1 == "P07" & rethus_codigoperfilpos1 != "MA99"
 gen posgrado_quir = 1 if auxiliar == "Q" & rethus_codigoperfilpre1 == "P07"
 gen posgrado_otro = 1 if posgrado_clin != 1 & posgrado_quir != 1 & !mi(rethus_perfilpos1)
@@ -93,16 +93,16 @@ drop auxiliar
 * PILA variables
 rename 	pila_salario_max_r pila_salario_r_max
 
-replace pila_salario_r	 		= 0 if mi(pila_salario_r)
-replace pila_salario_r_max		= 0 if mi(pila_salario_r_max)	
-replace sal_dias_cot			= 0 if mi(sal_dias_cot)
-replace nro_cotizaciones		= 0 if mi(nro_cotizaciones)	
+replace pila_salario_r	 	 = 0 if mi(pila_salario_r)
+replace pila_salario_r_max = 0 if mi(pila_salario_r_max)	
+replace sal_dias_cot			 = 0 if mi(sal_dias_cot)
+replace nro_cotizaciones	 = 0 if mi(nro_cotizaciones)	
 
 * Annualize
-replace fecha_pila 				= yofd(dofm(fecha_pila))
-replace fechapregrado 			= yofd(dofm(fechapregrado))
-replace month_posgrado			= yofd(dofm(month_posgrado))
-replace posgrado_start			= yofd(dofm(posgrado_start))
+replace fecha_pila 				 = yofd(dofm(fecha_pila))
+replace fechapregrado 		 = yofd(dofm(fechapregrado))
+replace month_posgrado		 = yofd(dofm(month_posgrado))
+replace posgrado_start		 = yofd(dofm(posgrado_start))
 
 format fecha_pila %ty
 format fechapregrado %ty
@@ -118,9 +118,6 @@ collapse 	(median) sal_dias_cot pila_salario_r pila_salario_r_max							///
 * Last variables
 gen 	l_pila_salario_r 		= log(pila_salario_r)
 gen		p_cotizaciones			= (nro_cotizaciones > 1)
-
-* Identify occupation
-gen 	rethus_codigoperfilpre1 = "P07"
 
 save "${data}\Individual_balanced_all_PILA.dta", replace
 
