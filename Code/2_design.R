@@ -129,6 +129,25 @@ df_pila %>%
   write_parquet(file_treated)
 unlink('temp.parquet')
 
+
+# Add necessary variables for Step 4.
+df_aux <- open_dataset(file_rethus_studies) %>% 
+  filter(ESPECIALIDAD) %>% 
+  select(PERSONABASICAID, TITULO, FECHA_GRADO, id_TITULO)
+
+df_aux %>% 
+  group_by(PERSONABASICAID) %>% 
+  summarise(id_TITULO = min(id_TITULO)) %>% 
+  left_join(df_aux) %>% 
+  select(-id_TITULO) %>%
+  rename(rethus_fechagradopos1 = FECHA_GRADO, rethus_perfilpos1 = TITULO) %>% 
+  mutate(rethus_codigoperfilpos1 = str_replace(rethus_perfilpos1, " .*", "")) %>% 
+  left_join(
+    x = open_dataset(file_treated), 
+    by = join_by(personabasicaid == PERSONABASICAID)
+    ) %>% 
+  write_parquet(file_treated)
+  
 # Descriptive statistics --------------------------------------------------
 open_dataset(file_treated) %>% glimpse
   summarise(across(matches('control|treated'), ~ sum(., na.rm = T))) %>% collect %>% View
