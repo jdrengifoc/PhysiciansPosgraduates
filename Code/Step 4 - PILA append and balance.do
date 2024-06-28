@@ -49,7 +49,8 @@ log using "${logs}\Step_4.smcl", replace
 ****************************************************************************
 
 * Balancing with rethus sample
-use personabasicaid fechapregrado rethus_sexo using "${data}\master_rethus", clear
+use personabasicaid fechapregrado rethus_sexo rethus_fechagradopos1 rethus_perfilpos1 rethus_codigoperfilpos1 using "${data}\master_rethus", clear
+gen year_grado 		= year(dofm(fechapregrado))
 
 * Balancear panel
 bys personabasicaid: egen temp = min(fechapregrado)
@@ -85,8 +86,8 @@ replace rethus_perfilpos1		    = "" if (month_posgrado > fecha_pila)
 replace rethus_codigoperfilpos1 = "" if (month_posgrado > fecha_pila)
 
 gen auxiliar 	    = substr(rethus_perfilpos1, 1, 1)
-gen posgrado_clin = 1 if auxiliar == "M" & rethus_codigoperfilpre1 == "P07" & rethus_codigoperfilpos1 != "MA99"
-gen posgrado_quir = 1 if auxiliar == "Q" & rethus_codigoperfilpre1 == "P07"
+gen posgrado_clin = 1 if auxiliar == "M" & rethus_codigoperfilpos1 != "MA99"
+gen posgrado_quir = 1 if auxiliar == "Q"
 gen posgrado_otro = 1 if posgrado_clin != 1 & posgrado_quir != 1 & !mi(rethus_perfilpos1)
 drop auxiliar
 
