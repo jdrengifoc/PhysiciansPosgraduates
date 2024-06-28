@@ -20,7 +20,8 @@
 			  occupations.
 			  This do file can only be ran at BanRep's servers.
 
-4) Output:	- P01_PILA_monthly.dta
+4) Output:	
+      - P01_PILA_monthly.dta
 			- P03_PILA_monthly.dta
 			- P07_PILA_monthly.dta
 			- P09_PILA_monthly.dta
