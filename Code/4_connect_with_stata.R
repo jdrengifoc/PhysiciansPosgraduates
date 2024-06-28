@@ -2,12 +2,17 @@ source('Code/requirements.R')
 
 folder <- file.path(FOLDER_PROYECTO, 'Data')
 
+
+open_dataset(file.path(folder, 'history_PILA.parquet')) %>% 
+  filter(tipo_cotiz == 21) %>% 
+  distinct(personabasicaid) %>% 
+  collect %>% nrow
 # RIPS
 read_parquet(file.path(folder, 'history_RIPS.parquet')) %>% 
   write_dta(file.path(folder, 'Merge_individual_RIPS.dta'))
 # PILA
 read_parquet(file.path(folder, 'history_PILA.parquet')) %>% 
-  write_dta(file.path(folder, 'P07_PILA_monthly.dta'))
+  write_dta(file.path(folder, 'history_PILA.dta'))
 # DESIGN
 open_dataset(file.path(folder, 'treated_samples.parquet')) %>% 
   right_join(
@@ -17,5 +22,5 @@ open_dataset(file.path(folder, 'treated_samples.parquet')) %>%
   rename(
     rethus_sexo = sexo, fechapregrado = fecha_grado_pregrado
   ) %>% 
-  collect %>% 
+  collect %>% View
   write_dta(file.path(folder, 'master_rethus.dta'))

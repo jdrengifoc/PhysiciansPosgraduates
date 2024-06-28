@@ -3,15 +3,16 @@
       name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\RIPS_variables.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}27 Jun 2024, 12:17:29
+ {txt}opened on:  {res}28 Jun 2024, 13:12:46
 {txt}
 {com}. 
 . ********************************************************************************
 . **#                   1. Read R output files         
 . ********************************************************************************
+. 
 . use "${c -(}data{c )-}\Merge_individual_RIPS.dta", clear
 {txt}
-{com}. merge m:1 personabasicaid using "${c -(}data{c )-}\master_rethus.dta", keep(3) nogen 
+{com}. merge m:1 personabasicaid using "${c -(}data{c )-}\master_rethus.dta", keepusing(personabasicaid rethus_sexo) keep(3) nogen 
 {res}
 {txt}{col 5}Result{col 33}Number of obs
 {col 5}{hline 41}
@@ -144,18 +145,6 @@
 {txt}(4,452,973 missing values generated)
 
 {com}. compress
-  {txt}variable {bf}{res}ESPECIALIDAD{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}POSGRADO{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}n_cotizaciones_year1{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1a{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1b{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1c{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1d{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_2a{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_2b{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_3c{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_3d{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}control{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}year_RIPS{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}pregnancy{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}diag_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
@@ -175,9 +164,7 @@
   {txt}variable {bf}{res}contador_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}personabasicaid{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
   {txt}variable {bf}{res}causa_externa{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}fechapregrado{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-  {txt}variable {bf}{res}date_start_especializacion{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-{txt}  (492,199,637 bytes saved)
+{txt}  (275,451,173 bytes saved)
 
 {com}. 
 . 
@@ -321,7 +308,7 @@ as .dta format
 {txt}
 {com}. 
 . expand 14 // 14 years between 2009 and 2022
-{txt}(1,248,052 observations created)
+{txt}(1,248,598 observations created)
 
 {com}. bys personabasicaid: gen year_RIPS = (_n - 1) + 2009
 {txt}
@@ -329,8 +316,8 @@ as .dta format
 {res}
 {txt}{col 5}Result{col 33}Number of obs
 {col 5}{hline 41}
-{col 5}Not matched{col 30}{res}         821,933
-{txt}{col 9}from master{col 30}{res}         821,933{txt}  
+{col 5}Not matched{col 30}{res}         822,521
+{txt}{col 9}from master{col 30}{res}         822,521{txt}  
 {col 9}from using{col 30}{res}               0{txt}  
 
 {col 5}Matched{col 30}{res}         522,123{txt}  
@@ -343,34 +330,34 @@ as .dta format
 .         replace `var' = 0 if mi(`var')
 {txt}  3{com}.         
 . {c )-}
-{txt}(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
-(821,933 real changes made)
+{txt}(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
+(822,521 real changes made)
 
 {com}. 
 . ********************************************************************************
@@ -411,6 +398,32 @@ as .dta format
 {com}. gen service_mental2     = (proce_mental  == 1 | consul_mental2  == 1 | urg_mental  == 1 | hosp_mental  == 1)
 {txt}
 {com}. 
+. /*
+> gen     year_mental = year_RIPS if consul_mental == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     consul_mental_forever = 0
+> replace consul_mental_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> 
+> gen     year_mental = year_RIPS if consul_mental2 == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     consul_mental2_forever = 0
+> replace consul_mental2_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> 
+> gen     year_mental = year_RIPS if service_mental == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     service_mental_forever = 0
+> replace service_mental_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> 
+> gen     year_mental = year_RIPS if service_mental2 == 1
+> bys     personabasicaid: ereplace year_mental = min(year_mental)
+> gen     service_mental2_forever = 0
+> replace service_mental2_forever = 1 if year_RIPS >= year_mental
+> drop    year_mental
+> */
+. 
 . compress
   {txt}variable {bf}{res}ESPECIALIDAD{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}POSGRADO{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
@@ -449,17 +462,13 @@ as .dta format
   {txt}variable {bf}{res}personabasicaid{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
   {txt}variable {bf}{res}fechapregrado{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}date_start_especializacion{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-{txt}  (138,437,768 bytes saved)
+  {txt}variable {bf}{res}rethus_fechagradopos1{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
+{txt}  (146,566,196 bytes saved)
 
 {com}. 
 . * Save the final balanced RIPS panel
 . save "${c -(}data{c )-}\Individual_balanced_all_RIPS.dta", replace
 {txt}{p 0 4 2}
-(file {bf}
-//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Data\Individual_balanced_all_RIPS.dta{rm}
-not found)
-{p_end}
-{p 0 4 2}
 file {bf}
 //wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Data\Individual_balanced_all_RIPS.dta{rm}
 saved
@@ -470,7 +479,7 @@ saved
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\RIPS_variables.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res}27 Jun 2024, 12:20:02
+ {txt}closed on:  {res}28 Jun 2024, 13:15:10
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}

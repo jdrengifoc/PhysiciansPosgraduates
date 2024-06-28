@@ -47,9 +47,15 @@ log using "${logs}\Rethus-Pila.smcl", replace
 ****************************************************************************
 
 
-* Create empty dataset where each month will be appended recursively
+* Read R history_PILA.parquet
 
-use "${data}\P07_PILA_monthly.dta", clear
+use "${data}\history_PILA.dta", clear
+
+* Fecha a mes
+rename fecha_pila fecha_pila_temp
+gen fecha_pila = mofd(fecha_pila_temp)
+drop fecha_pila_temp
+format fecha_pila %tm
 
 
 * New variables
@@ -62,8 +68,8 @@ gen 	pila_dependientes   = (pila_independientes != 1 & pila_posgrado_salud != 1)
 foreach var of varlist salario_bas ibc_pens ibc_salud ibc_rprof ibc_ccf {
 
 	rename `var' `var'_orig
-	bys personabasicaid id: egen 	`var' = max(`var'_orig) if (pila_dependientes == 1)
-	bys personabasicaid id: replace `var' = `var'_orig if (pila_independientes == 1)
+	bys personabasicaid id fecha_pila: egen 	`var' = max(`var'_orig) if (pila_dependientes == 1)
+	bys personabasicaid id fecha_pila: replace `var' = `var'_orig if (pila_independientes == 1)
 	
 }
 
@@ -143,39 +149,38 @@ foreach var in $vars {
 	
 }
 
-
 * Remove duplicates of contributions with same company
-gduplicates drop personabasicaid id if pila_dependientes == 1, force
+gduplicates drop personabasicaid fecha_pila id if pila_dependientes == 1, force
 
-bys personabasicaid: gen nro_cotizaciones = _N
+bys personabasicaid fecha_pila: gen nro_cotizaciones = _N
 	
 * Since people may have more than one contribution each month, sum the wages of each contribution and keep the max of worked days. 
 foreach var of varlist pila_salario_r {
 	
-  bys personabasicaid: ereplace `var' 				 = total(`var')
-  bys personabasicaid: egen 	`var'_dependientes 	 = total(`var') if (pila_dependientes == 1)
-  bys personabasicaid: egen 	`var'_independientes = total(`var') if (pila_independientes == 1)
+  bys personabasicaid fecha_pila: ereplace `var' 				 = total(`var')
+  bys personabasicaid fecha_pila: egen 	`var'_dependientes 	 = total(`var') if (pila_dependientes == 1)
+  bys personabasicaid fecha_pila: egen 	`var'_independientes = total(`var') if (pila_independientes == 1)
   
 }
 
 foreach var of varlist sal_dias_cot pila_dependientes pila_independientes pila_posgrado_salud pila_salario_max_r incap_dias incap_gral licen_mat {
-  bys personabasicaid: ereplace `var' = max(`var')
+  bys personabasicaid fecha_pila: ereplace `var' = max(`var')
 }
 
 replace sal_dias_cot = 30 if (sal_dias_cot > 30 & !mi(sal_dias_cot))
 
-gsort personabasicaid tipo_cotizante
+gsort personabasicaid fecha_pila tipo_cotizante
 
-gduplicates drop personabasicaid, force
+gduplicates drop personabasicaid fecha_pila, force
 
 tostring ciudad_cod depto_cod, replace
 
 replace ciudad_cod = "00" + ciudad_cod if (length(ciudad_cod) == 1 & ciudad_cod != ".")
 replace ciudad_cod = "0" + ciudad_cod 	if (length(ciudad_cod) == 2 & ciudad_cod != ".")
 
-replace depto_cod	 = "0" + depto_cod 	if (length(depto_cod) == 1 & depto_cod != ".")
+replace depto_cod  = "0" + depto_cod 	if (length(depto_cod) == 1 & depto_cod != ".")
 
-gen pila_cod_mun 	 = depto_cod + ciudad_cod
+gen pila_cod_mun   = depto_cod + ciudad_cod
 
 * Keep relevant variables
 keep personabasicaid fecha_pila year month sexomode fechantomode *_r 	///
@@ -184,8 +189,9 @@ sal_dias_cot *dependientes *independientes nro_cotizaciones 			///
 pila_posgrado_salud tipo_cotiz pila_salario_max_r incap_dias incap_gral ///
 licen_mat
 
+
 * Remove any duplicates
-gduplicates drop personabasicaid, force
+gduplicates drop personabasicaid fecha_pila, force
 compress
 
 

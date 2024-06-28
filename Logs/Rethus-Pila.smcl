@@ -3,7 +3,7 @@
       name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\Rethus-Pila.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}27 Jun 2024, 20:32:06
+ {txt}opened on:  {res}28 Jun 2024, 13:53:45
 {txt}
 {com}. 
 . 
@@ -12,9 +12,19 @@
 . ****************************************************************************
 . 
 . 
-. * Create empty dataset where each month will be appended recursively
+. * Read R history_PILA.parquet
 . 
-. use "${c -(}data{c )-}\P07_PILA_monthly.dta", clear
+. use "${c -(}data{c )-}\history_PILA.dta", clear
+{txt}
+{com}. 
+. * Fecha a mes
+. rename fecha_pila fecha_pila_temp
+{res}{txt}
+{com}. gen fecha_pila = mofd(fecha_pila_temp)
+{txt}
+{com}. drop fecha_pila_temp
+{txt}
+{com}. format fecha_pila %tm
 {txt}
 {com}. 
 . 
@@ -32,11 +42,11 @@
 . foreach var of varlist salario_bas ibc_pens ibc_salud ibc_rprof ibc_ccf {c -(}
 {txt}  2{com}. 
 .         rename `var' `var'_orig
-{txt}  3{com}.         bys personabasicaid id: egen    `var' = max(`var'_orig) if (pila_dependientes == 1)
-{txt}  4{com}.         bys personabasicaid id: replace `var' = `var'_orig if (pila_independientes == 1)
+{txt}  3{com}.         bys personabasicaid id fecha_pila: egen         `var' = max(`var'_orig) if (pila_dependientes == 1)
+{txt}  4{com}.         bys personabasicaid id fecha_pila: replace `var' = `var'_orig if (pila_independientes == 1)
 {txt}  5{com}.         
 . {c )-}
-{res}{txt}(3,169,103 missing values generated)
+{res}{txt}(3,169,106 missing values generated)
 (2667642 real changes made)
 {res}{txt}(3,169,103 missing values generated)
 (2667642 real changes made)
@@ -44,7 +54,7 @@
 (2667642 real changes made)
 {res}{txt}(3,169,103 missing values generated)
 (2667642 real changes made)
-{res}{txt}(3,169,103 missing values generated)
+{res}{txt}(3,169,104 missing values generated)
 (2667642 real changes made)
 
 {com}. 
@@ -172,7 +182,7 @@
 {txt}(501,461 missing values generated)
 
 {com}. replace rowmax          = mw if (rowmax >= mw_1 * 0.8 & rowmax < mw)            
-{txt}(68,820 real changes made, 4 to missing)
+{txt}(201,088 real changes made, 4 to missing)
 
 {com}. replace rowmax          = rowmax / 0.4 if (pila_independientes == 1 & rowmax > mw)
 {txt}(1,916,490 real changes made)
@@ -223,58 +233,59 @@
 (0 real changes made)
 
 {com}. 
-. 
 . * Remove duplicates of contributions with same company
-. gduplicates drop personabasicaid id if pila_dependientes == 1, force
+. gduplicates drop personabasicaid fecha_pila id if pila_dependientes == 1, force
 
-{p 0 4}{txt}Duplicates in terms of {res} personabasicaid id{p_end}
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid fecha_pila id{p_end}
 {txt}{res}
-{txt}(7,531,942 observations deleted)
+{txt}(611,860 observations deleted)
 
 {com}. 
-. bys personabasicaid: gen nro_cotizaciones = _N
+. bys personabasicaid fecha_pila: gen nro_cotizaciones = _N
 {txt}
 {com}.         
 . * Since people may have more than one contribution each month, sum the wages of each contribution and keep the max of worked days. 
 . foreach var of varlist pila_salario_r {c -(}
 {txt}  2{com}.         
-.   bys personabasicaid: ereplace `var'                            = total(`var')
-{txt}  3{com}.   bys personabasicaid: egen     `var'_dependientes       = total(`var') if (pila_dependientes == 1)
-{txt}  4{com}.   bys personabasicaid: egen     `var'_independientes = total(`var') if (pila_independientes == 1)
+.   bys personabasicaid fecha_pila: ereplace `var'                                 = total(`var')
+{txt}  3{com}.   bys personabasicaid fecha_pila: egen  `var'_dependientes       = total(`var') if (pila_dependientes == 1)
+{txt}  4{com}.   bys personabasicaid fecha_pila: egen  `var'_independientes = total(`var') if (pila_independientes == 1)
 {txt}  5{com}.   
 . {c )-}
-{txt}(3,565,653 real changes made)
+{txt}(3,654,868 real changes made)
 (3,169,103 missing values generated)
-(903,489 missing values generated)
+(7,823,571 missing values generated)
 
 {com}. 
 . foreach var of varlist sal_dias_cot pila_dependientes pila_independientes pila_posgrado_salud pila_salario_max_r incap_dias incap_gral licen_mat {c -(}
-{txt}  2{com}.   bys personabasicaid: ereplace `var' = max(`var')
+{txt}  2{com}.   bys personabasicaid fecha_pila: ereplace `var' = max(`var')
 {txt}  3{com}. {c )-}
-{txt}(477,233 real changes made)
-(3,048,039 real changes made)
-(791,424 real changes made)
-(852,239 real changes made)
-(1,040 missing values generated)
-(1040 missing values generated)
-(3,475,834 real changes made)
-(23,469 real changes made)
-(151,235 real changes made)
-(56,228 real changes made)
+{txt}(679,056 real changes made)
+(821,792 real changes made)
+(880,014 real changes made)
+(156,648 real changes made)
+(369,283 missing values generated)
+(369283 missing values generated)
+(1,699,435 real changes made)
+(174 missing values generated)
+(174 missing values generated)
+(4,746 real changes made)
+(74,539 real changes made)
+(7,592 real changes made)
 
 {com}. 
 . replace sal_dias_cot = 30 if (sal_dias_cot > 30 & !mi(sal_dias_cot))
-{txt}(450 real changes made)
+{txt}(8 real changes made)
 
 {com}. 
-. gsort personabasicaid tipo_cotizante
+. gsort personabasicaid fecha_pila tipo_cotizante
 {txt}
 {com}. 
-. gduplicates drop personabasicaid, force
+. gduplicates drop personabasicaid fecha_pila, force
 
-{p 0 4}{txt}Duplicates in terms of {res} personabasicaid{p_end}
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid fecha_pila{p_end}
 {txt}{res}
-{txt}(3,477,187 observations deleted)
+{txt}(1,839,890 observations deleted)
 
 {com}. 
 . tostring ciudad_cod depto_cod, replace
@@ -283,17 +294,17 @@ depto_cod was {res:double} now {res:str2}
 
 {com}. 
 . replace ciudad_cod = "00" + ciudad_cod if (length(ciudad_cod) == 1 & ciudad_cod != ".")
-{txt}(76,015 real changes made)
+{txt}(7,319,216 real changes made)
 
 {com}. replace ciudad_cod = "0" + ciudad_cod   if (length(ciudad_cod) == 2 & ciudad_cod != ".")
-{txt}(1,600 real changes made)
+{txt}(120,391 real changes made)
 
 {com}. 
-. replace depto_cod        = "0" + depto_cod      if (length(depto_cod) == 1 & depto_cod != ".")
-{txt}(21,367 real changes made)
+. replace depto_cod  = "0" + depto_cod    if (length(depto_cod) == 1 & depto_cod != ".")
+{txt}(1,955,513 real changes made)
 
 {com}. 
-. gen pila_cod_mun         = depto_cod + ciudad_cod
+. gen pila_cod_mun   = depto_cod + ciudad_cod
 {txt}
 {com}. 
 . * Keep relevant variables
@@ -304,30 +315,31 @@ depto_cod was {res:double} now {res:str2}
 > licen_mat
 {txt}
 {com}. 
+. 
 . * Remove any duplicates
-. gduplicates drop personabasicaid, force
+. gduplicates drop personabasicaid fecha_pila, force
 
-{p 0 4}{txt}Duplicates in terms of {res} personabasicaid{p_end}
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid fecha_pila{p_end}
 {txt}{res}
 {txt}(0 observations are duplicates)
 
 {com}. compress
   {txt}variable {bf}{res}year{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}month{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}fecha_pila{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}pila_independientes{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}pila_posgrado_salud{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}pila_dependientes{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}licen_mat{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}incap_gral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}nro_cotizaciones{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}nro_cotizaciones{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}personabasicaid{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
   {txt}variable {bf}{res}id{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
   {txt}variable {bf}{res}sal_dias_cot{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}tipo_cotizante{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}sexomode{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}incap_dias{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}fecha_pila{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-{txt}  (6,012,416 bytes saved)
+{txt}  (527,730,703 bytes saved)
 
 {com}. 
 . 
@@ -344,7 +356,7 @@ saved
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\Rethus-Pila.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res}27 Jun 2024, 20:33:22
+ {txt}closed on:  {res}28 Jun 2024, 13:56:54
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}

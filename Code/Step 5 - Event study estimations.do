@@ -32,7 +32,7 @@
 
 global FOLDER_PROYECTO "//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates"
 global logs "${FOLDER_PROYECTO}\Logs"
-global data "${FOLDER_PROYECTO}\Data
+global data "${FOLDER_PROYECTO}\Data"
 global output "${FOLDER_PROYECTO}\Output"
 
 
@@ -58,13 +58,23 @@ global outcomes 	sal_dias_cot posgrado_salud pila_salario_r l_pila_salario_r 			
 
 * Panel
 use "${data}\Individual_balanced_all_RIPS", clear
+
 rename year_RIPS fecha_pila
 drop if mi(fechapregrado)
 merge 1:1 personabasicaid fecha_pila using "${data}\Individual_balanced_all_PILA"
 
+cap drop year_grado
+gen year_grado = yofd(fechapregrado)
+
 drop if _merge == 2 // Estos son los del 2008
 
-drop if (rethus_sexo != 1 & rethus_sexo != 2)
+rename rethus_sexo rethus_sexo_temp
+gen rethus_sexo = 0 
+replace rethus_sexo = 1 if rethus_sexo_temp == "MASCULINO"
+replace rethus_sexo = 2 if rethus_sexo_temp == "FEMENINO"
+drop rethus_sexo_temp
+drop if rethus_sexo == 0
+
 keep if inrange(posgrado_start, 2011, 2017) | mi(posgrado_start)
 
 * Final outcomes
@@ -72,9 +82,6 @@ g service_mental3 	= (service_mental == 1 		& service_mental2 == 0								)
 g cardio_risk		= (stroke == 1 				| infarct == 1 			| cardiovascular == 1	 	)
 g laboral			= (diag_laboral == 1 		| estres_laboral == 1 	| accidente_laboral == 1 	| 	///
 					   enfermedad_laboral == 1	| acc_enf_laboral == 1								)
-
-* Esto lo tenemos que borrar cuando corramos rips desde el comienzo
-keep if rethus_codigoperfilpre1 == "P07"
 
 
 ****************************************************************************

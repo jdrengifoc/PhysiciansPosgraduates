@@ -39,6 +39,7 @@ df_aux %>%
 # 2. To determine that a degree is national, must have only national values.
 # 3. `POSGRADO` exclude specializations.
 df_aux %>% 
+  filter(FECHA_GRADO >= ymd('1995/01/01')) %>% 
   group_by(PERSONABASICAID, TITULO) %>% 
   summarise(
     FECHA_ACTO_ADMIN = min(FECHA_ACTO_ADMIN, na.rm = T), 

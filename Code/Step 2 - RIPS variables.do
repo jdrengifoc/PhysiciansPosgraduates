@@ -41,8 +41,9 @@ log using "${logs}\RIPS_variables.smcl", replace
 ********************************************************************************
 **#                   1. Read R output files         
 ********************************************************************************
+
 use "${data}\Merge_individual_RIPS.dta", clear
-merge m:1 personabasicaid using "${data}\master_rethus.dta", keep(3) nogen 
+merge m:1 personabasicaid using "${data}\master_rethus.dta", keepusing(personabasicaid rethus_sexo) keep(3) nogen 
 
 gen year_RIPS = yofd(date)
 drop date
