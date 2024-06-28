@@ -41,7 +41,6 @@ for (file in files) {
 }
 # MODIFY: PROCESS AND SAVE THE REQUIRED DATA.
 df %>% 
-  dataRC::relocate_columns(selected_columns) %>% 
   mutate(DATE = ymd(str_sub(DATE_JUAN, 1L, 10L))) %>% select(-DATE_JUAN) %>% 
   mutate(across(
     all_of(selected_columns[str_detect(selected_columns, 'DIAG')]), ~toupper(.)

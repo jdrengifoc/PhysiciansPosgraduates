@@ -35,6 +35,10 @@ merge m:1 personabasicaid using "${data}\master_rethus.dta", keep(3) nogen
 
 gen year_RIPS = yofd(date)
 drop date
+replace service = "procedimientos" if service == "p"
+replace service = "consultas" if service == "c"
+replace service = "urgencias" if service == "u"
+replace service = "Hospitalizacion" if service == "h"
 
 ********************************************************************************
 **#                   2. Variable creation          
@@ -209,6 +213,32 @@ gen service 	    	= (nro_serviciosprocedimientos > 0 | ///
              nro_serviciosHospitalizacion > 0)					   
 gen service_mental  = (proce_mental == 1 | consul_mental == 1 | urg_mental == 1 | hosp_mental == 1)
 gen service_mental2	= (proce_mental  == 1 | consul_mental2  == 1 | urg_mental  == 1 | hosp_mental  == 1)
+
+/*
+gen 	year_mental = year_RIPS if consul_mental == 1
+bys 	personabasicaid: ereplace year_mental = min(year_mental)
+gen 	consul_mental_forever = 0
+replace consul_mental_forever = 1 if year_RIPS >= year_mental
+drop 	year_mental
+
+gen 	year_mental = year_RIPS if consul_mental2 == 1
+bys 	personabasicaid: ereplace year_mental = min(year_mental)
+gen 	consul_mental2_forever = 0
+replace consul_mental2_forever = 1 if year_RIPS >= year_mental
+drop 	year_mental
+
+gen 	year_mental = year_RIPS if service_mental == 1
+bys 	personabasicaid: ereplace year_mental = min(year_mental)
+gen 	service_mental_forever = 0
+replace service_mental_forever = 1 if year_RIPS >= year_mental
+drop 	year_mental
+
+gen 	year_mental = year_RIPS if service_mental2 == 1
+bys 	personabasicaid: ereplace year_mental = min(year_mental)
+gen 	service_mental2_forever = 0
+replace service_mental2_forever = 1 if year_RIPS >= year_mental
+drop 	year_mental
+*/
 
 compress
 
