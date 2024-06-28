@@ -107,220 +107,242 @@ global outcomes service_mental service_mental2 service_mental3 diag_laboral estr
 */
 
 * Outcomes simplified
-global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
-				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
-
+*global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
+*				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
+global outcomes pila_salario_r service_mental
 * Controls
 global controls year_grado
-
+global cohorts 1995 //2000 2005 2010 
+global treatment_groups treated_1a treated_1b treated_1c treated_1d ///
+                      treated_2a treated_2b treated_3c treated_3d
 
 ****************************************************************************
 **#						3. CS never treated only
 ****************************************************************************			
+local replace replace
+
+foreach treated in $treatment_groups {
+    
+    preserve
+	
+	keep if `treated' + control > 0
+	
+	foreach cohort in $cohorts {
+		
+		keep if year_grado >= `cohort'
+		
+		foreach outcome in $outcomes {
+						
+			dis as err "Running event study for `outcome'"
+			
+			* Without controls
+			qui sum `outcome' if mi(dist)
+			local mean = r(mean)
+			
+			qui sum `outcome' if fecha_pila == 2015
+			local obs  = r(N) 
+			
+			csdid2 		`outcome',					///
+						i(personabasicaid) 			/// panel id variable
+						t(fecha_pila) 				/// Time variable
+						gvar(posgrado_start) 		/// Treatment time
+						long2 						/// Calculate results relative to -1
+						asinr 						/// Calculate pre-treatment results as in R
+						method(drimp)				/// Use doubly robust improved method
+						cluster(personabasicaid)				
+			estat event, post						// Aggregate estimation like an event-study
+			
+			regsave using "${output}\Tables\CS_results", `replace' ci level(95) ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NT, cohort, `cohort', controls, 0)
+			
+			local replace append
+			
+			estat event, wboot post					// SE using WildBootstrap
+			regsave using "${output}\Tables\CS_results", append ci rtable ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NT, cohort, `cohort', controls, 0)
 					
-foreach cohort in 1995 2000 2005 2010 {
-	
-	preserve	
-	keep if year_grado >= `cohort'
-	
-	foreach outcome in $outcomes {
-					
-		dis as err "Running event study for `outcome'"
+			* With controls
+			qui sum `outcome' if mi(dist)
+			local mean = r(mean)
+			
+			qui sum `outcome' if fecha_pila == 2015
+			local obs  = r(N) 
+			
+			csdid2 		`outcome' $controls , 		///
+						i(personabasicaid) 			/// panel id variable
+						t(fecha_pila) 				/// Time variable
+						gvar(posgrado_start) 		/// Treatment time
+						long2 						/// Calculate results relative to -1
+						asinr 						/// Calculate pre-treatment results as in R
+						method(drimp)				/// Use doubly robust improved method
+						cluster(personabasicaid)				
+			estat event, post						// Aggregate estimation like an event-study
+			
+			regsave using "${output}\Tables\CS_results", append ci level(95) ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NT, cohort, `cohort', controls, 1)
+			
+			estat event, wboot post					// SE using WildBootstrap
+			regsave using "${output}\Tables\CS_results", append ci rtable ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NT, cohort, `cohort', controls, 1)
 		
-		* Without controls
-		qui sum `outcome' if mi(dist)
-		local mean = r(mean)
+		}
 		
-		qui sum `outcome' if fecha_pila == 2015
-		local obs  = r(N) 
-		
-		csdid2 		`outcome',					///
-					i(personabasicaid) 			/// panel id variable
-					t(fecha_pila) 				/// Time variable
-					gvar(posgrado_start) 		/// Treatment time
-					long2 						/// Calculate results relative to -1
-					asinr 						/// Calculate pre-treatment results as in R
-					method(drimp)				/// Use doubly robust improved method
-					cluster(personabasicaid)				
-		estat event, post						// Aggregate estimation like an event-study
-		
-		regsave using "${output}\Tables\CS_results", replace ci level(95) ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NT, cohort, `cohort', controls, 0)
-		
-		estat event, wboot post					// SE using WildBootstrap
-		regsave using "${output}\Tables\CS_results", append ci rtable ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NT, cohort, `cohort', controls, 0)
-				
-		* With controls
-		qui sum `outcome' if mi(dist)
-		local mean = r(mean)
-		
-		qui sum `outcome' if fecha_pila == 2015
-		local obs  = r(N) 
-		
-		csdid2 		`outcome' $controls , 		///
-					i(personabasicaid) 			/// panel id variable
-					t(fecha_pila) 				/// Time variable
-					gvar(posgrado_start) 		/// Treatment time
-					long2 						/// Calculate results relative to -1
-					asinr 						/// Calculate pre-treatment results as in R
-					method(drimp)				/// Use doubly robust improved method
-					cluster(personabasicaid)				
-		estat event, post						// Aggregate estimation like an event-study
-		
-		regsave using "${output}\Tables\CS_results", append ci level(95) ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NT, cohort, `cohort', controls, 1)
-		
-		estat event, wboot post					// SE using WildBootstrap
-		regsave using "${output}\Tables\CS_results", append ci rtable ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NT, cohort, `cohort', controls, 1)
-	
 	}
-	
+
 	restore
-	
 }
 
 
 ****************************************************************************
 **#						4. CS with eventually treated
 ****************************************************************************			
-
-foreach cohort in 1995 2000 2005 2010 {
-		
-	preserve	
-	keep if year_grado >= `cohort'
+foreach treated in $treatment_groups {
+    
+    preserve
 	
-	foreach outcome in $outcomes {
+	keep if `treated' + control > 0
+	
+	foreach cohort in $cohorts  {
+			
+		preserve	
+		keep if year_grado >= `cohort'
+		
+		foreach outcome in $outcomes {
+						
+			dis as err "Running event study for `outcome'"
+			
+			* Without controls
+			qui sum `outcome' if mi(dist)
+			local mean = r(mean)
+			
+			qui sum `outcome' if fecha_pila == 2015
+			local obs  = r(N) 
+			
+			csdid2 		`outcome',					///
+						i(personabasicaid) 			/// panel id variable
+						t(fecha_pila) 				/// Time variable
+						gvar(posgrado_start) 		/// Treatment time
+						long2 						/// Calculate results relative to -1
+						asinr 						/// Calculate pre-treatment results as in R
+						method(drimp)				/// Use doubly robust improved method
+						notyet						/// Request using eventually treated
+						cluster(personabasicaid)					
+			estat event, post						// Aggregate estimation like an event-study
+			
+			regsave using "${output}\Tables\CS_results", append ci level(95) ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NET, cohort, `cohort', controls, 0)
+			
+			estat event, wboot post					// SE using WildBootstrap
+			regsave using "${output}\Tables\CS_results", append ci rtable ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NET, cohort, `cohort', controls, 0)	
+
+			* With controls
+			qui sum `outcome' if mi(dist)
+			local mean = r(mean)
+			
+			qui sum `outcome' if fecha_pila == 2015
+			local obs  = r(N) 
+			
+			csdid2 		`outcome' $controls ,		///
+						i(personabasicaid) 			/// panel id variable
+						t(fecha_pila) 				/// Time variable
+						gvar(posgrado_start) 		/// Treatment time
+						long2 						/// Calculate results relative to -1
+						asinr 						/// Calculate pre-treatment results as in R
+						method(drimp)				/// Use doubly robust improved method
+						notyet						/// Request using eventually treated
+						cluster(personabasicaid)					
+			estat event, post						// Aggregate estimation like an event-study
+			
+			regsave using "${output}\Tables\CS_results", append ci level(95) ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NET, cohort, `cohort', controls, 1)
+			
+			estat event, wboot post					// SE using WildBootstrap
+			regsave using "${output}\Tables\CS_results", append ci rtable ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NET, cohort, `cohort', controls, 1)
 					
-		dis as err "Running event study for `outcome'"
+		}
 		
-		* Without controls
-		qui sum `outcome' if mi(dist)
-		local mean = r(mean)
-		
-		qui sum `outcome' if fecha_pila == 2015
-		local obs  = r(N) 
-		
-		csdid2 		`outcome',					///
-					i(personabasicaid) 			/// panel id variable
-					t(fecha_pila) 				/// Time variable
-					gvar(posgrado_start) 		/// Treatment time
-					long2 						/// Calculate results relative to -1
-					asinr 						/// Calculate pre-treatment results as in R
-					method(drimp)				/// Use doubly robust improved method
-					notyet						/// Request using eventually treated
-					cluster(personabasicaid)					
-		estat event, post						// Aggregate estimation like an event-study
-		
-		regsave using "${output}\Tables\CS_results", append ci level(95) ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NET, cohort, `cohort', controls, 0)
-		
-		estat event, wboot post					// SE using WildBootstrap
-		regsave using "${output}\Tables\CS_results", append ci rtable ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NET, cohort, `cohort', controls, 0)	
-
-		* With controls
-		qui sum `outcome' if mi(dist)
-		local mean = r(mean)
-		
-		qui sum `outcome' if fecha_pila == 2015
-		local obs  = r(N) 
-		
-		csdid2 		`outcome' $controls ,		///
-					i(personabasicaid) 			/// panel id variable
-					t(fecha_pila) 				/// Time variable
-					gvar(posgrado_start) 		/// Treatment time
-					long2 						/// Calculate results relative to -1
-					asinr 						/// Calculate pre-treatment results as in R
-					method(drimp)				/// Use doubly robust improved method
-					notyet						/// Request using eventually treated
-					cluster(personabasicaid)					
-		estat event, post						// Aggregate estimation like an event-study
-		
-		regsave using "${output}\Tables\CS_results", append ci level(95) ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, NET, cohort, `cohort', controls, 1)
-		
-		estat event, wboot post					// SE using WildBootstrap
-		regsave using "${output}\Tables\CS_results", append ci rtable ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, NET, cohort, `cohort', controls, 1)
-				
 	}
-	
-	restore
-	
+
+	restore		
+		
 }
-
-
 ****************************************************************************
 **#						5. CS eventually treated only
 ****************************************************************************			
 
 keep if eventually_treated == 1
 
-foreach cohort in 1995 2000 2005 2010 {
-		
-	preserve	
-	keep if year_grado >= `cohort'
+foreach treated in $treatment_groups {
+    
+    preserve
 	
-	foreach outcome in $outcomes {
-					
-		dis as err "Running event study for `outcome'"
+	keep if `treated' + control > 0
+	foreach cohort in $cohorts  {
+			
+		preserve	
+		keep if year_grado >= `cohort'
 		
-		* Without controls
-		qui sum `outcome' if mi(dist)
-		local mean = r(mean)
-		
-		qui sum `outcome' if fecha_pila == 2015
-		local obs  = r(N) 
-		
-		csdid2 		`outcome',					///
-					i(personabasicaid) 			/// panel id variable
-					t(fecha_pila) 				/// Time variable
-					gvar(posgrado_start) 		/// Treatment time
-					long2 						/// Calculate results relative to -1
-					asinr 						/// Calculate pre-treatment results as in R
-					method(drimp)				/// Use doubly robust improved method
-					notyet						/// Request using eventually treated
-					cluster(personabasicaid)					
-		estat event, post						// Aggregate estimation like an event-study
-		
-		regsave using "${output}\Tables\CS_results", append ci level(95) ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, ET, cohort, `cohort', controls, 0)
-		
-		estat event, wboot post					// SE using WildBootstrap
-		regsave using "${output}\Tables\CS_results", append ci rtable ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, ET, cohort, `cohort', controls, 0)	
+		foreach outcome in $outcomes {
+						
+			dis as err "Running event study for `outcome'"
+			
+			* Without controls
+			qui sum `outcome' if mi(dist)
+			local mean = r(mean)
+			
+			qui sum `outcome' if fecha_pila == 2015
+			local obs  = r(N) 
+			
+			csdid2 		`outcome',					///
+						i(personabasicaid) 			/// panel id variable
+						t(fecha_pila) 				/// Time variable
+						gvar(posgrado_start) 		/// Treatment time
+						long2 						/// Calculate results relative to -1
+						asinr 						/// Calculate pre-treatment results as in R
+						method(drimp)				/// Use doubly robust improved method
+						notyet						/// Request using eventually treated
+						cluster(personabasicaid)					
+			estat event, post						// Aggregate estimation like an event-study
+			
+			regsave using "${output}\Tables\CS_results", append ci level(95) ///
+					addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, ET, cohort, `cohort', controls, 0)
+			
+			estat event, wboot post					// SE using WildBootstrap
+			regsave using "${output}\Tables\CS_results", append ci rtable ///
+					addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, ET, cohort, `cohort', controls, 0)	
 
-		* With controls
-		qui sum `outcome' if mi(dist)
-		local mean = r(mean)
-		
-		qui sum `outcome' if fecha_pila == 2015
-		local obs  = r(N) 
-		
-		csdid2 		`outcome' $controls ,		///
-					i(personabasicaid) 			/// panel id variable
-					t(fecha_pila) 				/// Time variable
-					gvar(posgrado_start) 		/// Treatment time
-					long2 						/// Calculate results relative to -1
-					asinr 						/// Calculate pre-treatment results as in R
-					method(drimp)				/// Use doubly robust improved method
-					notyet						/// Request using eventually treated
-					cluster(personabasicaid)					
-		estat event, post						// Aggregate estimation like an event-study
-		
-		regsave using "${output}\Tables\CS_results", append ci level(95) ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, ET, cohort, `cohort', controls, 1)
-		
-		estat event, wboot post					// SE using WildBootstrap
-		regsave using "${output}\Tables\CS_results", append ci rtable ///
-				addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, ET, cohort, `cohort', controls, 1)
-				
+			* With controls
+			qui sum `outcome' if mi(dist)
+			local mean = r(mean)
+			
+			qui sum `outcome' if fecha_pila == 2015
+			local obs  = r(N) 
+			
+			csdid2 		`outcome' $controls ,		///
+						i(personabasicaid) 			/// panel id variable
+						t(fecha_pila) 				/// Time variable
+						gvar(posgrado_start) 		/// Treatment time
+						long2 						/// Calculate results relative to -1
+						asinr 						/// Calculate pre-treatment results as in R
+						method(drimp)				/// Use doubly robust improved method
+						notyet						/// Request using eventually treated
+						cluster(personabasicaid)					
+			estat event, post						// Aggregate estimation like an event-study
+			
+			regsave using "${output}\Tables\CS_results", append ci level(95) ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, ET, cohort, `cohort', controls, 1)
+			
+			estat event, wboot post					// SE using WildBootstrap
+			regsave using "${output}\Tables\CS_results", append ci rtable ///
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, ET, cohort, `cohort', controls, 1)
+					
+		}
+			
 	}
-	
+		
 	restore
-	
 }
 
 

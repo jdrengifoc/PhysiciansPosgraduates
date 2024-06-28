@@ -24,15 +24,14 @@
 ****************************************************************************
 *Globals
 ****************************************************************************
-
 clear all
 set more off
 
-global tables	"~\Dropbox\PhysiciansPostgraduates\Output\Tables"
-global figures	"~\Dropbox\PhysiciansPostgraduates\Output\Figures"
+global FOLDER_PROYECTO "//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates"
+global tables	"${FOLDER_PROYECTO}\Output\tables"
+global figures	"${FOLDER_PROYECTO}\Output\Figures"
 
 set scheme white_tableau
-
 
 ****************************************************************************
 **#						1. Processing
@@ -71,8 +70,8 @@ replace ci_upper = 0 if ci_upper == . & dist < 0
 */
 
 * Relevant periods
-drop if dist < -2
-drop if dist > 5
+drop if dist < -8
+drop if dist > 11
 
 * Controls label
 tostring controls, replace
@@ -81,7 +80,7 @@ replace controls = "NoControls" if controls == "0"
 
 * Temporal restrictions
 keep if wboot == 0
-drop if estimation == "NT"
+*drop if estimation == "NT"
 
 bys outcome cohort: ereplace mean = min(mean)
 drop wboot
@@ -93,21 +92,23 @@ drop wboot
 tempfile tempfile
 save `tempfile'
 
-levelsof estimation, 	local(estimations)
-levelsof cohort, 		local(cohors)
-levelsof controls, 		local(controls)
-levelsof outcome, 		local(outcomes)
+levelsof estimation, 	   local(estimations)
+levelsof treatment_groups, local(treatment_groups)
+levelsof cohort, 		   local(cohors)
+levelsof controls, 		   local(controls)
+levelsof outcome, 		   local(outcomes)
 
 
 *Tester
 *local outcomes = "service_mental"
-
+foreach treatment_group in `treatment_groups' {
 foreach estimation in `estimations' {
 foreach cohort in `cohors' {
 foreach control in `controls' {
 	
 	use `tempfile', clear	
-	keep if estimation == "`estimation'" & cohort == `cohort' & controls == "`control'"
+	keep if estimation == "`estimation'" & cohort == `cohort' & ///
+	        controls == "`control'" & treatment_group == treatment_groups
 
 	foreach outcome in `outcomes' {
 	
@@ -140,10 +141,11 @@ foreach control in `controls' {
 				legend(order(2 "Coefficient" 1 "IC at 95%") position(6) col(4))														///
 				graphregion(fcolor(white)) note("Control mean: `mean'" "Sample: `samp'")
 				
-		graph export "${figures}\\`control'\ES_`outcome'_`cohort'_`estimation'.png", replace
+		graph export "${figures}\\`control'\ES_`treatment_group`_`outcome'_`cohort'_`estimation'.png", replace
 		
 	}
 	
+}
 }
 }
 }
