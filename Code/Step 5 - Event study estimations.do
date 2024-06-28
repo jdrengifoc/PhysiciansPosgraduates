@@ -2,11 +2,15 @@
  *************************************************************************			       	
 					Event study estimation
 			 
-1) Created by: Daniel Márquez
-			   Harvard Business School
-			   dmarquezm20@gmail.com
+1) Created by: Juan David Rengifo Castro
+               Banco de la República
+               jdrengifoc@eafit.edu.co
+               
+               Daniel Márquez
+			         Harvard Business School
+			         dmarquezm20@gmail.com
 				
-2) Date: Februar 2023
+2) Date: February 2024
 
 3) Objective: Estimate the event studies for PILA and RIPS.
 			  This do file can only be ran at BanRep's servers.
@@ -26,18 +30,11 @@
 *Globals
 ****************************************************************************
 
-* Working directory
-if "`c(hostname)'" == "SM201439"{
-	global pc "C:"
-}
+global FOLDER_PROYECTO "//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates"
+global logs "${FOLDER_PROYECTO}\Logs"
+global data "${FOLDER_PROYECTO}\Data
+global output "${FOLDER_PROYECTO}\Output"
 
-else {
-	global pc "\\sm093119"
-}
-
-global data 	"${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Data"
-global logs 	"${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Logs"
-global output 	"${pc}\Proyectos\Banrep research\PhysiciansPosgraduates\Output"
 
 cap log close
 log using "${logs}\event_study.smcl", replace
