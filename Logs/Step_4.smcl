@@ -3,7 +3,7 @@
       name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\Step_4.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}28 Jun 2024, 14:07:00
+ {txt}opened on:  {res}29 Jun 2024, 00:38:54
 {txt}
 {com}. 
 . ****************************************************************************
@@ -28,11 +28,11 @@
 {res}
 {txt}{col 5}Result{col 33}Number of obs
 {col 5}{hline 41}
-{col 5}Not matched{col 30}{res}       8,316,911
-{txt}{col 9}from master{col 30}{res}       8,316,911{txt}  (_merge==1)
+{col 5}Not matched{col 30}{res}       8,311,504
+{txt}{col 9}from master{col 30}{res}       8,311,504{txt}  (_merge==1)
 {col 9}from using{col 30}{res}               0{txt}  (_merge==2)
 
-{col 5}Matched{col 30}{res}       8,587,185{txt}  (_merge==3)
+{col 5}Matched{col 30}{res}       8,592,592{txt}  (_merge==3)
 {col 5}{hline 41}
 
 {com}. 
@@ -41,10 +41,10 @@
 {com}. drop _merge
 {txt}
 {com}. replace pila_dependientes       = 0 if mi(pila_dependientes)
-{txt}(8,316,911 real changes made)
+{txt}(8,311,504 real changes made)
 
 {com}. replace pila_independientes = 0 if mi(pila_independientes)
-{txt}(8,316,911 real changes made)
+{txt}(8,311,504 real changes made)
 
 {com}. 
 . * Postgraduate PILA
@@ -54,12 +54,12 @@
 . 
 . * Postgraduate starting date
 . gen     posgrado_start                  = fecha_pila if posgrado_salud == 1
-{txt}(16,501,295 missing values generated)
+{txt}(16,501,183 missing values generated)
 
 {com}. bys     personabasicaid:          ereplace posgrado_start = min(posgrado_start)
-{txt}(14,400,144 missing values generated)
-(14400144 missing values generated)
-(2,489,725 real changes made)
+{txt}(14,399,440 missing values generated)
+(14399440 missing values generated)
+(2,490,425 real changes made)
 
 {com}. 
 . * Postgraduate RETHUS
@@ -83,16 +83,16 @@
 {res}{txt}
 {com}. 
 . replace pila_salario_r     = 0 if mi(pila_salario_r)
-{txt}(8,316,911 real changes made)
+{txt}(8,311,504 real changes made)
 
 {com}. replace pila_salario_r_max = 0 if mi(pila_salario_r_max)        
-{txt}(8,680,369 real changes made)
+{txt}(8,675,045 real changes made)
 
 {com}. replace sal_dias_cot       = 0 if mi(sal_dias_cot)
-{txt}(8,316,911 real changes made)
+{txt}(8,311,504 real changes made)
 
 {com}. replace nro_cotizaciones   = 0 if mi(nro_cotizaciones)  
-{txt}(8,316,911 real changes made)
+{txt}(8,311,504 real changes made)
 
 {com}. 
 . * Annualize
@@ -114,7 +114,7 @@
 . rename posgrado_start posgrado_start_temp
 {res}{txt}
 {com}. gen posgrado_start = yofd(dofm(posgrado_start_temp))
-{txt}(14,400,144 missing values generated)
+{txt}(14,399,440 missing values generated)
 
 {com}. drop posgrado_start_temp
 {txt}
@@ -136,27 +136,12 @@
 >                         (max) nro_cotizaciones formal incap_dias incap_gral licen_mat                                   ///
 >                         posgrado_salud posgrado_start                                           ///
 >                         pila_independientes pila_dependientes,                          ///
->                         by(personabasicaid fecha_pila year_grado)
-{err}variable {bf}year_grado{sf} not found
-(error in option {bf:by()})
-{txt}{search r(111), local:r(111);}
-
-end of do-file
-
-{search r(111), local:r(111);}
-
-{com}. do "C:\Users\pmede1\AppData\Local\Temp\STD2dcc_000000.tmp"
-{txt}
-{com}. collapse        (median) sal_dias_cot pila_salario_r pila_salario_r_max                                                 ///                             
->                         (max) nro_cotizaciones formal incap_dias incap_gral licen_mat                                   ///
->                         posgrado_salud posgrado_start                                           ///
->                         pila_independientes pila_dependientes,                          ///
 >                         by(personabasicaid fecha_pila)
 {res}{txt}
 {com}. 
 . * Last variables
 . gen     l_pila_salario_r                = log(pila_salario_r)
-{txt}(696,919 missing values generated)
+{txt}(696,456 missing values generated)
 
 {com}. gen             p_cotizaciones                  = (nro_cotizaciones > 1)
 {txt}
@@ -173,7 +158,7 @@ saved
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\Step_4.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res}28 Jun 2024, 14:09:58
+ {txt}closed on:  {res}29 Jun 2024, 00:39:51
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}

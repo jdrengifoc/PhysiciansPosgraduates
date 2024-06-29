@@ -3,7 +3,7 @@
       name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\RIPS_variables.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}28 Jun 2024, 13:12:46
+ {txt}opened on:  {res}29 Jun 2024, 00:33:16
 {txt}
 {com}. 
 . ********************************************************************************
@@ -17,7 +17,7 @@
 {txt}{col 5}Result{col 33}Number of obs
 {col 5}{hline 41}
 {col 5}Not matched{col 30}{res}               0
-{txt}{col 5}Matched{col 30}{res}       4,515,593{txt}  
+{txt}{col 5}Matched{col 30}{res}       4,518,283{txt}  
 {col 5}{hline 41}
 
 {com}. 
@@ -27,17 +27,17 @@
 {txt}
 {com}. replace service = "procedimientos" if service == "p"
 {txt}variable {bf}{res}service{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str14{sf}
-{txt}(2,790,810 real changes made)
+{txt}(2,792,573 real changes made)
 
 {com}. replace service = "consultas" if service == "c"
-{txt}(1,529,542 real changes made)
+{txt}(1,530,426 real changes made)
 
 {com}. replace service = "urgencias" if service == "u"
-{txt}(159,247 real changes made)
+{txt}(159,279 real changes made)
 
 {com}. replace service = "Hospitalizacion" if service == "h"
 {txt}variable {bf}{res}service{sf}{txt} was {bf}{res}str14{sf}{txt} now {bf}{res}str15{sf}
-{txt}(35,994 real changes made)
+{txt}(36,005 real changes made)
 
 {com}. 
 . ********************************************************************************
@@ -136,13 +136,13 @@
 . gen contador                            = 1
 {txt}
 {com}. gen contador_nopreg                     = 1 if (substr(substr(diag_prin, 1, 3),1,1) != "O")
-{txt}(82,970 missing values generated)
+{txt}(83,010 missing values generated)
 
 {com}. gen contador_mental             = 1 if (diag_mental   == 1)
-{txt}(4,437,109 missing values generated)
+{txt}(4,439,767 missing values generated)
 
 {com}. gen contador_mental2            = 1 if (diag_mental2  == 1)
-{txt}(4,452,973 missing values generated)
+{txt}(4,455,637 missing values generated)
 
 {com}. compress
   {txt}variable {bf}{res}year_RIPS{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
@@ -164,7 +164,7 @@
   {txt}variable {bf}{res}contador_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}personabasicaid{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
   {txt}variable {bf}{res}causa_externa{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
-{txt}  (275,451,173 bytes saved)
+{txt}  (275,615,263 bytes saved)
 
 {com}. 
 . 
@@ -192,29 +192,29 @@
 {txt}  4{com}.         
 . {c )-}
 {err}Creating variable for pregnancy
-{txt}(420,577 real changes made)
+{txt}(420,680 real changes made)
 {err}Creating variable for stroke
-{txt}(27,709 real changes made)
+{txt}(27,927 real changes made)
 {err}Creating variable for infarct
-{txt}(31,087 real changes made)
+{txt}(31,140 real changes made)
 {err}Creating variable for cardiovascular
-{txt}(11,352 real changes made)
+{txt}(11,369 real changes made)
 {err}Creating variable for digestive
-{txt}(41,732 real changes made)
+{txt}(41,743 real changes made)
 {err}Creating variable for diag_mental
-{txt}(340,699 real changes made)
+{txt}(340,947 real changes made)
 {err}Creating variable for diag_mental2
-{txt}(288,698 real changes made)
+{txt}(288,952 real changes made)
 {err}Creating variable for diag_laboral
 {txt}(46,777 real changes made)
 {err}Creating variable for estres_laboral
 {txt}(3,307 real changes made)
 {err}Creating variable for accidente_laboral
-{txt}(145,842 real changes made)
+{txt}(145,966 real changes made)
 {err}Creating variable for enfermedad_laboral
 {txt}(33,743 real changes made)
 {err}Creating variable for acc_enf_laboral
-{txt}(176,743 real changes made)
+{txt}(176,867 real changes made)
 
 {com}. 
 . 
@@ -226,7 +226,7 @@
   {txt}variable {bf}{res}nro_servicios_np{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}nro_serv_mental{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}nro_serv_mental2{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
-{txt}  (112,889,825 bytes saved)
+{txt}  (112,957,075 bytes saved)
 
 {com}. 
 . ********************************************************************************
@@ -238,7 +238,7 @@
 
 {p 0 4}{txt}Duplicates in terms of {res} personabasicaid year_RIPS service{p_end}
 {txt}{res}
-{txt}(3,597,646 observations deleted)
+{txt}(3,599,963 observations deleted)
 
 {com}. 
 . * Reshape the dataset to get an individual-year panel
@@ -249,7 +249,7 @@
 {res}{txt}{res}{txt}
 Data{col 36}long{col 43}->{col 48}wide
 {hline 77}
-Number of obs.{col 19}{res}              917,947{txt}{col 43}->   {res}522,123              
+Number of obs.{col 19}{res}              918,320{txt}{col 43}->   {res}522,349              
 {txt}Number of variables{col 19}{res}                   20{txt}{col 43}->   {res}31                   
 {txt}j (4 values)        {col 33}{res}service{txt}{col 43}->{col 48}(dropped)
 xij variables:
@@ -265,22 +265,22 @@ xij variables:
 .         replace `var' = 0 if mi(`var')
 {txt}  3{com}.         
 . {c )-}
-{txt}(496,532 real changes made)
-(78,654 real changes made)
-(171,789 real changes made)
-(423,570 real changes made)
-(496,532 real changes made)
-(78,654 real changes made)
-(171,789 real changes made)
-(423,570 real changes made)
-(496,532 real changes made)
-(78,654 real changes made)
-(171,789 real changes made)
-(423,570 real changes made)
-(496,532 real changes made)
-(78,654 real changes made)
-(171,789 real changes made)
-(423,570 real changes made)
+{txt}(496,747 real changes made)
+(78,702 real changes made)
+(171,852 real changes made)
+(423,775 real changes made)
+(496,747 real changes made)
+(78,702 real changes made)
+(171,852 real changes made)
+(423,775 real changes made)
+(496,747 real changes made)
+(78,702 real changes made)
+(171,852 real changes made)
+(423,775 real changes made)
+(496,747 real changes made)
+(78,702 real changes made)
+(171,852 real changes made)
+(423,775 real changes made)
 
 {com}. 
 . tempfile temp
@@ -316,11 +316,11 @@ as .dta format
 {res}
 {txt}{col 5}Result{col 33}Number of obs
 {col 5}{hline 41}
-{col 5}Not matched{col 30}{res}         822,521
-{txt}{col 9}from master{col 30}{res}         822,521{txt}  
+{col 5}Not matched{col 30}{res}         822,295
+{txt}{col 9}from master{col 30}{res}         822,295{txt}  
 {col 9}from using{col 30}{res}               0{txt}  
 
-{col 5}Matched{col 30}{res}         522,123{txt}  
+{col 5}Matched{col 30}{res}         522,349{txt}  
 {col 5}{hline 41}
 
 {com}. 
@@ -330,34 +330,34 @@ as .dta format
 .         replace `var' = 0 if mi(`var')
 {txt}  3{com}.         
 . {c )-}
-{txt}(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
-(822,521 real changes made)
+{txt}(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
+(822,295 real changes made)
 
 {com}. 
 . ********************************************************************************
@@ -479,7 +479,7 @@ saved
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\RIPS_variables.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res}28 Jun 2024, 13:15:10
+ {txt}closed on:  {res}29 Jun 2024, 00:35:40
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}

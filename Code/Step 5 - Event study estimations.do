@@ -29,11 +29,11 @@
 ****************************************************************************
 *Globals
 ****************************************************************************
-
+timer clear
 global FOLDER_PROYECTO "//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates"
-global logs "${FOLDER_PROYECTO}\Logs"
-global data "${FOLDER_PROYECTO}\Data"
-global output "${FOLDER_PROYECTO}\Output"
+global logs "${FOLDER_PROYECTO}/Logs"
+global data "${FOLDER_PROYECTO}/Data"
+global output "${FOLDER_PROYECTO}/Output"
 
 
 cap log close
@@ -93,7 +93,7 @@ gen dist = fecha_pila - posgrado_start
 *keep if (dist >= -2 & dist <= 5)
 
 * Eventually treated dummy
-g eventually_treated = (posgrado_start != .)
+gen eventually_treated = (posgrado_start != .)
 
 * Never treated condition
 replace posgrado_start = 0 	if	posgrado_start == .
@@ -107,23 +107,25 @@ global outcomes service_mental service_mental2 service_mental3 diag_laboral estr
 */
 
 * Outcomes simplified
-*global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
-*				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
-global outcomes pila_salario_r service_mental
+global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
+				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
+*global outcomes pila_salario_r service_mental
+
 * Controls
 global controls year_grado
 global cohorts 1995 //2000 2005 2010 
 global treatment_groups treated_1a treated_1b treated_1c treated_1d ///
-                      treated_2a treated_2b treated_3c treated_3d
+                        treated_2a treated_2b treated_2c treated_2d
 
 ****************************************************************************
 **#						3. CS never treated only
 ****************************************************************************			
 local replace replace
 
-foreach treated in $treatment_groups {
-    
-    preserve
+preserve
+
+timer on 1
+foreach treated in $treatment_groups {    
 	
 	keep if `treated' + control > 0
 	
@@ -189,16 +191,15 @@ foreach treated in $treatment_groups {
 		
 	}
 
-	restore
+	cap restore
 }
-
+timer off 1
 
 ****************************************************************************
 **#						4. CS with eventually treated
-****************************************************************************			
-foreach treated in $treatment_groups {
-    
-    preserve
+****************************************************************************
+timer on 2
+foreach treated in $treatment_groups {    
 	
 	keep if `treated' + control > 0
 	
@@ -265,20 +266,19 @@ foreach treated in $treatment_groups {
 		
 	}
 
-	restore		
+	cap restore		
 		
 }
+timer off 2
 ****************************************************************************
 **#						5. CS eventually treated only
 ****************************************************************************			
-
-keep if eventually_treated == 1
-
-foreach treated in $treatment_groups {
-    
-    preserve
+timer on 3
+foreach treated in $treatment_groups {    
 	
+	keep if eventually_treated == 1
 	keep if `treated' + control > 0
+	
 	foreach cohort in $cohorts  {
 			
 		preserve	
@@ -307,11 +307,11 @@ foreach treated in $treatment_groups {
 			estat event, post						// Aggregate estimation like an event-study
 			
 			regsave using "${output}\Tables\CS_results", append ci level(95) ///
-					addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, ET, cohort, `cohort', controls, 0)
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 0, estimation, ET, cohort, `cohort', controls, 0)
 			
 			estat event, wboot post					// SE using WildBootstrap
 			regsave using "${output}\Tables\CS_results", append ci rtable ///
-					addlabel(outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, ET, cohort, `cohort', controls, 0)	
+					addlabel(treatment_group, `treated', outcome, `outcome', mean, `mean', n, `obs', wboot, 1, estimation, ET, cohort, `cohort', controls, 0)	
 
 			* With controls
 			qui sum `outcome' if mi(dist)
@@ -342,8 +342,15 @@ foreach treated in $treatment_groups {
 			
 	}
 		
-	restore
+	cap restore
 }
 
+timer off 3
 
+dis "NT duration:"
+timer list 1
+dis "NET duration:"
+timer list 2
+dis "ET duration:"
+timer list 3
 log close
