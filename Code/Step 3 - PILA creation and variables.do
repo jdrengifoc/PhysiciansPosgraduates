@@ -40,7 +40,8 @@ global data_general "//wmedesrv/gamma/Christian Posso/_banrep_research/datos_ori
 
 cap log close
 log using "${logs}\Rethus-Pila.smcl", replace
-
+timer clear
+timer 1 on
 
 ****************************************************************************
 **#  1. Create each occupations dataset by merging with PILA
@@ -198,4 +199,6 @@ compress
 * Save that file so in the next iteration, the new observations are part of the file
 save "${data}\P07_PILA_monthly.dta", replace		
 
+timer 1 off
+timer 1 list
 log close

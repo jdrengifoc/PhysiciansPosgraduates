@@ -35,38 +35,41 @@ global logs "${FOLDER_PROYECTO}/Logs"
 global data "${FOLDER_PROYECTO}/Data"
 global output "${FOLDER_PROYECTO}/Output"
 
-
 cap log close
 log using "${logs}\event_study.smcl", replace
 
-* Outcomes and categories
-global specialities	all quirurgical clinical other none
-global genders 		all female male
 
-/*
-global outcomes 	sal_dias_cot posgrado_salud pila_salario_r l_pila_salario_r 				///
-					posgrado_rethus p_cotizaciones nro_cotizaciones							 	///
-					pila_independientes pila_dependientes formal								///
-					diag_mental diag_mental2 service_mental service_mental2 					///
-					urg hosp urg_np hosp_np pregnancy service cons_mental 						///
-					cons_mental2 cons_mental3 cons_mental4 consul proce
-*/
+* Controls
+global controls year_grado
+global cohorts 1995 //2000 2005 2010 
+global treatment_groups treated_1a treated_1b treated_1c treated_1d ///
+                        treated_2a treated_2b treated_2c treated_2d
+* Outcomes
+global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
+				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
+/*global outcomes service_mental service_mental2 service_mental3 diag_laboral estres_laboral				///
+				accidente_laboral enfermedad_laboral acc_enf_laboral laboral							///
+				pregnancy stroke infarct cardiovascular cardio_risk digestive 							///
+				pila_independientes p_cotizaciones pila_salario_r pila_salario_r_max sal_dias_cot*/
+*global outcomes pila_salario_r service_mental		
 					
 ****************************************************************************
 **#						1. Merge data and set-up
 ****************************************************************************
 
-* Panel
+* RIPS
 use "${data}\Individual_balanced_all_RIPS", clear
-
 rename year_RIPS fecha_pila
-drop if mi(fechapregrado)
+
+* PILA
 merge 1:1 personabasicaid fecha_pila using "${data}\Individual_balanced_all_PILA"
-
-cap drop year_grado
-gen year_grado = yofd(fechapregrado)
-
 drop if _merge == 2 // Estos son los del 2008
+keep if inrange(posgrado_start, 2011, 2017) | mi(posgrado_start)
+
+* ReTHUS
+merge m:1 personabasicaid using "${data}\master_rethus.dta", keep(3) nogen 
+drop if mi(fechapregrado)
+gen year_grado = yofd(fechapregrado)
 
 rename rethus_sexo rethus_sexo_temp
 gen rethus_sexo = 0 
@@ -75,20 +78,18 @@ replace rethus_sexo = 2 if rethus_sexo_temp == "FEMENINO"
 drop rethus_sexo_temp
 drop if rethus_sexo == 0
 
-keep if inrange(posgrado_start, 2011, 2017) | mi(posgrado_start)
-
 * Final outcomes
-g service_mental3 	= (service_mental == 1 		& service_mental2 == 0								)
-g cardio_risk		= (stroke == 1 				| infarct == 1 			| cardiovascular == 1	 	)
-g laboral			= (diag_laboral == 1 		| estres_laboral == 1 	| accidente_laboral == 1 	| 	///
-					   enfermedad_laboral == 1	| acc_enf_laboral == 1								)
+gen service_mental3 = (service_mental == 1 & service_mental2 == 0)
+gen cardio_risk     = (stroke == 1 | infarct == 1 | cardiovascular == 1)
+gen laboral         = (diag_laboral == 1 | estres_laboral == 1 | ///
+                       accidente_laboral == 1 | enfermedad_laboral == 1	| ///
+					   acc_enf_laboral == 1)
 
 
 ****************************************************************************
 **#						2. Estimation features
 ****************************************************************************
 
-* Balance
 gen dist = fecha_pila - posgrado_start
 *keep if (dist >= -2 & dist <= 5)
 
@@ -97,25 +98,6 @@ gen eventually_treated = (posgrado_start != .)
 
 * Never treated condition
 replace posgrado_start = 0 	if	posgrado_start == .
-
-* Outcomes all
-/*
-global outcomes service_mental service_mental2 service_mental3 diag_laboral estres_laboral				///
-				accidente_laboral enfermedad_laboral acc_enf_laboral laboral							///
-				pregnancy stroke infarct cardiovascular cardio_risk digestive 							///
-				pila_independientes p_cotizaciones pila_salario_r pila_salario_r_max sal_dias_cot
-*/
-
-* Outcomes simplified
-global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
-				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
-*global outcomes pila_salario_r service_mental
-
-* Controls
-global controls year_grado
-global cohorts 1995 //2000 2005 2010 
-global treatment_groups treated_1a treated_1b treated_1c treated_1d ///
-                        treated_2a treated_2b treated_2c treated_2d
 
 ****************************************************************************
 **#						3. CS never treated only

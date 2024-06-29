@@ -3,7 +3,7 @@
       name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\RIPS_variables.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}29 Jun 2024, 00:33:16
+ {txt}opened on:  {res}29 Jun 2024, 10:47:28
 {txt}
 {com}. 
 . ********************************************************************************
@@ -12,15 +12,8 @@
 . 
 . use "${c -(}data{c )-}\Merge_individual_RIPS.dta", clear
 {txt}
-{com}. merge m:1 personabasicaid using "${c -(}data{c )-}\master_rethus.dta", keepusing(personabasicaid rethus_sexo) keep(3) nogen 
-{res}
-{txt}{col 5}Result{col 33}Number of obs
-{col 5}{hline 41}
-{col 5}Not matched{col 30}{res}               0
-{txt}{col 5}Matched{col 30}{res}       4,518,283{txt}  
-{col 5}{hline 41}
-
-{com}. 
+{com}. *merge m:1 personabasicaid using "${c -(}data{c )-}\master_rethus.dta", keepusing(personabasicaid rethus_sexo) keep(3) nogen 
+. 
 . gen year_RIPS = yofd(date)
 {txt}
 {com}. drop date
@@ -218,7 +211,7 @@
 
 {com}. 
 . 
-. keep    personabasicaid year_RIPS service rethus_sexo nro_servicios nro_servicios_np                            ///
+. keep    personabasicaid year_RIPS service nro_servicios nro_servicios_np                                ///
 >                 nro_serv_mental* $t_sensitive $work 
 {txt}
 {com}. compress
@@ -243,14 +236,14 @@
 {com}. 
 . * Reshape the dataset to get an individual-year panel
 . greshape wide   nro_servicios nro_servicios_np nro_serv_mental nro_serv_mental2                                         ///
->                                 , i(personabasicaid year_RIPS rethus_sexo) j(service) string
+>                                 , i(personabasicaid year_RIPS) j(service) string
 {txt}Option -string- ignored with {cmd:greshape wide}
 {res}{txt}{res}{txt}(note: j = Hospitalizacion consultas procedimientos urgencias)
 {res}{txt}{res}{txt}
 Data{col 36}long{col 43}->{col 48}wide
 {hline 77}
 Number of obs.{col 19}{res}              918,320{txt}{col 43}->   {res}522,349              
-{txt}Number of variables{col 19}{res}                   20{txt}{col 43}->   {res}31                   
+{txt}Number of variables{col 19}{res}                   19{txt}{col 43}->   {res}30                   
 {txt}j (4 values)        {col 33}{res}service{txt}{col 43}->{col 48}(dropped)
 xij variables:
                           {res}nro_servicios{col 43}{txt}->{res}{col 48}nro_serviciosHospitalizacion nro_serviciosconsultas ... nro_serviciosurgencias
@@ -304,7 +297,7 @@ as .dta format
 . **#                             4. Balance the panel     
 . ********************************************************************************
 . 
-. use "${c -(}data{c )-}\master_rethus.dta", clear
+. use personabasicaid using "${c -(}data{c )-}\master_rethus.dta", clear
 {txt}
 {com}. 
 . expand 14 // 14 years between 2009 and 2022
@@ -425,18 +418,6 @@ as .dta format
 > */
 . 
 . compress
-  {txt}variable {bf}{res}ESPECIALIDAD{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}POSGRADO{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}n_cotizaciones_year1{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1a{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1b{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1c{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_1d{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_2a{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_2b{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_3c{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}treated_3d{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
-  {txt}variable {bf}{res}control{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}year_RIPS{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
   {txt}variable {bf}{res}nro_serviciosHospitalizacion{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}nro_serviciosurgencias{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
@@ -460,10 +441,7 @@ as .dta format
   {txt}variable {bf}{res}service_mental{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}service_mental2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
   {txt}variable {bf}{res}personabasicaid{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
-  {txt}variable {bf}{res}fechapregrado{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-  {txt}variable {bf}{res}date_start_especializacion{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-  {txt}variable {bf}{res}rethus_fechagradopos1{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}int{sf}
-{txt}  (146,566,196 bytes saved)
+{txt}  (73,955,420 bytes saved)
 
 {com}. 
 . * Save the final balanced RIPS panel
@@ -479,7 +457,7 @@ saved
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\RIPS_variables.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res}29 Jun 2024, 00:35:40
+ {txt}closed on:  {res}29 Jun 2024, 10:49:43
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}

@@ -43,20 +43,18 @@ global data "${FOLDER_PROYECTO}\Data"
 
 cap log close
 log using "${logs}\Step_4.smcl", replace
+timer clear
+timer 1 on
 
 ****************************************************************************
 **#				1. Process each occupation's dataset
 ****************************************************************************
 
-* Balancing with rethus sample
+* Balancear panel with rethus sample
 use personabasicaid using "${data}\master_rethus", clear
-
-* Balancear panel
 expand 176 // 176 months between 2008 and 2022m8
 bys personabasicaid: gen fecha_pila = _n + 575
 format fecha_pila %tm
-
-
 merge 1:1 personabasicaid fecha_pila using "${data}\\P07_PILA_monthly", keep(1 3)
 
 gen formal = (_merge == 3)
@@ -65,12 +63,12 @@ replace pila_dependientes 	= 0 if mi(pila_dependientes)
 replace pila_independientes = 0 if mi(pila_independientes)
 
 * Postgraduate PILA
-gen 	posgrado_salud 			= (tipo_cotizante == 21)
+gen posgrado_salud = (tipo_cotizante == 21)
 * replace posgrado_salud  	= 0 if (fecha_pila < fechapregrado)
 
 * Postgraduate starting date
-gen 	posgrado_start			= fecha_pila if posgrado_salud == 1
-bys 	personabasicaid:	  ereplace posgrado_start = min(posgrado_start)
+gen posgrado_start = fecha_pila if posgrado_salud == 1
+bys personabasicaid: ereplace posgrado_start = min(posgrado_start)
 
 * Postgraduate RETHUS
 /*
@@ -136,4 +134,6 @@ gen		p_cotizaciones			= (nro_cotizaciones > 1)
 
 save "${data}\Individual_balanced_all_PILA.dta", replace
 
+timer 1 off
+timer 1 list
 log close

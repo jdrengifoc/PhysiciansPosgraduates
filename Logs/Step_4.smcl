@@ -3,28 +3,24 @@
       name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\Step_4.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}29 Jun 2024, 00:38:54
+ {txt}opened on:  {res}29 Jun 2024, 10:55:03
 {txt}
 {com}. 
 . ****************************************************************************
 . **#                             1. Process each occupation's dataset
 . ****************************************************************************
 . 
-. * Balancing with rethus sample
+. * Balancear panel with rethus sample
 . use personabasicaid using "${c -(}data{c )-}\master_rethus", clear
 {txt}
-{com}. 
-. * Balancear panel
-. expand 176 // 176 months between 2008 and 2022m8
+{com}. expand 176 // 176 months between 2008 and 2022m8
 {txt}(16,808,050 observations created)
 
 {com}. bys personabasicaid: gen fecha_pila = _n + 575
 {txt}
 {com}. format fecha_pila %tm
 {txt}
-{com}. 
-. 
-. merge 1:1 personabasicaid fecha_pila using "${c -(}data{c )-}\\P07_PILA_monthly", keep(1 3)
+{com}. merge 1:1 personabasicaid fecha_pila using "${c -(}data{c )-}\\P07_PILA_monthly", keep(1 3)
 {res}
 {txt}{col 5}Result{col 33}Number of obs
 {col 5}{hline 41}
@@ -48,15 +44,15 @@
 
 {com}. 
 . * Postgraduate PILA
-. gen     posgrado_salud                  = (tipo_cotizante == 21)
+. gen posgrado_salud = (tipo_cotizante == 21)
 {txt}
 {com}. * replace posgrado_salud        = 0 if (fecha_pila < fechapregrado)
 . 
 . * Postgraduate starting date
-. gen     posgrado_start                  = fecha_pila if posgrado_salud == 1
+. gen posgrado_start = fecha_pila if posgrado_salud == 1
 {txt}(16,501,183 missing values generated)
 
-{com}. bys     personabasicaid:          ereplace posgrado_start = min(posgrado_start)
+{com}. bys personabasicaid: ereplace posgrado_start = min(posgrado_start)
 {txt}(14,399,440 missing values generated)
 (14399440 missing values generated)
 (2,490,425 real changes made)
@@ -158,7 +154,7 @@ saved
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\Step_4.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res}29 Jun 2024, 00:39:51
+ {txt}closed on:  {res}29 Jun 2024, 10:56:00
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}

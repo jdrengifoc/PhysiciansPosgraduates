@@ -37,13 +37,14 @@ global logs "${FOLDER_PROYECTO}\Logs"
 
 cap log close
 log using "${logs}\RIPS_variables.smcl", replace
-
+timer clear
+timer 1 on
 ********************************************************************************
 **#                   1. Read R output files         
 ********************************************************************************
 
 use "${data}\Merge_individual_RIPS.dta", clear
-merge m:1 personabasicaid using "${data}\master_rethus.dta", keepusing(personabasicaid rethus_sexo) keep(3) nogen 
+*merge m:1 personabasicaid using "${data}\master_rethus.dta", keepusing(personabasicaid rethus_sexo) keep(3) nogen 
 
 gen year_RIPS = yofd(date)
 drop date
@@ -160,7 +161,7 @@ foreach variable in $t_sensitive $work {
 }
 
 
-keep 	personabasicaid year_RIPS service rethus_sexo nro_servicios nro_servicios_np 		  		///
+keep 	personabasicaid year_RIPS service nro_servicios nro_servicios_np 		  		///
 		nro_serv_mental* $t_sensitive $work 
 compress
 
@@ -172,8 +173,8 @@ compress
 gduplicates drop personabasicaid year_RIPS service, force
 
 * Reshape the dataset to get an individual-year panel
-greshape wide 	nro_servicios nro_servicios_np nro_serv_mental nro_serv_mental2  					///
-				, i(personabasicaid year_RIPS rethus_sexo) j(service) string
+greshape wide  nro_servicios nro_servicios_np nro_serv_mental nro_serv_mental2,  					///
+		       i(personabasicaid year_RIPS) j(service) string
 
 foreach var of varlist nro* {
 	
@@ -189,7 +190,7 @@ save `temp', replace
 **#           			4. Balance the panel     
 ********************************************************************************
 
-use "${data}\master_rethus.dta", clear
+use personabasicaid using "${data}\master_rethus.dta", clear
 
 expand 14 // 14 years between 2009 and 2022
 bys personabasicaid: gen year_RIPS = (_n - 1) + 2009
@@ -206,25 +207,28 @@ foreach var of varlist nro* $t_sensitive $work {
 **#           	5. Additional variable creation
 ********************************************************************************
 
-gen proce 		    	= (nro_serviciosprocedimientos > 0)
-gen consul 	    		= (nro_serviciosconsultas > 0)
-gen urg 		      	= (nro_serviciosurgencias > 0) 
-gen hosp 			      = (nro_serviciosHospitalizacion > 0)
+gen proce 		    = (nro_serviciosprocedimientos > 0)
+gen consul 	        = (nro_serviciosconsultas > 0)
+gen urg 		    = (nro_serviciosurgencias > 0) 
+gen hosp 		    = (nro_serviciosHospitalizacion > 0)
 
-gen urg_np 		    	= (nro_servicios_npurgencias > 0) 
-gen hosp_np			    = (nro_servicios_npHospitalizacion > 0)
+gen urg_np 		    = (nro_servicios_npurgencias > 0) 
+gen hosp_np		    = (nro_servicios_npHospitalizacion > 0)
 
-gen consul_mental 	= (nro_serv_mentalconsultas > 0)
-gen consul_mental2 	= (nro_serv_mental2consultas > 0)
-gen proce_mental 	  = (nro_serv_mentalprocedimientos > 0) 
-gen urg_mental 	  	= (nro_serv_mentalurgencias > 0) 
-gen hosp_mental 	  = (nro_serv_mentalHospitalizacion > 0)
+gen consul_mental   = (nro_serv_mentalconsultas > 0)
+gen consul_mental2  = (nro_serv_mental2consultas > 0)
+gen proce_mental    = (nro_serv_mentalprocedimientos > 0) 
+gen urg_mental 	    = (nro_serv_mentalurgencias > 0) 
+gen hosp_mental     = (nro_serv_mentalHospitalizacion > 0)
 
-gen service 	    	= (nro_serviciosprocedimientos > 0 | ///
-             nro_serviciosconsultas > 0 | nro_serviciosurgencias > 0 | ///
-             nro_serviciosHospitalizacion > 0)					   
-gen service_mental  = (proce_mental == 1 | consul_mental == 1 | urg_mental == 1 | hosp_mental == 1)
-gen service_mental2	= (proce_mental  == 1 | consul_mental2  == 1 | urg_mental  == 1 | hosp_mental  == 1)
+gen service 	    = (nro_serviciosprocedimientos > 0 | ///
+                      nro_serviciosconsultas > 0 |  ///
+					  nro_serviciosurgencias > 0 | ///
+                      nro_serviciosHospitalizacion > 0)					   
+gen service_mental  = (proce_mental == 1 | consul_mental == 1 | /// 
+                       urg_mental == 1 | hosp_mental == 1)
+gen service_mental2	= (proce_mental  == 1 | consul_mental2  == 1 | ///
+                       urg_mental  == 1 | hosp_mental  == 1)
 
 /*
 gen 	year_mental = year_RIPS if consul_mental == 1
@@ -257,4 +261,7 @@ compress
 * Save the final balanced RIPS panel
 save "${data}\Individual_balanced_all_RIPS.dta", replace
 
+
+timer 1 off
+timer 1 list
 log close
