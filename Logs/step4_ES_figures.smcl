@@ -1,0 +1,5293 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates/Logs\step4_ES_figures.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}29 Jun 2024, 15:50:27
+{txt}
+{com}. ****************************************************************************
+. **#                                             1. Processing
+. ****************************************************************************
+. 
+. use "${c -(}tables{c )-}\CS_Results.dta", clear
+{txt}
+{com}. drop if var == "Pre_avg" | var == "Post_avg"
+{txt}(1,728 observations deleted)
+
+{com}. 
+. gen     dist            = substr(var, 3, 1) if (strlen(var) == 3)
+{txt}(1,152 missing values generated)
+
+{com}. replace dist            = substr(var, 3, 2) if (strlen(var) == 4)
+{txt}variable {bf}{res}dist{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str2{sf}
+{txt}(1,152 real changes made)
+
+{com}. destring dist, replace
+{txt}dist: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}
+{com}. replace dist            = dist * (-1) if (substr(var, 1, 2) == "tm")
+{txt}(5,760 real changes made)
+
+{com}. sort outcome dist
+{txt}
+{com}. drop var
+{txt}
+{com}. 
+. * Balance for variables with non-estimated periods
+. /*
+> preserve
+> 
+>         keep outcome
+>         duplicates drop
+>         expand 14
+>         
+>         bys outcome: g dist = _n - 5
+>         drop if dist == -1
+>         
+>         tempfile temp
+>         save `temp'
+>         
+> restore
+> 
+> merge m:1 dist outcome using `temp', nogen
+> replace coef = 0 if coef == . & dist < 0
+> replace ci_lower = 0 if ci_lower == . & dist < 0
+> replace ci_upper = 0 if ci_upper == . & dist < 0
+> */
+. 
+. * Relevant periods
+. 
+. 
+. drop if dist < $x_min_lim
+{txt}(0 observations deleted)
+
+{com}. drop if dist > $x_max_lim
+{txt}(0 observations deleted)
+
+{com}. 
+. * Controls label
+. tostring controls, replace
+{txt}controls was {res:byte} now {res:str1}
+
+{com}. replace controls = "Controls" if controls == "1"
+{txt}variable {bf}{res}controls{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str8{sf}
+{txt}(7,200 real changes made)
+
+{com}. replace controls = "NoControls" if controls == "0"
+{txt}variable {bf}{res}controls{sf}{txt} was {bf}{res}str8{sf}{txt} now {bf}{res}str10{sf}
+{txt}(7,200 real changes made)
+
+{com}. 
+. * Temporal restrictions
+. keep if wboot == 0
+{txt}(7,200 observations deleted)
+
+{com}. *drop if estimation == "NT"
+. 
+. bys outcome cohort: ereplace mean = min(mean)
+{txt}(4,350 real changes made)
+
+{com}. drop wboot
+{txt}
+{com}.                 
+. ****************************************************************************
+. **#                                             2. Figures
+. ****************************************************************************
+. 
+. tempfile tempfile
+{txt}
+{com}. save `tempfile'
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\pmede1\AppData\Local\Temp\ST_2dcc_000001.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. levelsof estimation,      local(estimations)
+{res}{txt}`"ET"' `"NET"' `"NT"'
+
+{com}. levelsof treatment_group, local(treatment_groups)
+{res}{txt}`"treated_1a"' `"treated_1b"' `"treated_1c"' `"treated_1d"' `"treated_2a"' `"treated_2b"' `"treated_2c"' `"treated_2d"'
+
+{com}. levelsof cohort,                  local(cohors)
+{res}{txt}1995
+
+{com}. levelsof controls,                local(controls)
+{res}{txt}`"Controls"' `"NoControls"'
+
+{com}. levelsof outcome,                 local(outcomes)
+{res}{txt}`"cardio_risk"' `"laboral"' `"p_cotizaciones"' `"pila_independientes"' `"pila_salario_r"' `"sal_dias_cot"' `"service_mental"' `"service_mental2"' `"service_mental3"'
+
+{com}. 
+. *Tester
+. *local outcomes = "service_mental"
+. foreach treatment_group in `treatment_groups' {c -(}
+{txt}  2{com}. foreach estimation in `estimations' {c -(}
+{txt}  3{com}. foreach cohort in `cohors' {c -(}
+{txt}  4{com}. foreach control in `controls' {c -(}
+{txt}  5{com}.         
+.         use `tempfile', clear   
+{txt}  6{com}.         keep if estimation == "`estimation'" & cohort == `cohort' & ///
+>                 controls == "`control'" & treatment_group == "`treatment_group'"
+{txt}  7{com}. 
+.         foreach outcome in `outcomes' {c -(}
+{txt}  8{com}.         
+.                 qui sum mean if (outcome =="`outcome'")
+{txt}  9{com}. 
+.                 if r(mean)>1 & r(mean) >= 1000  {c -(}                       
+{txt} 10{com}.                         local format = "%16.0fc"                        
+{txt} 11{com}.                 {c )-}
+{txt} 12{com}.                 if r(mean)>1 & r(mean) < 1000 {c -(}         
+{txt} 13{com}.                         local format = "%5.0f"                  
+{txt} 14{com}.                 {c )-}               
+{txt} 15{com}.                 if r(mean)<=1                            {c -(}              
+{txt} 16{com}.                         local format = "%5.4f"                  
+{txt} 17{com}.                 {c )-}               
+{txt} 18{com}.                 
+.                 local mean: dis `format' r(mean)
+{txt} 19{com}.                 local mean: dis strtrim("`mean'")
+{txt} 20{com}.                 
+.                 qui sum n if (outcome == "`outcome'")
+{txt} 21{com}.                 local samp: dis r(mean)
+{txt} 22{com}.                         
+.                 twoway  (rspike ci_lower ci_upper dist  if (outcome == "`outcome'"), lcolor(gs11) color(gs11) lp(solid))                                        ///
+>                                 (scatter coef dist                              if (outcome == "`outcome'"), mlc(gs11)    mfc(gs11)   m(O) msize(medsmall)),            ///
+>                                 xlabel($x_min_lim(1)$x_max_lim, nogrid labsize(small))                                                                                                                                                          ///
+>                                 ylabel(#10, angle(h) format(`format') labsize(small))                                                                                                                           ///
+>                                 xline(-1, lcolor(gs10))                                                                                                                                                                                         ///
+>                                 yline(0, lcolor(gs10))                                                                                                                                                                                          ///
+>                                 xtitle("Years from Enrollment")                                                                                                                                                                         ///
+>                                 ytitle("Point Estimate")                                                                                                                                                                                        ///
+>                                 legend(order(2 "Coefficient" 1 "IC at 95%") position(6) col(4))                                                                                                         ///
+>                                 graphregion(fcolor(white)) note("Control mean: `mean'" "Sample: `samp'")
+{txt} 23{com}.                 graph export "${c -(}figures{c )-}\\`control'\ES_`treatment_group'_`outcome'_`cohort'_`estimation'.png", replace
+{txt} 24{com}.                 
+.         {c )-}
+{txt} 25{com}.         
+. {c )-}
+{txt} 26{com}. {c )-}
+{txt} 27{com}. {c )-}
+{txt} 28{com}. {c )-}
+{txt}(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1a_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1a_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1b_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1b_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1c_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1c_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_1d_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_1d_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2a_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2a_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2b_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2b_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2c_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2c_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,092 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_cardio_risk_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_cardio_risk_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_laboral_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_laboral_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_p_cotizaciones_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_p_cotizaciones_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_independientes_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_independientes_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_salario_r_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_salario_r_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_sal_dias_cot_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_sal_dias_cot_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental2_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental2_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental3_1995_ET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental3_1995_ET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_cardio_risk_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_cardio_risk_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_laboral_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_laboral_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_p_cotizaciones_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_p_cotizaciones_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_independientes_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_independientes_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_salario_r_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_salario_r_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_sal_dias_cot_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_sal_dias_cot_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental2_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental2_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental3_1995_NET.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental3_1995_NET.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\Controls\ES_treated_2d_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+(7,029 observations deleted)
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_cardio_risk_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_cardio_risk_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_laboral_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_laboral_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_p_cotizaciones_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_p_cotizaciones_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_independientes_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_independientes_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_salario_r_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_pila_salario_r_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_sal_dias_cot_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_sal_dias_cot_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental2_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental2_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+{res}{txt}{p 0 4 2}
+(file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental3_1995_NT.png{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Output\Figures\NoControls\ES_treated_2d_service_mental3_1995_NT.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates/Logs\step4_ES_figures.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}29 Jun 2024, 16:00:36
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

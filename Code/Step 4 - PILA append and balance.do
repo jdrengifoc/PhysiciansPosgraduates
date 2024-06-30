@@ -42,7 +42,7 @@ global logs "${FOLDER_PROYECTO}\Logs"
 global data "${FOLDER_PROYECTO}\Data"
 
 cap log close
-log using "${logs}\Step_4.smcl", replace
+log using "${logs}\step4_balance_PILA.smcl", replace
 timer clear
 timer 1 on
 
