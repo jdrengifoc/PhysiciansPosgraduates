@@ -110,8 +110,8 @@ df_pila %>%
     # 2013-2017
     treated_2a = between(date_start_especializacion, ymd('2013-01-01'), ymd('2017-12-31')),
     treated_2b = treated_2a & n_cotizaciones_year1 > 3,
-    treated_3c = treated_2a & fecha_grado_pregrado < date_start_especializacion,
-    treated_3d = treated_2b & fecha_grado_pregrado < date_start_especializacion,
+    treated_2c = treated_2a & fecha_grado_pregrado < date_start_especializacion,
+    treated_2d = treated_2b & fecha_grado_pregrado < date_start_especializacion,
     ) %>% 
   # Untreated.
   left_join(

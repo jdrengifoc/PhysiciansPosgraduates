@@ -7,7 +7,7 @@ read_parquet(file.path(folder, 'history_RIPS.parquet')) %>%
   write_dta(file.path(folder, 'Merge_individual_RIPS.dta'))
 # PILA
 read_parquet(file.path(folder, 'history_PILA.parquet')) %>% 
-  write_dta(file.path(folder, 'P07_PILA_monthly.dta'))
+  write_dta(file.path(folder, 'history_PILA.dta'))
 # DESIGN
 open_dataset(file.path(folder, 'treated_samples.parquet')) %>% 
   right_join(

@@ -1,0 +1,514 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\step3_create_PILA_variables_balance.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}29 Jun 2024, 11:35:26
+{txt}
+{com}. timer clear
+{txt}
+{com}. timer on 1
+{txt}
+{com}. 
+. ****************************************************************************
+. **#  1. Create new variables from PILA
+. ****************************************************************************
+. 
+. 
+. * Read R history_PILA.parquet
+. 
+. use "${c -(}data{c )-}\history_PILA.dta", clear
+{txt}
+{com}. 
+. * Fecha a mes
+. rename fecha_pila fecha_pila_temp
+{res}{txt}
+{com}. gen fecha_pila = mofd(fecha_pila_temp)
+{txt}
+{com}. drop fecha_pila_temp
+{txt}
+{com}. format fecha_pila %tm
+{txt}
+{com}. 
+. 
+. * New variables
+. rename  tipo_cotiz tipo_cotizante
+{res}{txt}
+{com}. 
+. gen     pila_independientes = inlist(tipo_cotizante, 2, 3, 16, 41, 42, 59, 57, 66)                      
+{txt}
+{com}. gen     pila_posgrado_salud = (tipo_cotizante == 21)    
+{txt}
+{com}. gen     pila_dependientes   = (pila_independientes != 1 & pila_posgrado_salud != 1)
+{txt}
+{com}. 
+. foreach var of varlist salario_bas ibc_pens ibc_salud ibc_rprof ibc_ccf {c -(}
+{txt}  2{com}. 
+.         rename `var' `var'_orig
+{txt}  3{com}.         bys personabasicaid id fecha_pila: egen         `var' = max(`var'_orig) if (pila_dependientes == 1)
+{txt}  4{com}.         bys personabasicaid id fecha_pila: replace `var' = `var'_orig if (pila_independientes == 1)
+{txt}  5{com}.         
+. {c )-}
+{res}{txt}(3,172,590 missing values generated)
+(2670981 real changes made)
+{res}{txt}(3,172,587 missing values generated)
+(2670981 real changes made)
+{res}{txt}(3,172,587 missing values generated)
+(2670981 real changes made)
+{res}{txt}(3,172,587 missing values generated)
+(2670981 real changes made)
+{res}{txt}(3,172,588 missing values generated)
+(2670981 real changes made)
+
+{com}. 
+. * Maternity license
+. g licen_mat1 = (licen_mat == "X")
+{txt}
+{com}. drop licen_mat
+{txt}
+{com}. rename licen_mat1 licen_mat
+{res}{txt}
+{com}. 
+. * General incapacity
+. g incap_gral1 = (incap_gral == "X")
+{txt}
+{com}. drop incap_gral
+{txt}
+{com}. rename incap_gral1 incap_gral
+{res}{txt}
+{com}. 
+. * Days of incapacity
+. replace incap_trab = 0 if incap_trab < 0
+{txt}(0 real changes made)
+
+{com}. rename incap_trab incap_dias
+{res}{txt}
+{com}. 
+. drop salario_bas_orig ibc_pens_orig ibc_salud_orig ibc_rprof_orig ibc_ccf_orig
+{txt}
+{com}. 
+. * Minimum wage per year
+. gen     mw = 461500  if (year == 2008)
+{txt}(11,111,543 missing values generated)
+
+{com}. replace mw = 496900  if (year == 2009)
+{txt}(251,520 real changes made)
+
+{com}. replace mw = 515000  if (year == 2010)
+{txt}(319,337 real changes made)
+
+{com}. replace mw = 535600  if (year == 2011)
+{txt}(347,249 real changes made)
+
+{com}. replace mw = 566700  if (year == 2012)
+{txt}(420,452 real changes made)
+
+{com}. replace mw = 589500  if (year == 2013)
+{txt}(494,867 real changes made)
+
+{com}. replace mw = 616000  if (year == 2014)
+{txt}(570,099 real changes made)
+
+{com}. replace mw = 644350  if (year == 2015)
+{txt}(831,807 real changes made)
+
+{com}. replace mw = 689455  if (year == 2016)
+{txt}(933,006 real changes made)
+
+{com}. replace mw = 737717  if (year == 2017)
+{txt}(1,078,332 real changes made)
+
+{com}. replace mw = 781242  if (year == 2018)
+{txt}(1,191,349 real changes made)
+
+{com}. replace mw = 828116  if (year == 2019)
+{txt}(1,239,810 real changes made)
+
+{com}. replace mw = 877803  if (year == 2020)
+{txt}(1,198,348 real changes made)
+
+{com}. replace mw = 908526  if (year == 2021)
+{txt}(1,290,276 real changes made)
+
+{com}. replace mw = 1000000 if (year == 2022)
+{txt}(945,072 real changes made)
+
+{com}. 
+. * Minimum wage t-1
+. gen     mw_1 = 461500  if (year == 2009)
+{txt}(10,860,038 missing values generated)
+
+{com}. replace mw_1 = 496900  if (year == 2010)
+{txt}(319,337 real changes made)
+
+{com}. replace mw_1 = 515000  if (year == 2011)
+{txt}(347,249 real changes made)
+
+{com}. replace mw_1 = 535600  if (year == 2012)
+{txt}(420,452 real changes made)
+
+{com}. replace mw_1 = 566700  if (year == 2013)
+{txt}(494,867 real changes made)
+
+{com}. replace mw_1 = 589500  if (year == 2014)
+{txt}(570,099 real changes made)
+
+{com}. replace mw_1 = 616000  if (year == 2015)
+{txt}(831,807 real changes made)
+
+{com}. replace mw_1 = 644350  if (year == 2016)
+{txt}(933,006 real changes made)
+
+{com}. replace mw_1 = 689455  if (year == 2017)
+{txt}(1,078,332 real changes made)
+
+{com}. replace mw_1 = 737717  if (year == 2018)
+{txt}(1,191,349 real changes made)
+
+{com}. replace mw_1 = 781242  if (year == 2019)
+{txt}(1,239,810 real changes made)
+
+{com}. replace mw_1 = 828116  if (year == 2020)
+{txt}(1,198,348 real changes made)
+
+{com}. replace mw_1 = 877803  if (year == 2021)
+{txt}(1,290,276 real changes made)
+
+{com}. replace mw_1 = 908526  if (year == 2022)
+{txt}(945,072 real changes made)
+
+{com}. replace mw_1 = 1000000 if (year == 2023)
+{txt}(4 real changes made)
+
+{com}. 
+. egen    rowmax          = rowmax(ibc*)
+{txt}(501,606 missing values generated)
+
+{com}. replace rowmax          = mw if (rowmax >= mw_1 * 0.8 & rowmax < mw)            
+{txt}(201,201 real changes made, 4 to missing)
+
+{com}. replace rowmax          = rowmax / 0.4 if (pila_independientes == 1 & rowmax > mw)
+{txt}(1,919,425 real changes made)
+
+{com}. 
+. replace salario_bas = mw if (rowmax >= mw_1 * 0.8 & rowmax < mw)
+{txt}(0 real changes made)
+
+{com}. 
+. egen    pila_salario = rowmax(rowmax salario_bas)
+{txt}(501,606 missing values generated)
+
+{com}. replace pila_salario = .  if (pila_posgrado_salud == 1)
+{txt}(0 real changes made)
+
+{com}. lab var pila_salario    "Salario nominal"
+{txt}
+{com}. drop    rowmax
+{txt}
+{com}. 
+. gen             pila_salario_max = pila_salario
+{txt}(501,606 missing values generated)
+
+{com}. 
+. * Get the CPI
+. merge m:1 year month using "${c -(}data_general{c )-}/IPC_mensual", keepusing(IPC) keep(1 3) nogen
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}      11,111,558{txt}  
+{col 5}{hline 41}
+
+{com}. 
+. *Generate real wages (base 2018m12)
+. global vars pila_salario pila_salario_max
+{txt}
+{com}. 
+. foreach var in $vars {c -(}
+{txt}  2{com}.         
+.         gen     `var'_r = (`var' / IPC) * 100
+{txt}  3{com}.         replace `var'_r = . if mi(`var')
+{txt}  4{com}.         
+. {c )-}
+{txt}(501,606 missing values generated)
+(0 real changes made)
+(501,606 missing values generated)
+(0 real changes made)
+
+{com}. 
+. * Remove duplicates of contributions with same company
+. gduplicates drop personabasicaid fecha_pila id if pila_dependientes == 1, force
+
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid fecha_pila id{p_end}
+{txt}{res}
+{txt}(612,262 observations deleted)
+
+{com}. 
+. bys personabasicaid fecha_pila: gen nro_cotizaciones = _N
+{txt}
+{com}.         
+. * Since people may have more than one contribution each month, sum the wages of each contribution and keep the max of worked days. 
+. foreach var of varlist pila_salario_r {c -(}
+{txt}  2{com}.         
+.   bys personabasicaid fecha_pila: ereplace `var'                                 = total(`var')
+{txt}  3{com}.   bys personabasicaid fecha_pila: egen  `var'_dependientes       = total(`var') if (pila_dependientes == 1)
+{txt}  4{com}.   bys personabasicaid fecha_pila: egen  `var'_independientes = total(`var') if (pila_independientes == 1)
+{txt}  5{com}.   
+. {c )-}
+{txt}(3,659,520 real changes made)
+(3,172,587 missing values generated)
+(7,828,315 missing values generated)
+
+{com}. 
+. foreach var of varlist sal_dias_cot pila_dependientes pila_independientes pila_posgrado_salud pila_salario_max_r incap_dias incap_gral licen_mat {c -(}
+{txt}  2{com}.   bys personabasicaid fecha_pila: ereplace `var' = max(`var')
+{txt}  3{com}. {c )-}
+{txt}(679,725 real changes made)
+(822,981 real changes made)
+(881,360 real changes made)
+(156,718 real changes made)
+(369,366 missing values generated)
+(369366 missing values generated)
+(1,702,043 real changes made)
+(174 missing values generated)
+(174 missing values generated)
+(4,797 real changes made)
+(74,791 real changes made)
+(7,586 real changes made)
+
+{com}. 
+. replace sal_dias_cot = 30 if (sal_dias_cot > 30 & !mi(sal_dias_cot))
+{txt}(8 real changes made)
+
+{com}. 
+. gsort personabasicaid fecha_pila tipo_cotizante
+{txt}
+{com}. 
+. gduplicates drop personabasicaid fecha_pila, force
+
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid fecha_pila{p_end}
+{txt}{res}
+{txt}(1,842,545 observations deleted)
+
+{com}. 
+. tostring ciudad_cod depto_cod, replace
+{txt}ciudad_cod was {res:double} now {res:str3}
+depto_cod was {res:double} now {res:str2}
+
+{com}. 
+. replace ciudad_cod = "00" + ciudad_cod if (length(ciudad_cod) == 1 & ciudad_cod != ".")
+{txt}(7,324,119 real changes made)
+
+{com}. replace ciudad_cod = "0" + ciudad_cod   if (length(ciudad_cod) == 2 & ciudad_cod != ".")
+{txt}(120,419 real changes made)
+
+{com}. 
+. replace depto_cod  = "0" + depto_cod    if (length(depto_cod) == 1 & depto_cod != ".")
+{txt}(1,956,465 real changes made)
+
+{com}. 
+. gen pila_cod_mun   = depto_cod + ciudad_cod
+{txt}
+{com}. 
+. * Keep relevant variables
+. keep personabasicaid fecha_pila year month sexomode fechantomode *_r    ///
+> pila_independientes pila_dependientes pila_cod_mun id                                   ///
+> sal_dias_cot *dependientes *independientes nro_cotizaciones                     ///
+> pila_posgrado_salud tipo_cotiz pila_salario_max_r incap_dias incap_gral ///
+> licen_mat
+{txt}
+{com}. 
+. 
+. * Remove any duplicates
+. gduplicates drop personabasicaid fecha_pila, force
+
+{p 0 4}{txt}Duplicates in terms of {res} personabasicaid fecha_pila{p_end}
+{txt}{res}
+{txt}(0 observations are duplicates)
+
+{com}. compress
+  {txt}variable {bf}{res}year{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}month{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}fecha_pila{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}pila_independientes{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}pila_posgrado_salud{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}pila_dependientes{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}licen_mat{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}incap_gral{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nro_cotizaciones{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}personabasicaid{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
+  {txt}variable {bf}{res}id{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
+  {txt}variable {bf}{res}sal_dias_cot{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}tipo_cotizante{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}sexomode{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}incap_dias{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+{txt}  (528,061,811 bytes saved)
+
+{com}. 
+. 
+. * Save that file so in the next iteration, the new observations are part of the file
+. save "${c -(}data{c )-}\P07_PILA_monthly.dta", replace            
+{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Data\P07_PILA_monthly.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. ****************************************************************************
+. **#                             2. Balance panel
+. ****************************************************************************
+. 
+. * Balancear panel with rethus sample
+. use personabasicaid using "${c -(}data{c )-}\master_rethus", clear
+{txt}
+{com}. expand 176 // 176 months between 2008 and 2022m8
+{txt}(16,808,050 observations created)
+
+{com}. bys personabasicaid: gen fecha_pila = _n + 575
+{txt}
+{com}. format fecha_pila %tm
+{txt}
+{com}. merge 1:1 personabasicaid fecha_pila using "${c -(}data{c )-}\\P07_PILA_monthly", keep(1 3)
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}       8,311,504
+{txt}{col 9}from master{col 30}{res}       8,311,504{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}       8,592,592{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. gen formal = (_merge == 3)
+{txt}
+{com}. drop _merge
+{txt}
+{com}. replace pila_dependientes       = 0 if mi(pila_dependientes)
+{txt}(8,311,504 real changes made)
+
+{com}. replace pila_independientes = 0 if mi(pila_independientes)
+{txt}(8,311,504 real changes made)
+
+{com}. 
+. * Postgraduate PILA
+. gen posgrado_salud = (tipo_cotizante == 21)
+{txt}
+{com}. * replace posgrado_salud        = 0 if (fecha_pila < fechapregrado)
+. 
+. * Postgraduate starting date
+. gen posgrado_start = fecha_pila if posgrado_salud == 1
+{txt}(16,501,184 missing values generated)
+
+{com}. bys personabasicaid: ereplace posgrado_start = min(posgrado_start)
+{txt}(14,399,440 missing values generated)
+(14399440 missing values generated)
+(2,490,425 real changes made)
+
+{com}. 
+. * Postgraduate RETHUS
+. /*
+> gen     month_posgrado                  = mofd(rethus_fechagradopos1)
+> bys     personabasicaid:                ereplace month_posgrado = min(month_posgrado)
+> gen     posgrado_rethus                 = 0
+> replace posgrado_rethus             = 1  if (month_posgrado == fecha_pila)
+> 
+> replace rethus_perfilpos1                   = "" if (month_posgrado > fecha_pila)
+> replace rethus_codigoperfilpos1 = "" if (month_posgrado > fecha_pila)
+> 
+> gen auxiliar        = substr(rethus_perfilpos1, 1, 1)
+> gen posgrado_clin = 1 if auxiliar == "M" & rethus_codigoperfilpos1 != "MA99"
+> gen posgrado_quir = 1 if auxiliar == "Q"
+> gen posgrado_otro = 1 if posgrado_clin != 1 & posgrado_quir != 1 & !mi(rethus_perfilpos1)
+> drop auxiliar
+> */
+. * PILA variables
+. rename  pila_salario_max_r pila_salario_r_max
+{res}{txt}
+{com}. 
+. replace pila_salario_r     = 0 if mi(pila_salario_r)
+{txt}(8,311,504 real changes made)
+
+{com}. replace pila_salario_r_max = 0 if mi(pila_salario_r_max)        
+{txt}(8,675,045 real changes made)
+
+{com}. replace sal_dias_cot       = 0 if mi(sal_dias_cot)
+{txt}(8,311,504 real changes made)
+
+{com}. replace nro_cotizaciones   = 0 if mi(nro_cotizaciones)  
+{txt}(8,311,504 real changes made)
+
+{com}. 
+. * Annualize
+. rename fecha_pila fecha_pila_temp
+{res}{txt}
+{com}. gen fecha_pila = yofd(dofm(fecha_pila_temp))
+{txt}
+{com}. drop fecha_pila_temp
+{txt}
+{com}. 
+. /*rename fechapregrado fechapregrado_temp
+> gen fechapregrado = yofd(fechapregrado_temp)
+> drop fechapregrado_temp
+> 
+> rename month_posgrado month_posgrado_temp
+> gen month_posgrado = yofd(dofm(month_posgrado_temp))
+> drop month_posgrado_temp*/
+. 
+. rename posgrado_start posgrado_start_temp
+{res}{txt}
+{com}. gen posgrado_start = yofd(dofm(posgrado_start_temp))
+{txt}(14,399,440 missing values generated)
+
+{com}. drop posgrado_start_temp
+{txt}
+{com}. 
+. format fecha_pila     %ty
+{txt}
+{com}. /*format fechapregrado  %ty
+> format month_posgrado %ty*/
+. format posgrado_start %ty
+{txt}
+{com}. 
+. /*collapse      (median) sal_dias_cot pila_salario_r pila_salario_r_max                                                 ///                             
+>                         (max) nro_cotizaciones formal incap_dias incap_gral licen_mat                                   ///
+>                         posgrado_salud posgrado_start posgrado_rethus posgrado_clin                                             ///
+>                         posgrado_quir posgrado_otro pila_independientes pila_dependientes,                              ///
+>                         by(personabasicaid fecha_pila fechapregrado year_grado rethus_sexo)*/
+.                         
+. collapse        (median) sal_dias_cot pila_salario_r pila_salario_r_max                                                 ///                             
+>                         (max) nro_cotizaciones formal incap_dias incap_gral licen_mat                                   ///
+>                         posgrado_salud posgrado_start                                           ///
+>                         pila_independientes pila_dependientes,                          ///
+>                         by(personabasicaid fecha_pila)
+{res}{txt}
+{com}. 
+. * Last variables
+. gen     l_pila_salario_r                = log(pila_salario_r)
+{txt}(696,456 missing values generated)
+
+{com}. gen             p_cotizaciones                  = (nro_cotizaciones > 1)
+{txt}
+{com}. 
+. save "${c -(}data{c )-}\Individual_balanced_all_PILA.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Data\Individual_balanced_all_PILA.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. timer off 1
+{txt}
+{com}. timer list 1
+{res}   1:    254.64 /        1 =     254.6430
+{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}//wmedesrv/gamma/Christian Posso/_banrep_research/proyectos/PhysiciansPosgraduates\Logs\step3_create_PILA_variables_balance.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}29 Jun 2024, 11:39:41
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
