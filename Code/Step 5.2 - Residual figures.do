@@ -71,14 +71,6 @@ gen laboral         = (diag_laboral == 1 | estres_laboral == 1 | ///
                        accidente_laboral == 1 | enfermedad_laboral == 1	| ///
 					   acc_enf_laboral == 1)
 
-
-****************************************************************************
-**#						2. Estimation features
-****************************************************************************
-
-* Distance to enrollment
-gen dist = fecha_pila - posgrado_start
-
 * Label globals
 global labels ""Mental health diagnosis" "Stress, anxiety or depression" "Mental health diagnosis (excluding)" "Cardio risk" "Laboral disease" "Independent" "Multiple jobs" "Real monthly earnings (total - 2018 COP)" "Monthly worked days""
 
@@ -93,7 +85,14 @@ foreach label in $labels {
 **# 				3.  Figures
 ****************************************************************************
 
+* Option 1
 preserve
+
+* Never treated as exposed in 2017
+replace posgrado_start = 2017 if posgrado_start == .
+
+* Distance to enrollment
+gen dist = fecha_pila - posgrado_start
 
 * Average calculations
 global residuals ""
@@ -128,8 +127,8 @@ foreach outcome in $outcomes {
 		local format = "%5.2f"			
 	}
 
-	twoway 	(line `outcome' date_to_draw if (treated == 1), color(gs5))					///
-			(line `outcome' date_to_draw if (treated == 0), color(gs10)),				///
+	twoway 	(line `outcome' dist if (treated_1a == 1), color(gs5))						///
+			(line `outcome' dist if (treated_1a == 0), color(gs10)),					///
 			xlabel(-2(1)5, nogrid labsize(vsmall))	 									///
 			ylabel(#6, labsize(small) angle(360) format(`format'))						///
 			xline(-1,lwidth(thin) lcolor(navy*0.5) lpattern(-))							///
@@ -140,8 +139,8 @@ foreach outcome in $outcomes {
 			
 	graph export "${output}\Figures\Averages\Ave_`outcome'.png", replace
 			
-	twoway 	(line r_`outcome' date_to_draw if (treated == 1), color(gs5))				///
-			(line r_`outcome' date_to_draw if (treated == 0), color(gs10)),				///
+	twoway 	(line r_`outcome' dist if (treated_1a == 1), color(gs5))					///
+			(line r_`outcome' dist if (treated_1a == 0), color(gs10)),					///
 			xlabel(-2(1)5, nogrid labsize(vsmall))	 									///
 			ylabel(#6, labsize(small) angle(360) format(`format'))						///
 			xline(-1,lwidth(thin) lcolor(navy*0.5) lpattern(-))							///
@@ -158,3 +157,87 @@ foreach outcome in $outcomes {
 
 restore
 
+
+* Option 2
+preserve
+
+* Distance to enrollment
+gen dist = fecha_pila - posgrado_start
+
+* Average calculations
+global residuals ""
+foreach outcome in $outcomes {	
+	
+	reghdfe `outcome', abs(personabasicaid fecha_pila) resid(res_`outcome')
+	g r_`outcome' = _b[_cons] + res_`outcome'
+	drop res_`outcome'
+	
+	global residuals "${residuals} r_`outcome'"
+	
+}
+
+collapse (mean) $outcomes $residuals , by(dist treated_1a)
+keep if (dist >= -2 & dist <= 5) | dist == .
+
+* Constant for never treated
+foreach outcome in $outcomes {
+
+	qui sum `outcome' if dist == .
+	local never = r(mean)
+	g `outcome'_nt = `never'
+	
+	qui sum r_`outcome' if dist == .
+	local never = r(mean)
+	g r_`outcome'_nt = `never'
+	
+}
+
+drop if dist == .
+
+* Graphs
+local i = 1
+foreach outcome in $outcomes {
+	
+	* Format local
+	qui sum `outcome'
+	local mean = r(mean)
+	
+	if r(mean)>1 & r(mean)>1000  {			
+		local format = "%12.0fc"			
+	}
+	if r(mean)>1 & r(mean)<=1000 {		
+		local format = "%5.0f"			
+	}		
+	if r(mean)<=1 				 {		
+		local format = "%5.2f"			
+	}
+
+	twoway 	(line `outcome' 	dist, color(gs5))										///
+			(line `outcome'_nt 	dist, color(gs10)),										///
+			xlabel(-2(1)5, nogrid labsize(vsmall))	 									///
+			ylabel(#6, labsize(small) angle(360) format(`format'))						///
+			xline(-1,lwidth(thin) lcolor(navy*0.5) lpattern(-))							///
+			xtitle("Time since enrollment (months)", size(small)) 						///
+			ytitle("${o`i'}", size(small))												///
+			legend(order(1 "Treated Average" 2 "Control Average") position(6) col(2))	///
+			scheme(s1color) graphregion(fcolor(white)) plotregion(fcolor(white))
+			
+	graph export "${output}\Figures\Averages\Ave_`outcome'.png", replace
+			
+	twoway 	(line r_`outcome' 		dist, color(gs5))									///
+			(line r_`outcome'_nt 	dist, color(gs10)),									///
+			xlabel(-2(1)5, nogrid labsize(vsmall))	 									///
+			ylabel(#6, labsize(small) angle(360) format(`format'))						///
+			xline(-1,lwidth(thin) lcolor(navy*0.5) lpattern(-))							///
+			xtitle("Time since enrollment (months)", size(small)) 						///
+			ytitle("${o`i'}", size(small))												///
+			legend(order(1 "Treated Average" 2 "Control Average") position(6) col(2))	///
+			scheme(s1color) graphregion(fcolor(white)) plotregion(fcolor(white))
+			
+	graph export "${output}\Figures\Averages\Res_`outcome'.png", replace
+			
+	local i = `i' + 1
+			
+} 
+
+restore
