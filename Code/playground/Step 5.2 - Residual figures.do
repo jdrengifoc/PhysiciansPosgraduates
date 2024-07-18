@@ -108,6 +108,7 @@ foreach outcome in $outcomes {
 
 collapse (mean) $outcomes $residuals , by(dist treated_1a)
 keep if dist >= -2 & dist <= 5
+replace treated_1a = 0 if treated_1a == .
 
 * Graphs
 local i = 1
@@ -137,7 +138,7 @@ foreach outcome in $outcomes {
 			legend(order(1 "Treated Average" 2 "Control Average") position(6) col(2))	///
 			scheme(s1color) graphregion(fcolor(white)) plotregion(fcolor(white))
 			
-	graph export "${output}\Figures\Averages\Ave_`outcome'.png", replace
+	graph export "${output}\Figures\Averages\Ave1_`outcome'.png", replace
 			
 	twoway 	(line r_`outcome' dist if (treated_1a == 1), color(gs5))					///
 			(line r_`outcome' dist if (treated_1a == 0), color(gs10)),					///
@@ -149,7 +150,7 @@ foreach outcome in $outcomes {
 			legend(order(1 "Treated Average" 2 "Control Average") position(6) col(2))	///
 			scheme(s1color) graphregion(fcolor(white)) plotregion(fcolor(white))
 			
-	graph export "${output}\Figures\Averages\Res_`outcome'.png", replace
+	graph export "${output}\Figures\Averages\Res1_`outcome'.png", replace
 			
 	local i = `i' + 1
 			
@@ -178,6 +179,8 @@ foreach outcome in $outcomes {
 
 collapse (mean) $outcomes $residuals , by(dist treated_1a)
 keep if (dist >= -2 & dist <= 5) | dist == .
+drop if treated_1a == . & dist != .
+drop if treated_1a == 1 & dist == .
 
 * Constant for never treated
 foreach outcome in $outcomes {
@@ -222,7 +225,7 @@ foreach outcome in $outcomes {
 			legend(order(1 "Treated Average" 2 "Control Average") position(6) col(2))	///
 			scheme(s1color) graphregion(fcolor(white)) plotregion(fcolor(white))
 			
-	graph export "${output}\Figures\Averages\Ave_`outcome'.png", replace
+	graph export "${output}\Figures\Averages\Ave2_`outcome'.png", replace
 			
 	twoway 	(line r_`outcome' 		dist, color(gs5))									///
 			(line r_`outcome'_nt 	dist, color(gs10)),									///
@@ -234,7 +237,7 @@ foreach outcome in $outcomes {
 			legend(order(1 "Treated Average" 2 "Control Average") position(6) col(2))	///
 			scheme(s1color) graphregion(fcolor(white)) plotregion(fcolor(white))
 			
-	graph export "${output}\Figures\Averages\Res_`outcome'.png", replace
+	graph export "${output}\Figures\Averages\Res2_`outcome'.png", replace
 			
 	local i = `i' + 1
 			
