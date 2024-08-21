@@ -13,3 +13,12 @@ Then, the second part developed in Stata,
 - create new variables in RIPS and PILA data;
 - balance the panel data of RIPS and PILA;
 - make a full event study, i.e., DiD with and without controls for NT, NET and ET.
+
+
+
+### Literature Review - Mental Health in Posgraduates:
+
+A quick literature review was carried out to understand how researchers usually study mental health.
+
+| **Author**      | **Title**      | **Year** | **Goal**        | **Data**         | **Effects**      | **Link**         |
+|-----------------|----------------|----------|-----------------|------------------|------------------|------------------|
