@@ -1,0 +1,589 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Data - Step 1.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:30:27
+{txt}
+{com}. 
+. 
+. 
+. preserve        
+{txt}
+{com}.         import  excel using "Data\Anonimizada\Universidades_Top_Medicine.xlsx", sheet("Both") clear firstrow
+{res}{text}(2 vars, 12 obs)
+
+{com}.         ren     Id Id_Inst 
+{res}{txt}
+{com}.         ren     Nombre ecaes_institution 
+{res}{txt}
+{com}.         replace ecaes_institution = upper(ecaes_institution)
+{txt}(9 real changes made)
+
+{com}.         tempfile topu
+{txt}
+{com}.         save    `topu'
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000002.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+.         import excel "Data\Anonimizada\instituciones acreditadas.xlsx", sheet("Sheet1") firstrow clear
+{res}{text}(3 vars, 47 obs)
+
+{com}.         tempfile acred
+{txt}
+{com}.         save    `acred', replace
+{txt}{p 0 4 2}
+(file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000003.tmp{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000003.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. restore 
+{txt}
+{com}. 
+. 
+. use             "Data\Anonimizada\SSO_estimations_09092019", clear
+{txt}(This file contains: data original de inscritos - master data)
+
+{com}. 
+. merge           m:1 ecaes_institution using `topu'
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}          15,258
+{txt}{col 9}from master{col 30}{res}          15,258{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}           3,232{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. gen             u_top = _merge==3
+{txt}
+{com}. drop            _merge
+{txt}
+{com}. 
+. merge           m:1 ecaes_institution using "`acred'", keep(1 3)
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}           5,113
+{txt}{col 9}from master{col 30}{res}           5,113{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}          13,377{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. gen             u_acred = acreditado==1
+{txt}
+{com}. drop            _merge
+{txt}
+{com}. 
+. 
+. ren             treat_num_doc Documento 
+{res}{txt}
+{com}. merge           1:1 Documento draw_date using "Data\Anonimizada\Profesionales_Fecha_Inicio_Imp.dta", keep(1 3) gen(_mergeFI)
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}          13,030
+{txt}{col 9}from master{col 30}{res}          13,030{txt}  (_mergeFI==1)
+{col 9}from using{col 30}{res}               0{txt}  (_mergeFI==2)
+
+{col 5}Matched{col 30}{res}           5,460{txt}  (_mergeFI==3)
+{col 5}{hline 41}
+
+{com}. 
+. label           var _mergeFI "_merge Fecha Inicio"
+{txt}
+{com}. 
+. * Creamos el codigo de hospital con 12 digitos
+. gen             codigo12 = substr(treat_cod_plaza,1,12)
+{txt}(13,582 missing values generated)
+
+{com}. 
+. * Creamos el codigo de hospital con 10 digitos
+. * Nota draw 2013-1 el codigo de plaza viene solo con 10 digitos, por tanto, para no perder información, se crea un identificador unicamente de 10 digitos
+. * tener presente a la hora de parea
+. * treat_cod_plaza es missing en 2013-1 por eso se usa treat_cod_habi
+. gen             codigo10 = cond(length(substr(treat_cod_habi,1,10))==10,substr(treat_cod_habi,1,10),"0"+substr(treat_cod_habi,1,10)) 
+{txt}
+{com}. 
+. drop            ecaes_*
+{txt}
+{com}. 
+. global          vars_ecaes ecaes_family_size ecaes_headhouse ecaes_dependants ecaes_educ* ///
+>                         ecaes_ocup* ecaes_stratum ecaes_sisben ecaes_floor ecaes_cellphone /// 
+>                         ecaes_internet ecaes_tv ecaes_wash ecaes_oven ecaes_car ecaes_room ///
+>                         ecaes_famincome ecaes_stwrk ecaes_interperscore ecaes_probscore /// 
+>                         ecaes_institution ecaes_microwave ecaes_fridge ecaes_marstatus /// 
+>                         ecaes_single ecaes_instype 
+{txt}
+{com}. 
+. 
+.                         
+. * Pegamos con base de Saber Pro para obtener el sexo del medico
+. merge           1:1 id draw_date using "Data\Anonimizada\Base_ps", keep(1 3) nogen keepusing(ecaes_gender ecaes_med_* ecaes_fin* $vars_ecaes)
+{res}{txt}{p 0 7 2}
+(variable
+{bf:draw_date} was {bf:int}, now {bf:float} to accommodate using data's values)
+{p_end}
+(label {bf:{txt}ecaes_car} already defined)
+(label {bf:{txt}ecaes_oven} already defined)
+(label {bf:{txt}ecaes_wash} already defined)
+(label {bf:{txt}ecaes_tv} already defined)
+(label {bf:{txt}ecaes_internet} already defined)
+(label {bf:{txt}ecaes_gender} already defined)
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}          18,490{txt}  
+{col 5}{hline 41}
+
+{com}. 
+. * conservamos solo los medicos (bacteriologos, enfermeras y odontologos no nos interesa, por ahora).
+. keep            if draw_bachelor==1
+{txt}(14,017 observations deleted)
+
+{com}. 
+. 
+. * promedio de reading quantitative public health and health management
+. egen            prom_4 = rowmean(ecaes_med_reading ecaes_med_quantitative  ecaes_med_administracion ecaes_med_spublica) ///
+>                         if ecaes_med_reading != . &  ecaes_med_quantitative != . & ecaes_med_administracion != . & ecaes_med_spublica != .
+{txt}(351 missing values generated)
+
+{com}. 
+. label           var prom_4 "Average of the 4 main tests: Reading, math, management and public health"
+{txt}
+{com}. 
+. drop            if mi(prom_4)
+{txt}(351 observations deleted)
+
+{com}. 
+. egen            prom_acad       = rowmean(ecaes_med_reading ecaes_med_quantitative)
+{txt}
+{com}. egen            prom_health = rowmean(ecaes_med_administracion ecaes_med_spublica)
+{txt}
+{com}. 
+. ***************************************************************
+. *|||||||||||||||||||| PRINCIPAL COMPONENT ||||||||||||||||||||* 
+. ***************************************************************
+. pca             ecaes_med_reading ecaes_med_quantitative  ecaes_med_administracion ecaes_med_spublica, com(1)
+
+{txt}Principal components/correlation{col 50}Number of obs    = {res}     4,122
+{col 50}{txt}Number of comp.  = {res}         1
+{col 50}{txt}Trace            {col 67}=  {res}        4
+{col 5}{txt}Rotation: (unrotated = principal){col 50}Rho              = {res}    0.6552
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}   Component {c |}   Eigenvalue   Difference         Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 12:Comp1} {c |}{res}      2.62089      2.07917             0.6552       0.6552
+{txt}{col 5}{ralign 12:Comp2} {c |}{res}      .541718     .0972922             0.1354       0.7907
+{txt}{col 5}{ralign 12:Comp3} {c |}{res}      .444426     .0514581             0.1111       0.9018
+{txt}{col 5}{ralign 12:Comp4} {c |}{res}      .392968            .             0.0982       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+
+Principal components (eigenvectors) 
+
+{space 4}{hline 13}{c  TT}{hline 10}{c  TT}{hline 13}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}{c |}{space 1}{ralign 11:Unexplained}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{c   +}{hline 13}
+{space 4}{space 0}{ralign 12:ecaes_m~ding}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4998}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .3452}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~e}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4924}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .3646}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~n}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4898}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .3713}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~a}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5175}}}{space 1}{c |}{space 1}{center 11:{res:{sf:       .298}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{c  BT}{hline 13}
+
+{com}. predict         comp1 
+{txt}({bf:score} assumed)
+
+Scoring coefficients 
+{col 5}sum of squares(column-loading) = 1
+
+{space 4}{hline 13}{c  TT}{hline 10}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}
+{space 4}{space 0}{ralign 12:ecaes_m~ding}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4998}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~e}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4924}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~n}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4898}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~a}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5175}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}
+
+{com}. 
+. pca             ecaes_med_reading ecaes_med_quantitative, com(1)  
+
+{txt}Principal components/correlation{col 50}Number of obs    = {res}     4,122
+{col 50}{txt}Number of comp.  = {res}         1
+{col 50}{txt}Trace            {col 67}=  {res}        2
+{col 5}{txt}Rotation: (unrotated = principal){col 50}Rho              = {res}    0.7783
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}   Component {c |}   Eigenvalue   Difference         Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 12:Comp1} {c |}{res}      1.55651      1.11303             0.7783       0.7783
+{txt}{col 5}{ralign 12:Comp2} {c |}{res}      .443485            .             0.2217       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+
+Principal components (eigenvectors) 
+
+{space 4}{hline 13}{c  TT}{hline 10}{c  TT}{hline 13}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}{c |}{space 1}{ralign 11:Unexplained}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{c   +}{hline 13}
+{space 4}{space 0}{ralign 12:ecaes_m~ding}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .2217}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~e}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .2217}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{c  BT}{hline 13}
+
+{com}. predict         comp1_acad
+{txt}({bf:score} assumed)
+
+Scoring coefficients 
+{col 5}sum of squares(column-loading) = 1
+
+{space 4}{hline 13}{c  TT}{hline 10}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}
+{space 4}{space 0}{ralign 12:ecaes_m~ding}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~e}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}
+
+{com}. 
+. pca             ecaes_med_administracion ecaes_med_spublica, com(1)
+
+{txt}Principal components/correlation{col 50}Number of obs    = {res}     4,122
+{col 50}{txt}Number of comp.  = {res}         1
+{col 50}{txt}Trace            {col 67}=  {res}        2
+{col 5}{txt}Rotation: (unrotated = principal){col 50}Rho              = {res}    0.7948
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}   Component {c |}   Eigenvalue   Difference         Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 12:Comp1} {c |}{res}      1.58966      1.17932             0.7948       0.7948
+{txt}{col 5}{ralign 12:Comp2} {c |}{res}      .410338            .             0.2052       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+
+Principal components (eigenvectors) 
+
+{space 4}{hline 13}{c  TT}{hline 10}{c  TT}{hline 13}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}{c |}{space 1}{ralign 11:Unexplained}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{c   +}{hline 13}
+{space 4}{space 0}{ralign 12:ecaes_med_~n}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .2052}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~a}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .2052}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{c  BT}{hline 13}
+
+{com}. predict         comp1_health
+{txt}({bf:score} assumed)
+
+Scoring coefficients 
+{col 5}sum of squares(column-loading) = 1
+
+{space 4}{hline 13}{c  TT}{hline 10}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}
+{space 4}{space 0}{ralign 12:ecaes_med_~n}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}
+{space 4}{space 0}{ralign 12:ecaes_med_~a}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}
+
+{com}. 
+. * Dejamos unicamente las personas que fueron tratados
+. keep            if treat_rural == 1
+{txt}(1,396 observations deleted)
+
+{com}. 
+. 
+. 
+. replace         distancia_imp = 0 if distancia_imp<0
+{txt}(8 real changes made)
+
+{com}. 
+. 
+.         /*Criterio 1: Imputar la fecha de inicio de la misma profesión, hospital y 
+>         cohorte de sorteo */
+.         sort codigo10 codigo12 draw_date 
+{txt}
+{com}.         egen d1=mean(distancia_imp), by(codigo10 codigo12 draw_date)
+{txt}(5 missing values generated)
+
+{com}.         
+.         replace distancia_imp=d1 if distancia_imp==.
+{txt}(6 real changes made)
+
+{com}. 
+.         /*Criterio 3: Imputar la fecha de inicio de la misma profesión y hospital*/    
+.         sort codigo10 codigo12 draw_date
+{txt}
+{com}.         egen d3=mean(distancia_imp), by(codigo10 codigo12)
+{txt}(3 missing values generated)
+
+{com}.         
+.         replace distancia_imp=d3 if distancia_imp==.
+{txt}(2 real changes made)
+
+{com}.         
+.         /*Criterio 4: Imputar la fecha de inicio de la misma profesión, sorteo y 
+>         departamento */
+.         egen d4=mean(distancia_imp), by(draw_date depto)
+{txt}
+{com}.         
+.         replace distancia_imp=d4 if distancia_imp==.    
+{txt}(3 real changes made)
+
+{com}.         
+.         
+. gen             n_docs_temp             = 1 
+{txt}
+{com}. gen             n_docs_women_temp       = ecaes_gender==1
+{txt}
+{com}. gen             n_docs_men_temp         = ecaes_gender==0
+{txt}
+{com}. ren             u_top n_docs_top_temp
+{res}{txt}
+{com}. 
+. gen             n_docs_top_income_temp = ecaes_famincome>=4
+{txt}
+{com}. tab             ecaes_famincome n_docs_top_income_temp
+
+                      {txt}{c |} n_docs_top_income_tem
+monthly family income {c |}           p
+ at ECAES examination {c |}         0          1 {c |}     Total
+{hline 22}{c +}{hline 22}{c +}{hline 10}
+        menos de 1 SM {c |}{res}       119          0 {txt}{c |}{res}       119 
+{txt}entre 1 y menos de 2  {c |}{res}       476          0 {txt}{c |}{res}       476 
+{txt}entre 2 y menos de 3  {c |}{res}       582          0 {txt}{c |}{res}       582 
+{txt}entre 3 y menos de 5  {c |}{res}         0        657 {txt}{c |}{res}       657 
+{txt}entre 5 y menos de 7  {c |}{res}         0        388 {txt}{c |}{res}       388 
+{txt}entre 7 y menos de 10 {c |}{res}         0        248 {txt}{c |}{res}       248 
+{txt}          10 o más SM {c |}{res}         0        250 {txt}{c |}{res}       250 
+{txt}{hline 22}{c +}{hline 22}{c +}{hline 10}
+                Total {c |}{res}     1,177      1,543 {txt}{c |}{res}     2,720 
+{txt}
+{com}. 
+. ren             ecaes_instype n_docs_u_publica_temp
+{res}{txt}
+{com}. ren             u_acred n_docs_u_acred_temp 
+{res}{txt}
+{com}. global          vars n_docs_temp n_docs_women_temp n_docs_men_temp n_docs_top_temp n_docs_top_income_temp n_docs_u_publica_temp n_docs_u_acred_temp 
+{txt}
+{com}.                 
+. foreach         x in $vars {c -(}
+{txt}  2{com}.         egen    `x'_a = total(`x'), by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  3{com}.         drop    `x'
+{txt}  4{com}. {c )-}
+{txt}
+{com}. ren     *_temp_a *
+{res}{txt}
+{com}. 
+. 
+. foreach x in prom_4 prom_acad prom_health comp1 comp1_acad comp1_health ecaes_med_reading ecaes_med_quantitative ecaes_med_administracion ecaes_med_spublica {c -(}
+{txt}  2{com}.         egen            ave_`x' = mean(`x')  ,                  by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  3{com}.         egen            p25_`x' = pctile(`x'), p(25)    by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  4{com}.         egen            p50_`x' = pctile(`x'), p(50)    by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  5{com}.         egen            p75_`x' = pctile(`x'), p(75)    by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  6{com}.         egen            min_`x' = min(`x'),                     by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  7{com}.         egen            max_`x' = max(`x'),                     by(codigo10 codigo12 draw_date treat_codmundep)
+{txt}  8{com}. {c )-}
+{txt}
+{com}. 
+.         egen ave_program = median(prom_health), by(draw_date ecaes_institution Profesion)
+{txt}
+{com}.         
+.         
+. label           var ave_prom_4 "Average score of the cohort (hospital-draw level)"
+{txt}
+{com}. label           var p25_prom_4 "Percentile 25 score of the cohort (hospital-draw level)"
+{txt}
+{com}. label           var p50_prom_4 "Percentile 25 score of the cohort (hospital-draw level)"
+{txt}
+{com}. label           var p75_prom_4 "Percentile 25 score of the cohort (hospital-draw level)"
+{txt}
+{com}. 
+. * Labels
+. label           variable treat_year     "draw year"
+{txt}
+{com}. label           variable treat_month    "draw month"
+{txt}
+{com}. label           variable Documento              "treat id"
+{txt}
+{com}. label           variable codigo12               "12 digits hospital code"
+{txt}
+{com}. 
+. order           codigo12 codigo10  
+{txt}
+{com}. compress
+  {txt}variable {bf}{res}draw_date{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}draw_state{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}treat_year{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}treat_month{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}treated{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}draw_Documento{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}Documento{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}draw_day{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}n_docs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}n_docs_women{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}n_docs_men{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}n_docs_top{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}n_docs_top_income{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}n_docs_u_publica{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}n_docs_u_acred{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}ecaes_interperscore{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}ecaes_probscore{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}treat_cod_habi{sf}{txt} was {bf}{res}str11{sf}{txt} now {bf}{res}str10{sf}
+  {txt}variable {bf}{res}Profesion{sf}{txt} was {bf}{res}str14{sf}{txt} now {bf}{res}str12{sf}
+  {txt}variable {bf}{res}ecaes_institution{sf}{txt} was {bf}{res}str68{sf}{txt} now {bf}{res}str54{sf}
+{txt}  (188,094 bytes saved)
+
+{com}. 
+. * Guardo esta base de datos
+. order           Documento codigo12 codigo10  /// 
+>                         treat_year treat_month treat_codmundep 
+{txt}
+{com}. 
+. egen            tag_cohorte = tag(draw_date draw_state codigo10 codigo12)
+{txt}
+{com}. 
+. 
+. sum             distancia_imp if tag_cohorte==1, d
+
+               {txt}Distancia con valores imputados
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        9              3
+{txt} 5%    {res}       10              3
+{txt}10%    {res}       10              3       {txt}Obs         {res}      1,516
+{txt}25%    {res}       14              3       {txt}Sum of wgt. {res}      1,516
+
+{txt}50%    {res}       33                      {txt}Mean          {res}  39.2105
+                        {txt}Largest       Std. dev.     {res} 27.35816
+{txt}75%    {res}       61            104
+{txt}90%    {res}       80            104       {txt}Variance      {res} 748.4687
+{txt}95%    {res}       93            104       {txt}Skewness      {res} .6438984
+{txt}99%    {res}      100            105       {txt}Kurtosis      {res} 2.220004
+{txt}
+{com}. 
+. egen            ave_distancia_imp_hc = mean(distancia_imp), by(draw_date draw_state codigo10 codigo12)
+{txt}
+{com}. egen            ave_distancia_imp_c  = mean(distancia_imp), by(draw_date draw_state)
+{txt}
+{com}. egen            ave_distancia_imp_d  = mean(distancia_imp), by(draw_date)
+{txt}
+{com}. 
+. label           var ave_distancia_imp_hc "promedio de la distancia draw-inicio por hospital-cohorte"
+{txt}
+{com}. label           var ave_distancia_imp_c  "promedio de la distancia draw-inicio por draw-state"
+{txt}
+{com}. label           var ave_distancia_imp_d  "promedio de la distancia draw-inicio por draw"
+{txt}
+{com}. 
+. 
+. 
+. replace         draw_day= mdy(1,25,2013)  if draw_date==ym(2013,1) & mi(draw_day)
+{txt}(4 real changes made)
+
+{com}. replace         draw_day= mdy(4,19,2013)  if draw_date==ym(2013,4) & mi(draw_day)
+{txt}(5 real changes made)
+
+{com}. replace         draw_day= mdy(7,19,2013)  if draw_date==ym(2013,7) & mi(draw_day)
+{txt}(2 real changes made)
+
+{com}. replace         draw_day= mdy(10,18,2013) if draw_date==ym(2013,10) & mi(draw_day)
+{txt}(0 real changes made)
+
+{com}. replace         draw_day= mdy(1,17,2014)  if draw_date==ym(2014,1) & mi(draw_day)
+{txt}(0 real changes made)
+
+{com}. replace         draw_day= mdy(4,22,2014)  if draw_date==ym(2014,4) & mi(draw_day)
+{txt}(0 real changes made)
+
+{com}. replace         draw_day= mdy(7,22,2014)  if draw_date==ym(2014,7) & mi(draw_day)
+{txt}(0 real changes made)
+
+{com}. replace         draw_day= mdy(10,22,2014) if draw_date==ym(2014,10) & mi(draw_day)
+{txt}(0 real changes made)
+
+{com}. format          draw_day %td
+{txt}
+{com}.         
+. sum             distancia_imp
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+distancia_~p {c |}{res}      2,726    39.96801    30.12115          0        283
+{txt}
+{com}. gen             p_fechin_obs_thumb = draw_day+int(`r(mean)')
+{txt}
+{com}. gen             p_fechfi_obs_thumb = p_fechin_obs_thumb+365
+{txt}
+{com}. 
+. keep            codigo12 codigo10 draw_date draw_state treat_codmundep *prom* *n_docs* *comp1* ave_dist*  draw_day p_fech* *_ecaes_med_* ave_program
+{txt}
+{com}. 
+. 
+. drop            prom_4 prom_acad prom_health comp1 comp1_acad comp1_health 
+{txt}
+{com}. 
+. collapse (max) ave_program, by(codigo12 codigo10 draw_date draw_state treat_codmundep *prom* *n_docs* *comp1* ave_dist* draw_day p_fech* *_ecaes_med_*)
+{res}{txt}
+{com}. 
+. 
+. ren             (draw_date draw_state treat_codmundep) (p_date p_state p_codmundep)
+{res}{txt}
+{com}. compress 
+  {txt}variable {bf}{res}p_fechin_obs_thumb{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_fechfi_obs_thumb{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+{txt}  (6,828 bytes saved)
+
+{com}. 
+. foreach x in ave  {c -(}
+{txt}  2{com}.         gen             p_fechin_obs_`x' = draw_day+`x'_distancia_imp_hc
+{txt}  3{com}.         gen                     p_fechfi_obs_`x' = p_fechin_obs_`x'+365
+{txt}  4{com}. {c )-}
+{txt}
+{com}. 
+. 
+. 
+. format          p_date %tm
+{txt}
+{com}. format          p_fechin_obs_ave %td
+{txt}
+{com}. format          p_fechfi_obs_ave %td
+{txt}
+{com}. 
+. gen             percent_female          = n_docs_women/n_docs
+{txt}
+{com}. gen             percent_top             = n_docs_top/n_docs 
+{txt}
+{com}. gen             percent_top_income      = n_docs_top_income/n_docs
+{txt}
+{com}. gen             percent_public          = n_docs_u_publica/n_docs
+{txt}
+{com}. gen             percent_acred           = n_docs_u_acred/n_docs 
+{txt}
+{com}. 
+. save            "Data\base_cohorte_rural_con_fecha_inicio.dta", replace 
+{txt}{p 0 4 2}
+file {bf}
+Data\base_cohorte_rural_con_fecha_inicio.dta{rm}
+saved
+{p_end}
+
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Data - Step 1.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:30:29
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

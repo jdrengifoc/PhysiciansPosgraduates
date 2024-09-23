@@ -1,0 +1,511 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Data - Step 2.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:30:29
+{txt}
+{com}. 
+. 
+.         ****************************************
+.         *               Codigo hospitales 2013             *
+.         ****************************************
+.         use                     codigo12 mpio_nacimiento fechanto semanas_gestacion using "Data\Anonimizada\1_VSR",replace
+{txt}
+{com}.         drop            if mi(semanas_gestacion)
+{txt}(13,972 observations deleted)
+
+{com}.         gen             p_codmundep=string(mpio_nacimiento)
+{txt}
+{com}.         replace         p_codmundep="0"+p_codmundep if length(p_codmundep)==4
+{txt}(1,153,888 real changes made)
+
+{com}.         duplicates      drop
+
+{p 0 4}{txt}Duplicates in terms of {txt} all variables{p_end}
+
+(3,082,337 observations deleted)
+
+{com}.         gen             codigo10=substr(codigo12,1,10)
+{txt}(4,737 missing values generated)
+
+{com}.         gen             p_date=ym(2013,1)
+{txt}
+{com}.         joinby          codigo10 p_codmundep p_date using "Data\base_cohorte_rural_con_fecha_inicio.dta"
+{txt}
+{com}.         gen             v_fconcep=fechanto-7*semanas_gestacion
+{txt}
+{com}.         format          v_fconcep %td
+{txt}
+{com}.         gen             p_emb=inrange(v_fconcep,p_fechin_obs_ave,p_fechfi_obs_ave)|inrange(fechanto,p_fechin_obs_ave,p_fechfi_obs_ave) 
+{txt}
+{com}.         keep            if p_emb==1 
+{txt}(311,487 observations deleted)
+
+{com}.         keep            codigo12 codigo10 p_codmundep 
+{txt}
+{com}.         duplicates      drop
+
+{p 0 4}{txt}Duplicates in terms of {txt} all variables{p_end}
+
+(80,243 observations deleted)
+
+{com}.         duplicates      tag codigo10, gen(dup10)                                
+
+{p 0 4}{txt}Duplicates in terms of {res} codigo10{p_end}
+{txt}
+{com}.         merge           1:m codigo12 p_codmundep using "Data\base_cohorte_rural_con_fecha_inicio.dta",keep(1 3) keepusing(codigo12) 
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}              88
+{txt}{col 9}from master{col 30}{res}              88{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}             308{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}.         duplicates      drop
+
+{p 0 4}{txt}Duplicates in terms of {txt} all variables{p_end}
+
+(171 observations deleted)
+
+{com}.         drop            if _merge==1 & dup10>0                                                                                                  
+{txt}(48 observations deleted)
+
+{com}.         duplicates      tag codigo10,gen(N)
+
+{p 0 4}{txt}Duplicates in terms of {res} codigo10{p_end}
+{txt}
+{com}.         keep            if N==0
+{txt}(7 observations deleted)
+
+{com}.         gen             p_date=ym(2013,1)
+{txt}
+{com}.         ren             codigo12 codigo12_v 
+{res}{txt}
+{com}.         merge           1:m codigo10 p_codmundep p_date using "Data\base_cohorte_rural_con_fecha_inicio.dta", update replace gen(match2)
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}           1,537
+{txt}{col 9}from master{col 30}{res}               0{txt}  (match2==1)
+{col 9}from using{col 30}{res}           1,537{txt}  (match2==2)
+
+{col 5}Matched{col 30}{res}             170
+{txt}{col 9}not updated{col 30}{res}             170{txt}  (match2==3)
+{col 9}missing updated{col 30}{res}               0{txt}  (match2==4)
+{col 9}nonmissing conflict{col 30}{res}               0{txt}  (match2==5)
+{col 5}{hline 41}
+
+{com}.         replace         codigo12=codigo12_v if mi(codigo12)
+{txt}(170 real changes made)
+
+{com}.         drop            _merge N dup10 match2 codigo12_v
+{txt}
+{com}.         keep            if !mi(codigo12)
+{txt}(18 observations deleted)
+
+{com}.         *keep           if prom_4!=. // Eliminar puntajes no disponibles
+.         tempfile        provisional
+{txt}
+{com}.         save            `provisional'
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000001.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+.         ************************************************
+.         *    Union datos todos los bebes vs Rural          *
+.         ************************************************
+.         use             id_nacido fechanto codigo12 mpio_nacimiento semanas_gestacion using "Data\Anonimizada\1_VSR", replace
+{txt}
+{com}.         drop            if mi(semanas_gestacion)
+{txt}(13,972 observations deleted)
+
+{com}.         gen             v_fconcep=fechanto-7*semanas_gestacion
+{txt}
+{com}.         gen             p_codmundep=string(mpio_nacimiento)
+{txt}
+{com}.         replace         p_codmundep="0"+p_codmundep if length(p_codmundep)==4
+{txt}(1,153,888 real changes made)
+
+{com}.         joinby          codigo12 p_codmundep using `provisional' 
+{txt}
+{com}.         duplicates      report id_nacido codigo12 p_fechin_obs_ave p_codmundep p_date
+
+{p 0 4}{txt}Duplicates in terms of {res} id_nacido codigo12 p_fechin_obs_ave p_codmundep p_date{p_end}
+
+{txt}{hline 10}{c TT}{hline 27}
+   Copies {c |} Observations       Surplus
+{hline 10}{c +}{hline 27}
+        1 {c |}      {res}3839967             0
+{txt}{hline 10}{c BT}{hline 27}
+
+{com}.         merge           m:1 id_nacido using "Data\Anonimizada\1_VSR",keep(1 3) nogen
+{res}{txt}(label {bf:{txt}mpio_nacimiento} already defined)
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}       3,839,967{txt}  
+{col 5}{hline 41}
+
+{com}. 
+.         ************************************************
+.         *       Pegar informacion del municipio            *
+.         ************************************************
+.         ren             p_codmundep codmundep   
+{res}{txt}
+{com}.         merge           m:1 codmundep using "Data\Anonimizada\SSO_poblacion_tratados",keep(1 3) nogen
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}       3,839,967{txt}  
+{col 5}{hline 41}
+
+{com}.         gen             cod_dane= mpio_nacimiento
+{txt}
+{com}. 
+.         * Areas metropolitanas
+.         recode          cod_dane (11001 25099 25799 25286 25473 25377 25175 25295 25785 25754 ///
+>                                 25899 25269 25126 25817 25214 25740 25430 = 1 "Bogotá Met") ///
+>                                 (5001 5129 5380 5088 5079 5266 5212 5308 5360 5631 = 2 "Medellín Met") ///
+>                                 (76001 76520 76364 76892 76130 = 3 "Cali met") ///
+>                                 (8001 8758 8573 8433 8296 = 4 "Barranquilla Met") ///
+>                                 (13001 = 5 "Cartagena Met") (68001 68307 68276 68547 = 6 "Bucaramanga Met") ///
+>                                 (54001 54261 54553 54673 54405 54874 = 7 "Cúcuta Met") ///
+>                                 (66001 66170 66400 = 8 "Pereira Met") (17001 17873 = 9 "Manizales Met") ///
+>                                 (20001 20013 20443 20621 20750 = 10 "Valledupar") (52001 = 11 "Pasto Met") ///
+>                                 (50001 = 12 "Villavicencio Met") (73001 = 13 "Ibagué") (23001 = 14 "Montería") ///
+>                                 (15001 = 15 "Tunja Met") (63001 = 16 "Armenia Met") (47001 = 17 "Santa Marta") ///
+>                                 (18001 = 18  "Florencia") (19001 = 19 "Popayan") (27001 = 20 "Quibdo") ///
+>                                 (41001 = 21 "Neiva") (44001 = 22 "Riohacha") (70001 = 23 "Sincelejo") ///
+>                                 , gen(Areas_br) label(Areas_met_banrep)
+{txt}(1145311 differences between {bf:cod_dane} and {bf:Areas_br})
+
+{com}.         gen             d_area_metro = (Areas_br < 24)
+{txt}
+{com}. 
+.         ************************************************
+.         * Relacion temporal bebe cohorte medicos           *
+.         ************************************************
+. 
+.         ** Participa en embarazo ** 
+.         foreach x in "ave" "thumb" {c -(}
+{txt}  2{com}.                                 gen     p_emb_obs_`x'=inrange(v_fconcep,p_fechin_obs_`x',p_fechfi_obs_`x') | inrange(fechanto,p_fechin_obs_`x',p_fechfi_obs_`x')
+{txt}  3{com}.                                 label   var p_emb_obs_`x'  "Cohorte participa en embarazo"
+{txt}  4{com}. 
+.                                 ** Participa en todo el embarazo ** 
+.                                 gen     p_embT_obs_`x'=v_fconcep>=p_fechin_obs_`x' & fechanto<=p_fechfi_obs_`x'
+{txt}  5{com}.                                 label   var p_embT_obs_`x'  "Cohorte participa en todo el embarazo"
+{txt}  6{com}.         {c )-}
+{txt}
+{com}.         compress
+  {txt}variable {bf}{res}fechanto{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}semanas_gestacion{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}v_fconcep{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_date{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}edad_madre{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nacido_mujer{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}numero_consultas{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}embarazos_madre{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}peso_nacido{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}apgar_1min{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}apgar_5min{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}d_area_metro{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_obs_ave{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_embT_obs_ave{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_obs_thumb{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_embT_obs_thumb{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}mpio_nacimiento{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
+  {txt}variable {bf}{res}edad_padre{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}byte{sf}
+{txt}  (195,838,317 bytes saved)
+
+{com}. 
+.         ren             codigo12 codigo 
+{res}{txt}
+{com}.         gen             p_mes_inicio = ym(2010,1)
+{txt}
+{com}.         merge           m:1 codigo p_mes_inicio using "Data\Anonimizada\SSO_Hospital_Vitales", keep(1 3) gen(_mergeH)
+{res}{txt}{p 0 7 2}
+(variable
+{bf:codigo} was {bf:str12}, now {bf:str42} to accommodate using data's values)
+{p_end}
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}          39,210
+{txt}{col 9}from master{col 30}{res}          39,210{txt}  (_mergeH==1)
+{col 9}from using{col 30}{res}               0{txt}  (_mergeH==2)
+
+{col 5}Matched{col 30}{res}       3,800,757{txt}  (_mergeH==3)
+{col 5}{hline 41}
+
+{com}. 
+.         
+.         merge           m:1 codigo p_mes_inicio using "Data\Anonimizada\SSO_Hospital_Vitales_ES", keep(1 3) nogen keepusing(h_prop_unhealthy)
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}          39,210
+{txt}{col 9}from master{col 30}{res}          39,210{txt}  
+{col 9}from using{col 30}{res}               0{txt}  
+
+{col 5}Matched{col 30}{res}       3,800,757{txt}  
+{col 5}{hline 41}
+
+{com}.         label           var _mergeH "_merge with variables at hospital level"
+{txt}
+{com}.         ren             codigo codigo12 
+{res}{txt}
+{com}.         drop            p_mes_inicio    
+{txt}
+{com}. 
+.         ************************************************
+.         *       Controles usados anteriormente         *
+.         ************************************************
+.         ren             nacido_mujer babyfemale 
+{res}{txt}
+{com}.         gen             adolescent      = (edad_madre<=19) 
+{txt}
+{com}.         gen             basicedu        = nivel_madre<=6 | nivel_madre==13
+{txt}
+{com}.         gen             married         = estado_civil_madre==1 | estado_civil_madre==6
+{txt}
+{com}.         gen             subsidie        = (regimen_madre==1) 
+{txt}
+{com}.         egen            tag_mun         = tag(codmundep)
+{txt}
+{com}.         egen            tag_hosp        = tag(codigo12)
+{txt}
+{com}.         bys             codmundep:      egen tot_hosp = total(tag_hosp)
+{txt}
+{com}.         gen             pop100          = c_population/100000
+{txt}
+{com}.         global          controls        babyfemale adolescent basicedu married subsidie tot_hosp pop100
+{txt}
+{com}.         sum             $controls
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}babyfemale {c |}{res}  3,839,967    .4872138    .4998366          0          1
+{txt}{space 2}adolescent {c |}{res}  3,839,967    .2837894    .4508359          0          1
+{txt}{space 4}basicedu {c |}{res}  3,839,967    .8762916    .3292486          0          1
+{txt}{space 5}married {c |}{res}  3,839,967    .5918908    .4914836          0          1
+{txt}{space 4}subsidie {c |}{res}  3,839,967    .7733694    .4186517          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 4}tot_hosp {c |}{res}  3,839,967     2.26339    2.769233          1         12
+{txt}{space 6}pop100 {c |}{res}  3,839,967    6.528678    17.62054     .00794   71.81469
+{txt}
+{com}.         egen            p_draw= group(p_state p_date)
+{res}{txt}
+{com}.         egen            id_cohorte=group(codigo12 p_date)
+{txt}
+{com}. 
+.         destring        id_nacido,replace
+{txt}id_nacido already numeric; no {res}replace
+{txt}
+{com}.         gen             mes_parto=ym(year(fechanto),month(fechanto))
+{txt}
+{com}. 
+.         replace         edad_madre=0 if edad_madre==.
+{txt}(3,424 real changes made)
+
+{com}.         gen             edadm_mis=edad_madre==0
+{txt}
+{com}. 
+.         replace         edad_padre=0 if edad_padre==.
+{txt}(127,110 real changes made)
+
+{com}.         gen             edadp_mis=edad_padre==0
+{txt}
+{com}. 
+.         gen             edad2 =edad_madre*edad_madre
+{txt}
+{com}.         gen             edadp2=edad_padre*edad_padre
+{txt}
+{com}. 
+.         ***********************************************
+.         ***                             Outcomes                                ***
+.         ***********************************************
+. 
+. 
+.         gen             bpn                     =  peso_nacido<=3
+{txt}
+{com}.         gen             numconsul0              = numero_consultas==0
+{txt}
+{com}.         gen             numconsul1_3    = numero_consultas==1
+{txt}
+{com}.         gen             numconsul4              = numero_consultas>=2 & numero_consultas!=999
+{txt}
+{com}.         gen             nacer_menos_37  = semanas_gestacion<37
+{txt}
+{com}.         gen             parto_ces               = tipo_parto==2
+{txt}
+{com}.         gen                     apgar1min_4     = apgar_1min==1
+{txt}
+{com}.         gen                     apgar1min_5_6   = apgar_1min==2
+{txt}
+{com}.         gen                     apgar1min_7     = apgar_1min==3
+{txt}
+{com}.         gen                     apgar5min_4     = apgar_5min==1
+{txt}
+{com}.         gen                     apgar5min_5_6   = apgar_5min==2
+{txt}
+{com}.         gen                     apgar5min_7     = apgar_5min==3
+{txt}
+{com}. 
+. 
+. 
+.         foreach var in female top public acred top_income{c -(}
+{txt}  2{com}.         gen dummy_`var' =(percent_`var'>0.5)
+{txt}  3{com}.                 {c )-}
+{txt}
+{com}.   
+. 
+.         drop            if mi(semanas_gestacion)
+{txt}(0 observations deleted)
+
+{com}. 
+.         *Placebo hacia adelante
+.         gen             p_fechin_obs_ave1f = p_fechin_obs_ave+365
+{txt}
+{com}.         gen             p_fechfi_obs_ave1f = p_fechfi_obs_ave+365
+{txt}
+{com}.         
+.         gen             p_fechin_obs_ave2f = p_fechin_obs_ave+731
+{txt}
+{com}.         gen             p_fechfi_obs_ave2f = p_fechfi_obs_ave+731
+{txt}
+{com}. 
+.         gen             p_fechin_obs_ave3f = p_fechin_obs_ave+1096
+{txt}
+{com}.         gen             p_fechfi_obs_ave3f = p_fechfi_obs_ave+1096
+{txt}
+{com}. 
+.         gen             p_fechin_obs_ave4f = p_fechin_obs_ave+1461
+{txt}
+{com}.         gen             p_fechfi_obs_ave4f = p_fechfi_obs_ave+1461
+{txt}
+{com}.         
+.         
+.         *Placebo anterior
+.         gen             p_fechin_obs_ave2  = p_fechin_obs_ave-730
+{txt}
+{com}.         gen             p_fechfi_obs_ave2  = p_fechfi_obs_ave-730
+{txt}
+{com}.         gen             p_fechin_obs_ave25 = p_fechin_obs_ave-913
+{txt}
+{com}.         gen             p_fechfi_obs_ave25 = p_fechfi_obs_ave-913
+{txt}
+{com}.         gen             p_fechin_obs_ave3  = p_fechin_obs_ave-1095
+{txt}
+{com}.         gen             p_fechfi_obs_ave3  = p_fechfi_obs_ave-1095
+{txt}
+{com}.         gen             p_fechin_obs_ave4  = p_fechin_obs_ave-1460
+{txt}
+{com}.         gen             p_fechfi_obs_ave4  = p_fechfi_obs_ave-1460
+{txt}
+{com}. 
+.         format          p_fechin_obs_ave3 %td 
+{txt}
+{com}.         format          p_fechfi_obs_ave3 %td 
+{txt}
+{com}.         format          v_fconcep %td
+{txt}
+{com}.         format          p_date %tm
+{txt}
+{com}. 
+.         forvalues i=1/4 {c -(}
+{txt}  2{com}.         format          p_fechin_obs_ave`i'f %td 
+{txt}  3{com}.         format          p_fechfi_obs_ave`i'f %td 
+{txt}  4{com}. 
+.         gen             p_emb_n`i'f_obs=inrange(v_fconcep,p_fechin_obs_ave`i'f,p_fechfi_obs_ave`i'f) | inrange(fechanto,p_fechin_obs_ave`i'f,p_fechfi_obs_ave`i'f)
+{txt}  5{com}.         {c )-}
+{txt}
+{com}. 
+.         gen             p_emb_n2_obs =inrange(v_fconcep,p_fechin_obs_ave2,p_fechfi_obs_ave2)   | inrange(fechanto,p_fechin_obs_ave2,p_fechfi_obs_ave2)
+{txt}
+{com}.         gen             p_emb_n25_obs=inrange(v_fconcep,p_fechin_obs_ave25,p_fechfi_obs_ave25) | inrange(fechanto,p_fechin_obs_ave25,p_fechfi_obs_ave25)
+{txt}
+{com}.         gen             p_emb_n3_obs =inrange(v_fconcep,p_fechin_obs_ave3,p_fechfi_obs_ave3)   | inrange(fechanto,p_fechin_obs_ave3,p_fechfi_obs_ave3)
+{txt}
+{com}.         gen             p_emb_n4_obs =inrange(v_fconcep,p_fechin_obs_ave4,p_fechfi_obs_ave4)   | inrange(fechanto,p_fechin_obs_ave4,p_fechfi_obs_ave4)
+{txt}
+{com}.         
+.         gen             year =  year(fechanto)
+{txt}
+{com}.         replace         p_emb_n3_obs=0 if year==2013
+{txt}(36,032 real changes made)
+
+{com}.         label           var p_emb_n3_obs "Partos 3 anos antes"
+{txt}
+{com}.         keep            if p_emb_n4_obs==1 | p_emb_n3_obs==1 | p_emb_n25_obs | p_emb_n2_obs | p_emb_n4f_obs==1 | p_emb_n3f_obs==1 | p_emb_n2f_obs==1 | p_emb_n1f_obs==1 | p_emb_obs_ave==1 | p_emb_obs_thumb==1
+{txt}(400,086 observations deleted)
+
+{com}. 
+.         compress 
+  {txt}variable {bf}{res}h_born{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}adolescent{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}basicedu{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}married{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}subsidie{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}tot_hosp{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_draw{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}id_cohorte{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}mes_parto{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}edadm_mis{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}edadp_mis{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}edad2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}edadp2{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}bpn{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}numconsul0{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}numconsul1_3{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}numconsul4{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}nacer_menos_37{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}parto_ces{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar1min_4{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar1min_5_6{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar1min_7{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar5min_4{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar5min_5_6{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar5min_7{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_female{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_top{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_public{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_acred{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_top_income{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n1f_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n2f_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n3f_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n4f_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n2_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n25_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n3_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_emb_n4_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}year{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}codigo12{sf}{txt} was {bf}{res}str42{sf}{txt} now {bf}{res}str12{sf}
+{txt}  (481,583,340 bytes saved)
+
+{com}.         save            "Data\base_hospital_cohorte_bebe.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+Data\base_hospital_cohorte_bebe.dta{rm}
+saved
+{p_end}
+
+{com}. 
+.         log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Data - Step 2.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:34:40
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

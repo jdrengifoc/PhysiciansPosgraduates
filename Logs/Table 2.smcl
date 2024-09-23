@@ -1,0 +1,524 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table 2.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:35:21
+{txt}
+{com}.         
+.         
+. ********************************************************************************
+. 
+.         use             "Data/Anonimizada/base_medico_rural_con_fecha_inicio",replace
+{txt}
+{com}.     
+.         cap drop        p_date
+{txt}
+{com}.         gen             p_date =ym(p_year,p_month)
+{txt}
+{com}.         format          p_date %tm
+{txt}
+{com}.         duplicates drop p_num_doc p_date, force
+
+{p 0 4}{txt}Duplicates in terms of {res} p_num_doc p_date{p_end}
+
+{txt}(0 observations are duplicates)
+
+{com}.         drop            codigo10
+{txt}
+{com}. 
+.         preserve
+{txt}
+{com}.     
+.         use         "Data/base_hospital_cohorte_bebe", replace
+{txt}
+{com}.         keep if     p_emb_obs_ave==1 & d_area_metro==0 
+{txt}(2,969,640 observations deleted)
+
+{com}.         tempfile    base1
+{txt}
+{com}.         save        `base1', replace 
+{txt}{p 0 4 2}
+(file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000002.tmp{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000002.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}.         
+.         restore
+{txt}
+{com}. 
+.         joinby  codigo12 p_date using `base1', unm(b) _merge(merge_pru) 
+{txt}
+{com}.         keep if p_emb_obs_ave==1 
+{txt}(1,230 observations deleted)
+
+{com}.         keep if d_area_metro ==0
+{txt}(0 observations deleted)
+
+{com}.     
+.         ren                     codigo12 codigo 
+{res}{txt}
+{com}.         gsort                   p_num_doc p_date codigo -id_nacido      
+{txt}
+{com}.         duplicates drop         p_num_doc p_date codigo, force 
+
+{p 0 4}{txt}Duplicates in terms of {res} p_num_doc p_date codigo{p_end}
+
+{txt}(894,700 observations deleted)
+
+{com}. 
+.         drop                    p_mes_inicio
+{txt}
+{com}.         gen                     p_mes_inicio=ym(2010,1)
+{txt}
+{com}.         merge m:1               p_mes_inicio codigo using "Data/Anonimizada/SSO_Hospital_Vitales.dta", keep(3) nogen
+{res}{txt}{p 0 7 2}
+(variable
+{bf:codigo} was {bf:str12}, now {bf:str42} to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(variable
+{bf:h_born} was {bf:int}, now {bf:float} to accommodate using data's values)
+{p_end}
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}           1,839{txt}  
+{col 5}{hline 41}
+
+{com}.         
+.         egen tag                = tag(codigo)
+{txt}
+{com}.         gen  apgar1men7         = 1-h_prop_v_apgar1_masy7
+{txt}
+{com}.         egen p75_apgar7         = pctile(apgar1men7)          if tag==1, p(75)
+{txt}(1,233 missing values generated)
+
+{com}.         egen p75_apgar71        = max(p75_apgar7)
+{txt}
+{com}.         egen p75_bw             = pctile(h_prop_low_weight)   if tag==1, p(75)
+{txt}(1,233 missing values generated)
+
+{com}.         egen p75_bw1                = max(p75_bw)
+{txt}
+{com}.         egen p75_prem           = pctile(h_prop_v_nacer_38_41) if tag==1,p(75)
+{txt}(1,233 missing values generated)
+
+{com}.         egen p75_prem1              = max(p75_prem)
+{txt}
+{com}.         
+.         gen dummy_prematurotop  = (h_prop_v_nacer_38_41<p75_prem1   & h_prop_v_nacer_38_41!=.)
+{txt}
+{com}.         gen dummy_bwtop         = (h_prop_low_weight   >p75_bw1     & h_prop_low_weight   !=.)
+{txt}
+{com}.         gen dummy_apgartop      = (apgar1men7          >p75_apgar71 & apgar1men7          !=.)
+{txt}
+{com}.         compress
+  {txt}variable {bf}{res}p_fechin_1mes{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_fechfi_1mes{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_fechin_prom{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_fechfi_prom{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_fechin_cons{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_fechfi_cons{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_finic_mis{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}p_fechfi_obs{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_num_doc{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_date{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}numero_consultas{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}tipo_parto{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}embarazos_madre{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}peso_nacido{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar_1min{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}apgar_5min{sf}{txt} was {bf}{res}int{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}h_born{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_mes_inicio{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}dummy_prematurotop{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_bwtop{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_apgartop{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}codigo{sf}{txt} was {bf}{res}str42{sf}{txt} now {bf}{res}str12{sf}
+{txt}  (128,730 bytes saved)
+
+{com}.     
+.         gen  dummy_1hosp        = (tot_hosp==1)
+{txt}
+{com}.         gen  apgar1menor7       = apgar1min_7==0
+{txt}
+{com}. 
+.         *Hospitals with many babies (more than percentile 75)
+.         sum     h_born, det
+
+                     {txt}Número de nacidos
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        4              2
+{txt} 5%    {res}       31              2
+{txt}10%    {res}       50              2       {txt}Obs         {res}      1,839
+{txt}25%    {res}      129              2       {txt}Sum of wgt. {res}      1,839
+
+{txt}50%    {res}      272                      {txt}Mean          {res} 907.4715
+                        {txt}Largest       Std. dev.     {res} 1525.715
+{txt}75%    {res}      752           7212
+{txt}90%    {res}     2999           8111       {txt}Variance      {res}  2327807
+{txt}95%    {res}     4941           8111       {txt}Skewness      {res} 2.550144
+{txt}99%    {res}     6822           8111       {txt}Kurtosis      {res} 8.936618
+{txt}
+{com}.         gen     dummy_Nbabies   = (h_born> r(p75))
+{txt}
+{com}.         gen     unhealthy       =1-(bpn==0&nacer_menos_37==0&apgar1menor7==0)
+{txt}
+{com}.         
+.         global  covars  unhealthy bpn nacer_menos_37        ///
+>                     apgar1menor7 h_prop_numconsul4      /// 
+>                     h_prop_babyfemale h_prop_basicedu   ///
+>                     h_prop_married h_prop_adolescent    /// 
+>                     tot_hosp c_population
+{txt}
+{com}.                                         
+.         global  S: word count $covars
+{txt}
+{com}.                 
+.         mat vlrp_b1 = J($S ,2,.)
+{txt}
+{com}. 
+.         local c = 1
+{txt}
+{com}.         foreach var of global covars{c -(}
+{txt}  2{com}.                 
+.                 reghdfe `var' ave_prom_health, abs(p_state p_cohorte) cluster(codigo) 
+{txt}  3{com}. 
+.                 mat vlrp_b1[`c',1] = _b[ave_prom_health] 
+{txt}  4{com}.                 mat vlrp_b1[`c',2] = _se[ave_prom_health]
+{txt}  5{com}.         
+.                 local c = `c'+1 
+{txt}  6{com}.         
+.         {c )-}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.18
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.6703
+{txt}{col 51}R-squared{col 67}= {res}    0.0309
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0099
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0002
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.3020
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}      unhealthy{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0052667{col 29}{space 2} .0123649{col 40}{space 1}    0.43{col 49}{space 3}0.670{col 57}{space 4}-.0190194{col 70}{space 3} .0295528
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2}  .047618{col 29}{space 2} .1291151{col 40}{space 1}    0.37{col 49}{space 3}0.712{col 57}{space 4}-.2059786{col 70}{space 3} .3012146
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.06
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.8081
+{txt}{col 51}R-squared{col 67}= {res}    0.0394
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0186
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.1755
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}            bpn{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0017032{col 29}{space 2} .0070107{col 40}{space 1}    0.24{col 49}{space 3}0.808{col 57}{space 4}-.0120666{col 70}{space 3}  .015473
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .0146505{col 29}{space 2} .0736128{col 40}{space 1}    0.20{col 49}{space 3}0.842{col 57}{space 4}-.1299335{col 70}{space 3} .1592344
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.91
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.3393
+{txt}{col 51}R-squared{col 67}= {res}    0.0382
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0173
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0005
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.1594
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1} nacer_menos_37{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2}-.0050601{col 29}{space 2} .0052907{col 40}{space 1}   -0.96{col 49}{space 3}0.339{col 57}{space 4}-.0154516{col 70}{space 3} .0053315
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .0793526{col 29}{space 2} .0560945{col 40}{space 1}    1.41{col 49}{space 3}0.158{col 57}{space 4}-.0308232{col 70}{space 3} .1895285
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.74
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.3899
+{txt}{col 51}R-squared{col 67}= {res}    0.0320
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0110
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0006
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.2429
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}   apgar1menor7{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0087815{col 29}{space 2} .0102066{col 40}{space 1}    0.86{col 49}{space 3}0.390{col 57}{space 4}-.0112654{col 70}{space 3} .0288284
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2}-.0279867{col 29}{space 2} .1060342{col 40}{space 1}   -0.26{col 49}{space 3}0.792{col 57}{space 4}-.2362498{col 70}{space 3} .1802764
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      1.27
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.2604
+{txt}{col 51}R-squared{col 67}= {res}    0.3393
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.3249
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0009
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.0991
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}h_prop_numcon~4{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0042624{col 29}{space 2} .0037833{col 40}{space 1}    1.13{col 49}{space 3}0.260{col 57}{space 4}-.0031684{col 70}{space 3} .0116932
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .7679012{col 29}{space 2} .0400539{col 40}{space 1}   19.17{col 49}{space 3}0.000{col 57}{space 4} .6892307{col 70}{space 3} .8465716
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.85
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.3559
+{txt}{col 51}R-squared{col 67}= {res}    0.0424
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0216
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0007
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.0501
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}h_prop_babyfe~e{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0018759{col 29}{space 2} .0020302{col 40}{space 1}    0.92{col 49}{space 3}0.356{col 57}{space 4}-.0021117{col 70}{space 3} .0058635
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .4748772{col 29}{space 2} .0214791{col 40}{space 1}   22.11{col 49}{space 3}0.000{col 57}{space 4} .4326898{col 70}{space 3} .5170645
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.70
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.4030
+{txt}{col 51}R-squared{col 67}= {res}    0.2591
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.2430
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0005
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.1033
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}h_prop_basicedu{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2}-.0032716{col 29}{space 2} .0039089{col 40}{space 1}   -0.84{col 49}{space 3}0.403{col 57}{space 4}-.0109491{col 70}{space 3} .0044059
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .4040991{col 29}{space 2} .0411405{col 40}{space 1}    9.82{col 49}{space 3}0.000{col 57}{space 4} .3232946{col 70}{space 3} .4849037
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      1.40
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.2366
+{txt}{col 51}R-squared{col 67}= {res}    0.2590
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.2430
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0013
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.0810
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1} h_prop_married{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0042134{col 29}{space 2} .0035561{col 40}{space 1}    1.18{col 49}{space 3}0.237{col 57}{space 4}-.0027712{col 70}{space 3}  .011198
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .2846472{col 29}{space 2} .0367772{col 40}{space 1}    7.74{col 49}{space 3}0.000{col 57}{space 4} .2124127{col 70}{space 3} .3568817
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.08
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7834
+{txt}{col 51}R-squared{col 67}= {res}    0.2715
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.2557
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0001
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.0583
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}h_prop_adoles~t{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2} .0007601{col 29}{space 2} .0027632{col 40}{space 1}    0.28{col 49}{space 3}0.783{col 57}{space 4}-.0046672{col 70}{space 3} .0061874
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .2786618{col 29}{space 2} .0288853{col 40}{space 1}    9.65{col 49}{space 3}0.000{col 57}{space 4} .2219278{col 70}{space 3} .3353957
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.12
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7337
+{txt}{col 51}R-squared{col 67}= {res}    0.1956
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.1782
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0001
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}    0.3027
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}       tot_hosp{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2}-.0044926{col 29}{space 2} .0131997{col 40}{space 1}   -0.34{col 49}{space 3}0.734{col 57}{space 4}-.0304182{col 70}{space 3}  .021433
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2}  1.15008{col 29}{space 2} .1386188{col 40}{space 1}    8.30{col 49}{space 3}0.000{col 57}{space 4} .8778171{col 70}{space 3} 1.422343
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 6 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,696
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   1{txt},{res}    573{txt}){col 67}= {res}      0.05
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.8290
+{txt}{col 51}R-squared{col 67}= {res}    0.1886
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.1710
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}codigo{txt}) {col 30}= {res}       574{txt}{col 51}Root MSE{col 67}= {res}32240.3835
+
+{txt}{ralign 81:(Std. err. adjusted for {res:574} clusters in codigo)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}   c_population{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2}-296.5827{col 29}{space 2} 1372.788{col 40}{space 1}   -0.22{col 49}{space 3}0.829{col 57}{space 4}-2992.893{col 70}{space 3} 2399.728
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} 33711.26{col 29}{space 2} 14277.98{col 40}{space 1}    2.36{col 49}{space 3}0.019{col 57}{space 4} 5667.702{col 70}{space 3} 61754.83
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_state{col 14}{c |}{space 1}       31{col 27}{space 1}        0{col 39}{result}{space 1}       31{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}   p_cohorte{col 14}{c |}{space 1}        6{col 27}{space 1}        1{col 39}{result}{space 1}        5{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}
+{com}.                 
+.         mat rown vlrp_b1 = $covars
+{txt}
+{com}.         mat list vlrp_b1
+{res}
+{txt}vlrp_b1[11,2]
+                      c1          c2
+   unhealthy {res}  .00526669   .01236494
+{txt}         bpn {res}  .00170319   .00701071
+{txt}nacer_men~37 {res} -.00506008   .00529072
+{txt}apgar1menor7 {res}  .00878153   .01020659
+{txt}h_prop_num~4 {res}  .00426239   .00378329
+{txt}h_prop_bab~e {res}  .00187589   .00203022
+{txt}h_prop_bas~u {res} -.00327163   .00390888
+{txt}h_prop_mar~d {res}   .0042134   .00355612
+{txt}h_prop_ado~t {res}  .00076012   .00276323
+{txt}    tot_hosp {res} -.00449261   .01319966
+{txt}c_population {res} -296.58266    1372.788
+{reset}
+{com}.         
+.         putexcel set "Results/Tables paper matrices replication.xls", sheet("Raw Table 2") modify
+{res}{txt}
+{com}.         putexcel B2=mat(vlrp_b1)
+{res}{txt}file {bf:Results/Tables paper matrices replication.xls} saved
+
+{com}.         
+.     
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table 2.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:35:34
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

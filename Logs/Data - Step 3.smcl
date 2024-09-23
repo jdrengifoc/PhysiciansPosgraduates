@@ -1,0 +1,110 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Data - Step 3.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:34:41
+{txt}
+{com}. 
+. 
+. use             "Data\base_hospital_cohorte_bebe.dta", replace
+{txt}
+{com}.         
+. keep            if p_emb_obs_ave==1 
+{txt}(2,758,064 observations deleted)
+
+{com}. keep        if d_area_metro ==0
+{txt}(211,576 observations deleted)
+
+{com}. 
+. 
+. keep codmundep
+{txt}
+{com}. rename codmundep MPIO_CCNCT
+{res}{txt}
+{com}. duplicates drop
+
+{p 0 4}{txt}Duplicates in terms of {txt} all variables{p_end}
+
+(469,641 observations deleted)
+
+{com}. 
+. tempfile tempfile
+{txt}
+{com}. save `tempfile'
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000001.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. 
+. * Merge with population data in 2005
+. import excel "Data\Anonimizada\DCD-area-proypoblacion-Mun-2005-2019.xlsx", sheet("NuevaMpal") cellrange(A12:H50502) firstrow allstring clear
+{res}{text}(8 vars, 50,490 obs)
+
+{com}. 
+. keep if ÁREAGEOGRÁFICA == "Total"
+{txt}(33,660 observations deleted)
+
+{com}. keep if AÑO == "2005"
+{txt}(15,708 observations deleted)
+
+{com}. 
+. keep MPIO Población
+{txt}
+{com}. destring Población, replace
+{txt}Población: all characters numeric; {res}replaced {txt}as {res}long
+{txt}
+{com}. sort MPIO
+{txt}
+{com}. 
+. 
+. rename MPIO MPIO_CCNCT
+{res}{txt}
+{com}. rename Población poblacion
+{res}{txt}
+{com}. 
+. replace poblacion = poblacion/100000
+{txt}variable {bf}{res}poblacion{sf}{txt} was {bf}{res}long{sf}{txt} now {bf}{res}double{sf}
+{txt}(1,118 real changes made)
+
+{com}. 
+. merge 1:1 MPIO_CCNCT using `tempfile'
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}             522
+{txt}{col 9}from master{col 30}{res}             522{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}             600{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. replace poblacion = . if _merge != 3
+{txt}(522 real changes made, 522 to missing)
+
+{com}. drop _merge
+{txt}
+{com}. 
+. compress
+{txt}  (0 bytes saved)
+
+{com}. save "Data\poblacion_munic", replace
+{txt}{p 0 4 2}
+file {bf}
+Data\poblacion_munic.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Data - Step 3.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:35:01
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

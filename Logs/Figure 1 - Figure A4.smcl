@@ -1,0 +1,2407 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Figure 1 - Figure A4.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:35:01
+{txt}
+{com}.         
+. 
+. ********************************************************************************        
+.         
+.         use "Data/Anonimizada/Base_ps", clear
+{txt}
+{com}.         
+.         keep if draw_bachelor   ==  1   
+{txt}(60,372 observations deleted)
+
+{com}.         drop if draw_date       >=  ym(2014,10) 
+{txt}(18,963 observations deleted)
+
+{com}.         drop if draw_date       <   ym(2013,1)
+{txt}(3,121 observations deleted)
+
+{com}.         egen    prom_health     =   rowmean(ecaes_med_administracion ecaes_med_spublica)
+{txt}(581 missing values generated)
+
+{com}. 
+.         global  puntaje ecaes_med_reading ecaes_med_english ecaes_med_quantitative ecaes_med_social         ///
+>                     ecaes_med_writing ecaes_med_diagnostico ecaes_med_spublica ecaes_med_administracion ///
+>                                         prom_health
+{txt}
+{com}.                                         
+.         * Dropping IES with less than 2 obs
+.         levelsof med_Institucion, local(levels)
+{res}{txt}`"COLEGIO MAYOR DE NUESTRA DEL ROSARIO"' `"COLEGIO MAYOR DE NUESTRA SEÑORA DEL ROSARIO"' `"COLEGIO MAYOR DE NUESTRA SEÑORADELROSARIO"' `"CORPORACION UNIVERSITARIA DEL SINU-CUS-"' `"CORPORACION UNIVERSITARIA RAFAEL NUÑEZ"' `"CORPORACION UNIVERSITARIA REMINGTON"' `"FUNDACION UNIVERSITARIA DE CIENCIAS DE LA SALUD"' `"FUNDACION UNIVERSITARIA JUAN N. CORPAS"' `"FUNDACION UNIVERSITARIA SAN MARTIN"' `"FUNDACION UNIVERSITARIA SANITAS"' `"INSTITUTO DE CIENCIAS DE LA SALUD"' `"PONTIFICIA UNIVERSIDAD JAVERIANA"' `"UNIDAD CENTRAL DEL VALLE DEL CAUCA"' `"UNIVERSIDAD ANTONIO NARIÑO"' `"UNIVERSIDAD AUTONOMA DE BUCARAMANGA-UNAB-"' `"UNIVERSIDAD AUTONOMA DE MANIZALES"' `"UNIVERSIDAD COOPERATIVA DE COLOMBIA"' `"UNIVERSIDAD DE ANTIOQUIA"' `"UNIVERSIDAD DE BOYACA"' `"UNIVERSIDAD DE CALDAS"' `"UNIVERSIDAD DE CARTAGENA"' `"UNIVERSIDAD DE CIENCIAS"' `"UNIVERSIDAD DE LA SABANA"' `"UNIVERSIDAD DE LOS ANDES"' `"UNIVERSIDAD DE MANIZALES"' `"UNIVERSIDAD DE NARIÑO"' `"UNIVERSIDAD DE PAMPLONA"' `"UNIVERSIDAD DE SANTANDER"' `"UNIVERSIDAD DE SUCRE"' `"UNIVERSIDAD DEL CAUCA"' `"UNIVERSIDAD DEL MAGDALENA"' `"UNIVERSIDAD DEL NORTE"' `"UNIVERSIDAD DEL QUINDIO"' `"UNIVERSIDAD DEL SINÚ ELIAS BECHARA ZAINUM - UNISINÚ-"' `"UNIVERSIDAD DEL TOLIMA"' `"UNIVERSIDAD DEL VALLE"' `"UNIVERSIDAD EL BOSQUE"' `"UNIVERSIDAD INDUSTRIAL DE SANTANDER"' `"UNIVERSIDAD LIBRE"' `"UNIVERSIDAD METROPOLITANA"' `"UNIVERSIDAD MILITAR-NUEVA GRANADA"' `"UNIVERSIDAD NACIONAL DE COLOMBIA"' `"UNIVERSIDAD PEDAGOGICA Y TECNOLOGICA DE COLOMBIA"' `"UNIVERSIDAD PONTIFICIA BOLIVARIANA"' `"UNIVERSIDAD SANTIAGO DE CALI"' `"UNIVERSIDAD SIMON BOLIVAR"' `"UNIVERSIDAD SURCOLOMBIANA"' `"UNIVERSIDAD TECNOLOGICA DE PEREIRA"'
+
+{com}.     
+.         foreach lev of local levels {c -(}      
+{txt}  2{com}.         di      "** med_Institucion==`lev' **"       
+{txt}  3{com}.         sum     ecaes_med_spublica if med_Institucion == "`lev'"
+{txt}  4{com}.         drop if med_Institucion == "`lev'" & r(N)<2      
+{txt}  5{com}.         {c )-}
+** med_Institucion==COLEGIO MAYOR DE NUESTRA DEL ROSARIO **
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}          0
+{txt}(2 observations deleted)
+** med_Institucion==COLEGIO MAYOR DE NUESTRA SEÑORA DEL ROSARIO **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         95    10.83053    .9117523        7.6       12.3
+{txt}(0 observations deleted)
+** med_Institucion==COLEGIO MAYOR DE NUESTRA SEÑORADELROSARIO **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}          0
+{txt}(1 observation deleted)
+** med_Institucion==CORPORACION UNIVERSITARIA DEL SINU-CUS- **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}          0
+{txt}(2 observations deleted)
+** med_Institucion==CORPORACION UNIVERSITARIA RAFAEL NUÑEZ **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         99    9.920202    .8333581        7.8       11.8
+{txt}(0 observations deleted)
+** med_Institucion==CORPORACION UNIVERSITARIA REMINGTON **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         46    10.36957    .7366198          9       11.7
+{txt}(0 observations deleted)
+** med_Institucion==FUNDACION UNIVERSITARIA DE CIENCIAS DE LA SALUD **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         72    10.38611    .7383471        7.9       11.8
+{txt}(0 observations deleted)
+** med_Institucion==FUNDACION UNIVERSITARIA JUAN N. CORPAS **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        167    10.00539    .8510983        7.6         12
+{txt}(0 observations deleted)
+** med_Institucion==FUNDACION UNIVERSITARIA SAN MARTIN **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        454    10.15595    .9071447        7.3         13
+{txt}(0 observations deleted)
+** med_Institucion==FUNDACION UNIVERSITARIA SANITAS **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        105    10.63905    .9979301        7.7       12.6
+{txt}(0 observations deleted)
+** med_Institucion==INSTITUTO DE CIENCIAS DE LA SALUD **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         92    10.71196    .8573973          9         13
+{txt}(0 observations deleted)
+** med_Institucion==PONTIFICIA UNIVERSIDAD JAVERIANA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         69    10.92899    .7186796        9.3       12.7
+{txt}(0 observations deleted)
+** med_Institucion==UNIDAD CENTRAL DEL VALLE DEL CAUCA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         78    10.30897    .7867715        8.6       12.2
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD ANTONIO NARIÑO **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         72    10.01389    .7899555        7.9       12.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD AUTONOMA DE BUCARAMANGA-UNAB- **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         15    10.46667    .9060642        8.8       11.7
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD AUTONOMA DE MANIZALES **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}          1         8.8           .        8.8        8.8
+{txt}(1 observation deleted)
+** med_Institucion==UNIVERSIDAD COOPERATIVA DE COLOMBIA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        230    9.933043    .8946441          7         12
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE ANTIOQUIA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        257    11.22646    .7739915        8.6       13.4
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE BOYACA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}          5        10.5     .969536        9.1       11.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE CALDAS **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         47    10.99787    .8398989        8.8       12.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE CARTAGENA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         69    10.56812    .7395334        8.8         12
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE CIENCIAS **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         42     10.1381    .9543105        7.8       12.3
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE LA SABANA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         82    11.01707    .6365037        9.6       12.7
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE LOS ANDES **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        124     11.0871    .8138005          9         13
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE MANIZALES **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         47    10.09149    .7427416        8.7       11.5
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE NARIÑO **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         20      11.225    .6820056       10.1       12.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE PAMPLONA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         33     10.5303     .790761          9       12.3
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE SANTANDER **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         20       10.38    .7763613          9       11.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DE SUCRE **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         25      10.648     .944334          8       12.2
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL CAUCA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         81    10.29753    .9755736        8.2       12.3
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL MAGDALENA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         58    10.32241    .7788978        8.4         12
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL NORTE **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        117    10.66154    .7454282        8.7       12.4
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL QUINDIO **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         44    11.05227    .7431825        9.8       13.4
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL SINÚ ELIAS BECHARA ZAINUM - UNISINÚ- **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        149     9.81745    .8868965        7.6         12
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL TOLIMA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         21     10.8619    .6248809        9.9       12.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD DEL VALLE **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         82    11.27439    .8479184        9.6       13.4
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD EL BOSQUE **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         71        10.5    .7841283        8.2       12.2
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD INDUSTRIAL DE SANTANDER **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         42    11.36667    .7514755       10.1         15
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD LIBRE **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        248    10.06573    .9111071          7       12.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD METROPOLITANA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        235    9.359574    .9308712        6.7       11.7
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD MILITAR-NUEVA GRANADA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         73    10.79589    .7818138        8.6       12.4
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD NACIONAL DE COLOMBIA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        155    11.20516    .8160559        9.1       13.4
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD PEDAGOGICA Y TECNOLOGICA DE COLOMBIA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         19    10.84737    .6947169        8.9       11.9
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD PONTIFICIA BOLIVARIANA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         94    11.11702     .803037        9.3       12.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD SANTIAGO DE CALI **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        142    10.29225    .8779468        8.1         12
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD SIMON BOLIVAR **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         51     9.82549    .8854023        7.3       11.6
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD SURCOLOMBIANA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         47    10.79787    .8354872        8.2       12.5
+{txt}(0 observations deleted)
+** med_Institucion==UNIVERSIDAD TECNOLOGICA DE PEREIRA **
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         93    10.95699    .8702071        8.5       12.8
+{txt}(0 observations deleted)
+
+{com}.         
+.         * Drop outlier (very small ci)
+.         drop if med_Institucion == "UNIVERSIDAD DE BOYACA"
+{txt}(5 observations deleted)
+
+{com}.         
+.     * Outcome matrix
+.         mat des=J(44,18,.)
+{txt}
+{com}.     
+.     local col=1
+{txt}
+{com}.         levelsof med_Institucion, local(levels)
+{res}{txt}`"COLEGIO MAYOR DE NUESTRA SEÑORA DEL ROSARIO"' `"CORPORACION UNIVERSITARIA RAFAEL NUÑEZ"' `"CORPORACION UNIVERSITARIA REMINGTON"' `"FUNDACION UNIVERSITARIA DE CIENCIAS DE LA SALUD"' `"FUNDACION UNIVERSITARIA JUAN N. CORPAS"' `"FUNDACION UNIVERSITARIA SAN MARTIN"' `"FUNDACION UNIVERSITARIA SANITAS"' `"INSTITUTO DE CIENCIAS DE LA SALUD"' `"PONTIFICIA UNIVERSIDAD JAVERIANA"' `"UNIDAD CENTRAL DEL VALLE DEL CAUCA"' `"UNIVERSIDAD ANTONIO NARIÑO"' `"UNIVERSIDAD AUTONOMA DE BUCARAMANGA-UNAB-"' `"UNIVERSIDAD COOPERATIVA DE COLOMBIA"' `"UNIVERSIDAD DE ANTIOQUIA"' `"UNIVERSIDAD DE CALDAS"' `"UNIVERSIDAD DE CARTAGENA"' `"UNIVERSIDAD DE CIENCIAS"' `"UNIVERSIDAD DE LA SABANA"' `"UNIVERSIDAD DE LOS ANDES"' `"UNIVERSIDAD DE MANIZALES"' `"UNIVERSIDAD DE NARIÑO"' `"UNIVERSIDAD DE PAMPLONA"' `"UNIVERSIDAD DE SANTANDER"' `"UNIVERSIDAD DE SUCRE"' `"UNIVERSIDAD DEL CAUCA"' `"UNIVERSIDAD DEL MAGDALENA"' `"UNIVERSIDAD DEL NORTE"' `"UNIVERSIDAD DEL QUINDIO"' `"UNIVERSIDAD DEL SINÚ ELIAS BECHARA ZAINUM - UNISINÚ-"' `"UNIVERSIDAD DEL TOLIMA"' `"UNIVERSIDAD DEL VALLE"' `"UNIVERSIDAD EL BOSQUE"' `"UNIVERSIDAD INDUSTRIAL DE SANTANDER"' `"UNIVERSIDAD LIBRE"' `"UNIVERSIDAD METROPOLITANA"' `"UNIVERSIDAD MILITAR-NUEVA GRANADA"' `"UNIVERSIDAD NACIONAL DE COLOMBIA"' `"UNIVERSIDAD PEDAGOGICA Y TECNOLOGICA DE COLOMBIA"' `"UNIVERSIDAD PONTIFICIA BOLIVARIANA"' `"UNIVERSIDAD SANTIAGO DE CALI"' `"UNIVERSIDAD SIMON BOLIVAR"' `"UNIVERSIDAD SURCOLOMBIANA"' `"UNIVERSIDAD TECNOLOGICA DE PEREIRA"'
+
+{com}.            
+.         foreach var in $puntaje {c -(}       
+{txt}  2{com}.         
+.         local row=1
+{txt}  3{com}.         foreach lev of local levels {c -(}
+{txt}  4{com}.         
+.             sum `var' if med_Institucion=="`lev'"
+{txt}  5{com}.             mat des[`row',`col']=r(mean)
+{txt}  6{com}.             mat des[`row',`col'+1]=r(sd)
+{txt}  7{com}.             
+.             local row=`row'+1   
+{txt}  8{com}.             
+.         {c )-}       
+{txt}  9{com}.         
+.         local col=`col'+2
+{txt} 10{com}.     
+.         {c )-}
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         98     11.0551    .7176885        9.5       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        100      10.155    .8908485        7.7       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         47     10.3766    .6242257          9       11.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         72    10.68194    .8338484        8.6       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        167    10.22036    .8737496        7.7       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        460    10.33739    .9615674          0       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        105    10.63143    .8397933        8.5       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         97    11.12784    .9503006        7.9       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        121    11.33719    .8488357        7.1       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         78    10.59615    .8921654        8.4       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         72        10.3    .7539567        8.3         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         19    11.15263    .9209708       10.2       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        234    9.967949    .9427146        7.4       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        268    11.30597    .8637746        8.2       14.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         50      11.244    .8951479        8.8       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         71    11.02394    .7867591        8.5       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         44    10.23864    .7904123          8       11.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         86    10.88023    .8201606        8.5       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        139    11.37266    .7314672        9.6       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         48     10.6125    .7286318        9.1         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         20       11.53    .9926573       10.2       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         34    10.65588    .8030967        9.3       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         20       10.65    .9789898        7.8       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         26    10.69615    .8660165        8.3       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         83    10.39398    .8624058        8.5       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         59    10.48814    .9397514        7.9       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        122    10.96311    .9244342        7.9       14.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         44    11.00909    .6907422        9.1       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        149    10.13221    .8845726        7.9       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         21     11.0619    .6499817        9.5       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         86    11.47558     .710416        9.5       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         75      10.656    .8616828          8       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         42    11.25952    .6469665        9.7       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        255    10.49333    .9474347        7.3       13.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        242    9.705372    .9974719        6.6       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         76    10.96053    .6328937        9.6       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        158    11.34557    .8343421        7.8       13.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         19    11.18421    .8434474        9.3       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         94    11.18085    .7353262        9.7       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}        142    10.20634    .8575253        6.8       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         51    10.04902    .8472007        8.2       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         51     11.0451    .9181097        8.7       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}         94    11.09681    .9685875        7.3       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         98    12.57959    1.215108        9.5         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         99    9.846465    .6953656        8.4       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         47    10.12553    .8522268        8.7       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         72     11.1375    1.214286        9.1       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        167    10.28503    .9512597        8.8       14.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        459    10.37359    1.171464        7.2         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        105    10.99333    1.411714        8.8         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         97    13.02165    1.592314        9.5         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        121    13.17058    1.267481       10.2         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         78    10.46026    1.026954        8.5       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         72    10.14444    .9722761        8.4       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         19    11.89474    1.557945        9.9         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        234    9.903846     .923853          8         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        268    11.78619    1.611846        8.4         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         50      11.026     2.11745          0         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         71    11.04366    1.333388        8.6         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         44    10.32727    1.088495        8.7       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         85    12.33176    1.103804       10.3         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        139    13.25396    1.208381       10.5         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         48    10.62917    .9997783        9.1       14.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         20       11.24    1.040445        9.7       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         34    10.27059    .7597964        9.1       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         20       10.35    1.021093        9.2       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         26    10.48846    1.122614        8.4       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         83    10.38072    1.231939        8.6         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         59    10.27627    .9059837        8.5       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        122    12.04672    1.286946          9       14.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         44      11.625    1.491234        9.1         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        149    10.34966    1.033991        8.4       14.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         21     11.0619    1.088336        9.4       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         86    12.61047    1.465046        9.2         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         75    11.49333    1.249252        8.3         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         42       12.35    1.539599        9.6         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        255    10.75569     1.37278        8.6         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        242    9.692562    .7486824        7.4       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         76    11.48566    1.236589        9.1         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        158    12.26899    1.648505        8.8         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         19    11.01579    1.507118        8.5       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         94    12.33404    1.588978        8.9         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}        142    10.27676    1.016646        7.3       14.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         51    9.978431    .7217517        8.8       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         51     10.8451     1.20554          9       13.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~h {c |}{res}         94     11.3734    1.413086        9.4       14.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         94    11.06064    1.002815          9       14.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         97    9.873196    .7998067        7.2       11.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         46    10.05217    .6524276        8.4       11.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         72    10.38056    .7499557        8.9         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        167    10.05988      .82309        7.6       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        454    10.18106    .8391327        7.3         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        105    10.50381    .8657949        7.9       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         97    11.33196    1.113885        8.8       14.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        118    11.46017    1.091078        9.3       15.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         78    10.43333    .7996211        8.9       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         72      10.075    .7574512        8.7       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         16     10.9375     .799062        9.8       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        232    9.846121    .8778578          8       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        265     11.6566    1.105891        8.9         16
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         47    10.85106    1.088452        8.4       14.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         70       10.98    .9578962        8.8       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         42    10.10238     .731683        8.4       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         83    10.71566    .7921077          8       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        129    11.83333    1.140815        9.6       15.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         47     10.2766    .8116577        8.4         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         20      11.265     .764526        9.8       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         34    10.78529    .9309924        8.4       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         20      10.355    .5906954        9.5       11.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         26    10.41538    1.057428        8.8       13.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         81    10.22469    1.008282        8.3       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         59    10.74915    .8369429        8.7         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        121    10.73636    .8764512        8.7       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         44    11.22727    .9339498        9.2       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        149    9.840268     .834794        7.4       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         21    10.94762    .8857872        9.2       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         83     11.6241    1.062623        9.4       15.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         74    10.52973    .9076131        8.7       13.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         42    11.52619    .9540822        9.7       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        250     10.3936    .8974524        8.3       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        239    9.664854    .8461598        7.4       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         73    10.95342    1.143348        9.2       14.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        157    11.73822     1.27945          8       15.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         19    10.73684     .790366        8.7       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         94    11.01277    1.041632        8.9       14.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}        141    10.01418    .8668153        8.3       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         51    9.923529    .7677469        8.6       11.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         51    11.09216    .8776886        9.3       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}         94    10.97872    .9720693        8.9       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         92    10.92391    .8455923        8.4       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         68    9.908824    .9161463        8.3       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         46     10.2587    .8668144        8.6       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         70    10.46143    .7526365        8.9       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        166    10.03976    .8635992        7.5       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        451    10.11619    .9019631        6.8       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        101    10.48713    .8481348        8.8       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         95    10.92737    .9866602        8.4       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        109    11.27064    .7582024        9.6       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         78    10.47692    .7990129        8.9       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         72    10.10556    .7486869        7.9       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}          7    10.54286    1.046991        8.8       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        221    9.855204    .9171262        7.3       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        257    11.11946    .9431553        7.9       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         47    11.00638    .9860779        7.9       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         68    10.93824    .8184495        7.9       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         40     10.3025     1.12785          8         14
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         82    10.90976    .7960721        9.5       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        124    11.34516    .9305436        8.1       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         46    10.34565    .8387044          8       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         20       10.93    .6399836       10.2       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         33    10.42121    .7118451        8.3       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         20      10.875     .998881          9       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         26    10.37692    1.014419        7.5       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         79    10.31013    1.049981        7.7       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         43    10.33023    1.069164        7.7       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         79    10.70506    .8228934        7.8       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         43    10.93953    .7828944        8.3       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        145    9.817931    .9432265        7.4       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         21     10.9619    .9505136        9.5       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         82    11.52073    .9627299        9.3       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         70       10.44    1.021423        7.8       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         42    11.36429    .7817496        9.9       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        245    10.20367    .9816069        7.1       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        225    9.505778    .8858574        7.5       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         72    11.01111    .9096595        9.1       13.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        155    11.23613    .8130338        8.1       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         18    10.91111    .8546681        9.6       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         94    11.06277    .7860318        9.1         14
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}        137    10.12993    .8363405          8       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         51    9.870588    .8918058        8.1       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         50      10.866    .7277615        8.9       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~l {c |}{res}         90    10.77111    1.003728        7.5       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         94     10.6383    1.012514        7.3       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         95    10.00842    1.112756        6.8       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         46     9.98913    1.072117        7.9       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         71    10.24225    .8119926        8.5       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        166    10.01265    1.014272        6.8       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        454    10.07907    .9983775        6.8         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        105     10.5619     .956293        8.2       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         97    10.66495    1.001566        8.3       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        118    10.74915    1.055207          8         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         78    9.994872    1.016858        7.4       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         71    10.07042    .9218606        8.3         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         16    10.96875    .7077841        9.5         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        228    10.02193    .9381544        6.8       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        265    10.63811    1.077042        7.2         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         46    10.88261    1.339868        6.8         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         70       10.47    1.190098        7.3         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         41     10.1439    1.029089        7.9       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         82    11.01585    .9274244        8.5       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        129    11.00853    1.169871        7.9         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         47    10.18085    .9289167        8.6       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         20       10.71    .9988941        9.2       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         33    10.16667    .9898443        7.9       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         20       10.62     .854462          9       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         26    10.18077    1.083704        7.9       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         80       10.16     1.19848        7.9       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         59    10.35932    1.058808        7.9       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        121    10.56612    1.077308          8       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         44    10.49091    1.134208          7       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        149    9.848322    .9741666        7.3       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         21    10.49048    1.262895        6.8       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         83    10.62048    .9441423        8.2       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         74    10.13108     .936172        7.5       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         42    10.78095    1.270344        8.3         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        250      10.038    .9346713        7.5       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        238    9.629832    .9296753        6.8       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         73    10.81507    1.000371        7.7         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        147    10.66259    1.144565        6.8       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         19    10.70526    .9009092        9.3       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         93    10.81398    1.083933          7       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}        140    10.07786    1.026769        6.9       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         51     9.92549    1.047061          8       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         51    9.982353    1.197615        7.8       12.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ting {c |}{res}         92    10.41304    1.022303        8.1       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         73     10.8589    .7997978        8.3       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         68    9.216176    .8800628        7.4         11
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         46     10.1087    .7509479        7.9       11.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         68        9.95    .6654591        8.1       11.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        166    9.644578    .7970024        7.7       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        419     9.62864    .8296485        7.4       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         94    9.860638    .8145476        8.1       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         89    10.97191    .7311244        9.3       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         85    10.76353    .7660733        8.9       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         78    10.22821    .7676744        7.9       11.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         72    9.766667    .8339622        7.5       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}          7    10.02857    .8035635          9       11.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        174    9.453448     .906728          7       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        255    10.76784    .9029181        7.7       13.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         45    10.34222    .9628294        8.4         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         58    10.13276    .8948955        7.7         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         40      9.5475    .7938829        7.9       11.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         26    10.88462    .9523412        9.2         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         93    10.65054    .8410169        8.8       14.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         43    10.14884    .8503143        8.1         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         20      10.545    .5083254        9.5       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         25       9.956    .6338244        9.1       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         20       9.705    .5155222        8.9       10.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         25      10.228    1.020016        8.8       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         79     10.0519    .8521257        8.8       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         35    9.762857    .7900431        7.9       11.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         49    10.00204    .6808358        8.4       11.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         43     10.7186    .7436256        9.3       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        108    9.422222    .7813639        7.8       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         19    10.41579    .8036467        8.9       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         68    11.25588    .8899744        9.2         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         70    10.14429    .7463216        8.4       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         41    10.75854     .844978        9.1       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        238    9.667647    .8796357        7.2       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        169    8.876331    .8764285        6.8       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         64    10.33906    .8861576        8.6       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        148     10.7777    .8916713        8.4       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         16    10.03125    .7829166        7.9         11
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         92    10.87717    .7908965          9       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}        131    9.928244    .8540649        7.7       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         50       9.146    .7186183        7.7         11
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         33    10.43333    .7939878        8.1       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~o {c |}{res}         71    10.66056    .6976448          9       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         95    10.83053    .9117523        7.6       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         99    9.920202    .8333581        7.8       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         46    10.36957    .7366198          9       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         72    10.38611    .7383471        7.9       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        167    10.00539    .8510983        7.6         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        454    10.15595    .9071447        7.3         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        105    10.63905    .9979301        7.7       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         92    10.71196    .8573973          9         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         69    10.92899    .7186796        9.3       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         78    10.30897    .7867715        8.6       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         72    10.01389    .7899555        7.9       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         15    10.46667    .9060642        8.8       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        230    9.933043    .8946441          7         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        257    11.22646    .7739915        8.6       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         47    10.99787    .8398989        8.8       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         69    10.56812    .7395334        8.8         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         42     10.1381    .9543105        7.8       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         82    11.01707    .6365037        9.6       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        124     11.0871    .8138005          9         13
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         47    10.09149    .7427416        8.7       11.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         20      11.225    .6820056       10.1       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         33     10.5303     .790761          9       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         20       10.38    .7763613          9       11.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         25      10.648     .944334          8       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         81    10.29753    .9755736        8.2       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         58    10.32241    .7788978        8.4         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        117    10.66154    .7454282        8.7       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         44    11.05227    .7431825        9.8       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        149     9.81745    .8868965        7.6         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         21     10.8619    .6248809        9.9       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         82    11.27439    .8479184        9.6       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         71        10.5    .7841283        8.2       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         42    11.36667    .7514755       10.1         15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        248    10.06573    .9111071          7       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        235    9.359574    .9308712        6.7       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         73    10.79589    .7818138        8.6       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        155    11.20516    .8160559        9.1       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         19    10.84737    .6947169        8.9       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         94    11.11702     .803037        9.3       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}        142    10.29225    .8779468        8.1         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         51     9.82549    .8854023        7.3       11.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         47    10.79787    .8354872        8.2       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}         93    10.95699    .8702071        8.5       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         94    10.86277    .9033967        8.8       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        100       9.726    .9568066          7       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         45    10.45556    .8441121        8.4       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         71    10.48169    .5979273        9.3       11.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        167    10.16347    .9326319        7.5       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        454    10.18414    1.059787        6.5       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        105     10.4381    1.072325        5.7       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         92    11.02826     .843635        7.3       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        104    11.11058    .8808555        7.7       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         78    10.52692    .8653013        8.8       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         72    10.14583    .8029764        7.2       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         16       10.45    1.050714        9.1       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        231    9.878355    .9718914        7.2       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        256    11.21875    .8542168        8.8       13.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         48    10.72083    1.100862        7.5       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         68    10.44412    .8834097        8.2       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         42    9.983333    .6735116        8.4       11.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         83    10.71325    .6990884        9.1       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        123    11.13902    .8597211        9.1       13.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         46        10.3    .9486833        8.6       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         20      10.765    .8791593          8         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         33    10.51818    .8963309        8.6       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         20      10.505     .915639        8.4       12.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         25      10.456     .983226        8.4       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         82    10.43659    .9322099        7.9       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         58    10.27759    1.024788        7.2       12.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        117    10.40085    .8450154        8.4       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         44    10.94318      .77831        9.5       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        148    9.808108    .8634304        7.5       11.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         21     11.1381    .8139264         10       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         82    11.17561    .9083374        8.8       13.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         72    10.37083    .8016598        7.9         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         42    11.28571    .8426357        9.2       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        249    10.17871    .9778539        7.3       13.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        230    9.383478     .986895        6.2         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         74    10.65811    .8850365        8.8       12.7
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        153    11.14902    .8981793        7.6       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         19    10.60526    1.114288        7.3       12.8
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         91    11.17253    .7639177        9.7       13.1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}        142    10.14225    .9227867          8       12.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         51    9.901961    .8147368        7.8       11.4
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         47    10.48723    .7993522          8         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}         93     10.5172    .9565136        7.2       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         95    10.84053    .7817157       8.25       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        100       9.823    .7686213        7.6      11.45
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         46    10.40435    .6282981          9      12.05
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         72    10.43125    .4842184       9.25       11.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        167    10.08443    .7998852       7.65       11.9
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        457    10.17319    .8670176        7.5       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        105    10.53857    .9182513        6.9      12.45
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         92    10.87011    .7084676       9.25      12.45
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        104    11.05625    .7779013        7.7       13.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         78    10.41795     .671303        8.8      11.75
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         72    10.07986    .6798229       7.55       11.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         16    10.44375    .8342412        9.2      12.55
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        232     9.90819    .8063451       7.65      11.65
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        258    11.22016    .6731949        9.3      13.05
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         48    10.85521    .8470374        8.5      12.85
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         69    10.50072    .6843574       8.65      11.75
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         42    10.06071    .6935712        8.1       11.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         85    10.86294    .5578526       9.65       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        127    11.10433    .7199268        9.2      12.85
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         47    10.17979    .7451772        8.8      12.45
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         20      10.995    .6708007       9.05       12.2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         33    10.52424    .7383598        8.8      12.55
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         20     10.4425    .7379336       8.85      11.65
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         25      10.552    .8919175        8.2      12.35
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         82    10.36524     .806788        8.5      12.05
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         58        10.3    .7340706        7.8      12.15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        118      10.525    .6672994       8.65      12.05
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         44    10.99773    .6260763         10      12.35
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        149    9.809396    .7518304       7.95      11.65
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         21          11    .6262986      10.05       12.5
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         83    11.22831    .7292326        9.3       13.3
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         72    10.43194    .6981014        8.2      11.95
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         42    11.32619    .6849638         10      14.05
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        250      10.134     .848708       7.75       12.6
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        236    9.374788    .8235173        7.1      11.85
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         76    10.70855    .6312626       8.95      12.15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        155    11.16645    .7633681       8.45      13.05
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         19    10.72632    .8267016        8.1         12
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         94    11.16117    .6223505        9.8      12.85
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}        142    10.21725    .7692459       8.25      11.95
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         51    9.863725    .7363476        8.3      11.15
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         47    10.64255    .7593604        8.1      11.85
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}prom_health {c |}{res}         93     10.7371    .7456359        8.8      12.05
+{txt}
+{com}.         
+.         * Column names
+.         mat colnames des =  med_reading med_reading_sd med_english med_english_sd                   ///
+>                         med_quantitative med_quantitative_sd med_social med_social_sd           ///
+>                         med_writing med_writing_sd med_diagnostico med_diagnostico_sd           ///
+>                         med_spublica med_spublica_sd med_administracion med_administracion_sd   ///
+>                         med_prom_health med_prom_health_sd
+{txt}
+{com}.         
+.         mat list des
+{res}
+{txt}des[44,18]
+      med_reading  med_readin~d   med_english  med_englis~d  med_quanti~e  med_quanti~d    med_social  med_social~d
+ r1 {res}    11.055102     .71768851     12.579592     1.2151076     11.060638     1.0028152     10.923913     .84559226
+{txt} r2 {res}       10.155     .89084853     9.8464646     .69536558     9.8731959     .79980668     9.9088235     .91614626
+{txt} r3 {res}    10.376596      .6242257     10.125532     .85222677     10.052174     .65242765     10.258696     .86681437
+{txt} r4 {res}    10.681944     .83384843       11.1375     1.2142856     10.380556     .74995566     10.461429      .7526365
+{txt} r5 {res}    10.220359     .87374963      10.28503     .95125971      10.05988     .82308997     10.039759      .8635992
+{txt} r6 {res}    10.337391     .96156743     10.373595     1.1714642     10.181057      .8391327     10.116186     .90196309
+{txt} r7 {res}    10.631429     .83979328     10.993333     1.4117138      10.50381     .86579486     10.487129     .84813482
+{txt} r8 {res}    11.127835     .95030064     13.021649      1.592314     11.331959     1.1138846     10.927368     .98666018
+{txt} r9 {res}     11.33719      .8488357     13.170579     1.2674806     11.460169      1.091078     11.270642      .7582024
+{txt}r10 {res}    10.596154     .89216537     10.460256     1.0269536     10.433333     .79962112     10.476923     .79901288
+{txt}r11 {res}         10.3      .7539567     10.144444      .9722761        10.075     .75745125     10.105556      .7486869
+{txt}r12 {res}    11.152632     .92097076     11.894737     1.5579451       10.9375     .79906195     10.542857     1.0469912
+{txt}r13 {res}    9.9679487     .94271459     9.9038462     .92385305     9.8461207     .87785775     9.8552036     .91712623
+{txt}r14 {res}     11.30597     .86377459     11.786194     1.6118463     11.656604     1.1058915     11.119455     .94315528
+{txt}r15 {res}       11.244     .89514792        11.026     2.1174503     10.851064     1.0884517     11.006383     .98607793
+{txt}r16 {res}    11.023944     .78675914     11.043662      1.333388         10.98     .95789625     10.938235     .81844946
+{txt}r17 {res}    10.238636     .79041229     10.327273     1.0884945     10.102381     .73168302       10.3025     1.1278497
+{txt}r18 {res}    10.880233     .82016064     12.331765     1.1038042     10.715663     .79210771     10.909756     .79607211
+{txt}r19 {res}    11.372662     .73146723     13.253957     1.2083805     11.833333     1.1408148     11.345161     .93054358
+{txt}r20 {res}      10.6125     .72863177     10.629167     .99977834     10.276596     .81165766     10.345652     .83870443
+{txt}r21 {res}        11.53     .99265725         11.24     1.0404452        11.265       .764526         10.93     .63998355
+{txt}r22 {res}    10.655882     .80309672     10.270588     .75979639     10.785294     .93099242     10.421212     .71184513
+{txt}r23 {res}        10.65     .97898981         10.35     1.0210933        10.355      .5906954        10.875     .99888095
+{txt}r24 {res}    10.696154     .86601652     10.488462     1.1226137     10.415385     1.0574279     10.376923     1.0144191
+{txt}r25 {res}    10.393976      .8624058     10.380723     1.2319386     10.224691     1.0082821     10.310127     1.0499811
+{txt}r26 {res}    10.488136     .93975139     10.276271     .90598374     10.749153     .83694289     10.330233     1.0691641
+{txt}r27 {res}    10.963115     .92443423     12.046721     1.2869455     10.736364     .87645118     10.705063     .82289338
+{txt}r28 {res}    11.009091     .69074216        11.625     1.4912341     11.227273     .93394976     10.939535     .78289437
+{txt}r29 {res}    10.132215     .88457261     10.349664     1.0339915     9.8402685     .83479399      9.817931     .94322651
+{txt}r30 {res}    11.061905     .64998168     11.061905     1.0883364     10.947619     .88578725     10.961905     .95051365
+{txt}r31 {res}    11.475581     .71041596     12.610465      1.465046     11.624096     1.0626233     11.520732     .96272989
+{txt}r32 {res}       10.656     .86168283     11.493333      1.249252      10.52973     .90761312         10.44     1.0214227
+{txt}r33 {res}    11.259524     .64696648         12.35     1.5395993      11.52619     .95408225     11.364286     .78174958
+{txt}r34 {res}    10.493333     .94743472     10.755686     1.3727799       10.3936     .89745235     10.203673     .98160686
+{txt}r35 {res}    9.7053719     .99747194      9.692562     .74868242     9.6648536     .84615981     9.5057778     .88585736
+{txt}r36 {res}    10.960526     .63289366     11.485658     1.2365892     10.953425     1.1433482     11.011111     .90965952
+{txt}r37 {res}     11.34557      .8343421     12.268987     1.6485045     11.738217     1.2794498     11.236129     .81303375
+{txt}r38 {res}    11.184211      .8434474     11.015789     1.5071176     10.736842     .79036597     10.911111     .85466807
+{txt}r39 {res}    11.180851     .73532622     12.334043     1.5889777     11.012766     1.0416317     11.062766     .78603183
+{txt}r40 {res}    10.206338     .85752529     10.276761     1.0166462     10.014184     .86681532     10.129927      .8363405
+{txt}r41 {res}     10.04902      .8472007     9.9784314     .72175168     9.9235294     .76774689     9.8705882     .89180583
+{txt}r42 {res}    11.045098     .91810974     10.845098     1.2055395     11.092157     .87768859        10.866     .72776145
+{txt}r43 {res}    11.096809      .9685875     11.373404      1.413086     10.978723     .97206933     10.771111     1.0037284
+{txt}r44 {res}            .             .             .             .             .             .             .             .
+
+{txt}      med_writing  med_writin~d  med_diagno~o  med_diagno~d  med_spublica  med_spubli~d  med_admini~n  med_admini~d
+ r1 {res}    10.638298     1.0125138     10.858904     .79979782     10.830526     .91175231     10.862766      .9033967
+{txt} r2 {res}    10.008421     1.1127561     9.2161765      .8800628      9.920202     .83335807         9.726     .95680656
+{txt} r3 {res}    9.9891304      1.072117     10.108696     .75094787     10.369565     .73661978     10.455556     .84411211
+{txt} r4 {res}    10.242254     .81199261          9.95     .66545911     10.386111     .73834714      10.48169     .59792734
+{txt} r5 {res}    10.012651     1.0142722     9.6445783     .79700242     10.005389     .85109833     10.163473     .93263193
+{txt} r6 {res}    10.079075      .9983775     9.6286396     .82964846     10.155947     .90714474     10.184141     1.0597865
+{txt} r7 {res}    10.561905     .95629302     9.8606383     .81454758     10.639048     .99793009     10.438095      1.072325
+{txt} r8 {res}    10.664948     1.0015656      10.97191     .73112441     10.711957     .85739734     11.028261       .843635
+{txt} r9 {res}    10.749153     1.0552065     10.763529     .76607333     10.928986     .71867964     11.110577     .88085553
+{txt}r10 {res}    9.9948718     1.0168576     10.228205     .76767442     10.308974     .78677146     10.526923     .86530125
+{txt}r11 {res}    10.070423      .9218606     9.7666667      .8339622     10.013889     .78995553     10.145833     .80297642
+{txt}r12 {res}     10.96875      .7077841     10.028571     .80356349     10.466667     .90606423         10.45      1.050714
+{txt}r13 {res}     10.02193     .93815441     9.4534483       .906728     9.9330435     .89464411      9.878355     .97189142
+{txt}r14 {res}    10.638113     1.0770419     10.767843     .90291809     11.226459     .77399148      11.21875     .85421676
+{txt}r15 {res}    10.882609      1.339868     10.342222     .96282937     10.997872      .8398989     10.720833      1.100862
+{txt}r16 {res}        10.47      1.190098     10.132759     .89489545     10.568116     .73953339     10.444118     .88340967
+{txt}r17 {res}    10.143902     1.0290891        9.5475     .79388286     10.138095     .95431047     9.9833333     .67351161
+{txt}r18 {res}    11.015854     .92742435     10.884615     .95234124     11.017073     .63650374     10.713253     .69908845
+{txt}r19 {res}    11.008527     1.1698712     10.650538     .84101694     11.087097     .81380045     11.139024     .85972109
+{txt}r20 {res}    10.180851     .92891669     10.148837     .85031425     10.091489     .74274163          10.3      .9486833
+{txt}r21 {res}        10.71     .99889413        10.545     .50832542        11.225     .68200556        10.765     .87915929
+{txt}r22 {res}    10.166667     .98984426         9.956     .63382437     10.530303     .79076105     10.518182      .8963309
+{txt}r23 {res}        10.62     .85446197         9.705     .51552222         10.38     .77636128        10.505     .91563898
+{txt}r24 {res}    10.180769     1.0837045        10.228     1.0200163        10.648     .94433398        10.456     .98322598
+{txt}r25 {res}        10.16     1.1984801     10.051899     .85212566     10.297531     .97557359     10.436585     .93220993
+{txt}r26 {res}    10.359322     1.0588085     9.7628571     .79004308     10.322414     .77889781     10.277586     1.0247881
+{txt}r27 {res}    10.566116     1.0773079     10.002041     .68083582     10.661538     .74542815     10.400855     .84501538
+{txt}r28 {res}    10.490909     1.1342077     10.718605     .74362555     11.052273     .74318255     10.943182     .77830995
+{txt}r29 {res}    9.8483221     .97416659     9.4222222     .78136393     9.8174497     .88689647     9.8081081     .86343039
+{txt}r30 {res}    10.490476     1.2628954     10.415789     .80364666     10.861905     .62488094     11.138095      .8139264
+{txt}r31 {res}    10.620482     .94414228     11.255882      .8899744      11.27439     .84791844      11.17561     .90833737
+{txt}r32 {res}    10.131081     .93617199     10.144286     .74632155          10.5     .78412827     10.370833     .80165981
+{txt}r33 {res}    10.780952     1.2703443     10.758537     .84497799     11.366667     .75147551     11.285714     .84263565
+{txt}r34 {res}       10.038      .9346713     9.6676471     .87963572     10.065726     .91110706     10.178715     .97785395
+{txt}r35 {res}    9.6298319     .92967531     8.8763314     .87642851     9.3595745      .9308712     9.3834783     .98689495
+{txt}r36 {res}    10.815068     1.0003709     10.339063      .8861576      10.79589     .78181384     10.658108     .88503645
+{txt}r37 {res}    10.662585     1.1445649     10.777703     .89167128     11.205161     .81605589      11.14902     .89817927
+{txt}r38 {res}    10.705263     .90090922      10.03125     .78291656     10.847368     .69471691     10.605263     1.1142879
+{txt}r39 {res}    10.813978     1.0839332     10.877174     .79089645     11.117021     .80303702     11.172527     .76391767
+{txt}r40 {res}    10.077857     1.0267689     9.9282443     .85406492     10.292254     .87794683     10.142254     .92278671
+{txt}r41 {res}    9.9254902     1.0470612         9.146     .71861829     9.8254902     .88540231     9.9019608     .81473682
+{txt}r42 {res}    9.9823529     1.1976153     10.433333     .79398783     10.797872     .83548719     10.487234     .79935219
+{txt}r43 {res}    10.413043     1.0223027     10.660563     .69764479     10.956989      .8702071     10.517204     .95651356
+{txt}r44 {res}            .             .             .             .             .             .             .             .
+
+{txt}     med_prom_h~h  med_prom_h~d
+ r1 {res}    10.840526     .78171569
+{txt} r2 {res}        9.823     .76862133
+{txt} r3 {res}    10.404348     .62829809
+{txt} r4 {res}     10.43125     .48421835
+{txt} r5 {res}    10.084431     .79988525
+{txt} r6 {res}    10.173195     .86701764
+{txt} r7 {res}    10.538571      .9182513
+{txt} r8 {res}    10.870109     .70846764
+{txt} r9 {res}     11.05625     .77790135
+{txt}r10 {res}    10.417949     .67130295
+{txt}r11 {res}    10.079861     .67982291
+{txt}r12 {res}     10.44375     .83424123
+{txt}r13 {res}    9.9081897     .80634506
+{txt}r14 {res}    11.220155      .6731949
+{txt}r15 {res}    10.855208     .84703737
+{txt}r16 {res}    10.500725     .68435742
+{txt}r17 {res}    10.060714      .6935712
+{txt}r18 {res}    10.862941     .55785261
+{txt}r19 {res}    11.104331     .71992681
+{txt}r20 {res}    10.179787     .74517716
+{txt}r21 {res}       10.995     .67080073
+{txt}r22 {res}    10.524242     .73835981
+{txt}r23 {res}      10.4425     .73793355
+{txt}r24 {res}       10.552     .89191746
+{txt}r25 {res}    10.365244     .80678797
+{txt}r26 {res}         10.3     .73407056
+{txt}r27 {res}       10.525     .66729939
+{txt}r28 {res}    10.997727     .62607626
+{txt}r29 {res}     9.809396     .75183043
+{txt}r30 {res}           11     .62629864
+{txt}r31 {res}    11.228313     .72923257
+{txt}r32 {res}    10.431944     .69810135
+{txt}r33 {res}     11.32619     .68496384
+{txt}r34 {res}       10.134     .84870797
+{txt}r35 {res}    9.3747882     .82351734
+{txt}r36 {res}    10.708553     .63126264
+{txt}r37 {res}    11.166452     .76336813
+{txt}r38 {res}    10.726316      .8267016
+{txt}r39 {res}     11.16117     .62235048
+{txt}r40 {res}    10.217254     .76924587
+{txt}r41 {res}    9.8637254      .7363476
+{txt}r42 {res}    10.642553     .75936042
+{txt}r43 {res}    10.737097     .74563592
+{txt}r44 {res}            .             .
+{reset}
+{com}. 
+.         gen         institucion = ""
+{txt}(4,822 missing values generated)
+
+{com}.         levelsof    med_Institucion, local(levels)
+{res}{txt}`"COLEGIO MAYOR DE NUESTRA SEÑORA DEL ROSARIO"' `"CORPORACION UNIVERSITARIA RAFAEL NUÑEZ"' `"CORPORACION UNIVERSITARIA REMINGTON"' `"FUNDACION UNIVERSITARIA DE CIENCIAS DE LA SALUD"' `"FUNDACION UNIVERSITARIA JUAN N. CORPAS"' `"FUNDACION UNIVERSITARIA SAN MARTIN"' `"FUNDACION UNIVERSITARIA SANITAS"' `"INSTITUTO DE CIENCIAS DE LA SALUD"' `"PONTIFICIA UNIVERSIDAD JAVERIANA"' `"UNIDAD CENTRAL DEL VALLE DEL CAUCA"' `"UNIVERSIDAD ANTONIO NARIÑO"' `"UNIVERSIDAD AUTONOMA DE BUCARAMANGA-UNAB-"' `"UNIVERSIDAD COOPERATIVA DE COLOMBIA"' `"UNIVERSIDAD DE ANTIOQUIA"' `"UNIVERSIDAD DE CALDAS"' `"UNIVERSIDAD DE CARTAGENA"' `"UNIVERSIDAD DE CIENCIAS"' `"UNIVERSIDAD DE LA SABANA"' `"UNIVERSIDAD DE LOS ANDES"' `"UNIVERSIDAD DE MANIZALES"' `"UNIVERSIDAD DE NARIÑO"' `"UNIVERSIDAD DE PAMPLONA"' `"UNIVERSIDAD DE SANTANDER"' `"UNIVERSIDAD DE SUCRE"' `"UNIVERSIDAD DEL CAUCA"' `"UNIVERSIDAD DEL MAGDALENA"' `"UNIVERSIDAD DEL NORTE"' `"UNIVERSIDAD DEL QUINDIO"' `"UNIVERSIDAD DEL SINÚ ELIAS BECHARA ZAINUM - UNISINÚ-"' `"UNIVERSIDAD DEL TOLIMA"' `"UNIVERSIDAD DEL VALLE"' `"UNIVERSIDAD EL BOSQUE"' `"UNIVERSIDAD INDUSTRIAL DE SANTANDER"' `"UNIVERSIDAD LIBRE"' `"UNIVERSIDAD METROPOLITANA"' `"UNIVERSIDAD MILITAR-NUEVA GRANADA"' `"UNIVERSIDAD NACIONAL DE COLOMBIA"' `"UNIVERSIDAD PEDAGOGICA Y TECNOLOGICA DE COLOMBIA"' `"UNIVERSIDAD PONTIFICIA BOLIVARIANA"' `"UNIVERSIDAD SANTIAGO DE CALI"' `"UNIVERSIDAD SIMON BOLIVAR"' `"UNIVERSIDAD SURCOLOMBIANA"' `"UNIVERSIDAD TECNOLOGICA DE PEREIRA"'
+
+{com}.         local       l=1
+{txt}
+{com}.     
+.         foreach lev of local levels {c -(}
+{txt}  2{com}.         
+.         di `l'
+{txt}  3{com}.         replace institucion="`lev'" in `l'
+{txt}  4{com}.         local l=`l'+1
+{txt}  5{com}.         
+.         {c )-}
+1
+{txt}variable {bf}{res}institucion{sf}{txt} was {bf}{res}str1{sf}{txt} now {bf}{res}str44{sf}
+{txt}(1 real change made)
+2
+(1 real change made)
+3
+(1 real change made)
+4
+variable {bf}{res}institucion{sf}{txt} was {bf}{res}str44{sf}{txt} now {bf}{res}str47{sf}
+{txt}(1 real change made)
+5
+(1 real change made)
+6
+(1 real change made)
+7
+(1 real change made)
+8
+(1 real change made)
+9
+(1 real change made)
+10
+(1 real change made)
+11
+(1 real change made)
+12
+(1 real change made)
+13
+(1 real change made)
+14
+(1 real change made)
+15
+(1 real change made)
+16
+(1 real change made)
+17
+(1 real change made)
+18
+(1 real change made)
+19
+(1 real change made)
+20
+(1 real change made)
+21
+(1 real change made)
+22
+(1 real change made)
+23
+(1 real change made)
+24
+(1 real change made)
+25
+(1 real change made)
+26
+(1 real change made)
+27
+(1 real change made)
+28
+(1 real change made)
+29
+variable {bf}{res}institucion{sf}{txt} was {bf}{res}str47{sf}{txt} now {bf}{res}str54{sf}
+{txt}(1 real change made)
+30
+(1 real change made)
+31
+(1 real change made)
+32
+(1 real change made)
+33
+(1 real change made)
+34
+(1 real change made)
+35
+(1 real change made)
+36
+(1 real change made)
+37
+(1 real change made)
+38
+(1 real change made)
+39
+(1 real change made)
+40
+(1 real change made)
+41
+(1 real change made)
+42
+(1 real change made)
+43
+(1 real change made)
+
+{com}.         
+.         svmat   des, names(col)
+{txt}
+{com}.                 
+.         keep    institucion med_reading med_reading_sd med_english med_english_sd       ///
+>                 med_quantitative med_quantitative_sd med_social med_social_sd           ///
+>                         med_writing med_writing_sd med_diagnostico med_diagnostico_sd           ///
+>                         med_spublica med_spublica_sd med_administracion med_administracion_sd   ///
+>                         med_prom_health med_prom_health_sd
+{txt}
+{com}. 
+.         keep    in 1/44                         
+{txt}(4,778 observations deleted)
+
+{com}.         
+.         
+.         /* Graphs */
+.         
+.         set     dp period
+{txt}
+{com}.         
+.         global  outcomes    med_reading  med_english     med_quantitative  med_social           ///
+>                         med_writing  med_diagnostico med_spublica      med_administracion   ///
+>                         med_prom_health
+{txt}
+{com}.         
+.         foreach outcome in $outcomes {c -(}
+{txt}  2{com}. 
+.         gen ub_`outcome'=(`outcome')+(`outcome'_sd)
+{txt}  3{com}.         gen lb_`outcome'=(`outcome')-(`outcome'_sd)
+{txt}  4{com}. 
+.         {c )-}
+{txt}(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+(1 missing value generated)
+
+{com}. 
+.         sort    med_spublica
+{txt}
+{com}.         egen    ranking=fill(1/2)
+{txt}
+{com}.         sum     med_spublica, det
+
+                        {txt}med_spublica
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res} 9.359574       9.359574
+{txt} 5%    {res}  9.82549        9.81745
+{txt}10%    {res} 9.933043        9.82549       {txt}Obs         {res}         43
+{txt}25%    {res} 10.15595       9.920202       {txt}Sum of wgt. {res}         43
+
+{txt}50%    {res} 10.56812                      {txt}Mean          {res} 10.55808
+                        {txt}Largest       Std. dev.     {res} .4759033
+{txt}75%    {res} 10.95699         11.225
+{txt}90%    {res} 11.20516       11.22646       {txt}Variance      {res}  .226484
+{txt}95%    {res} 11.22646       11.27439       {txt}Skewness      {res}-.2660649
+{txt}99%    {res} 11.36667       11.36667       {txt}Kurtosis      {res} 2.370388
+{txt}
+{com}.         local   p=r(p50)
+{txt}
+{com}.         
+.     * Figure 1
+.         twoway (rcapsym lb_med_spublica ub_med_spublica ranking, sort lcolor(gray*1.2)                      ///
+>             mcolor(gray*1.2) msize(0.4) msymbol(square) lwidth(0.25))                                   ///
+>                    (scatter med_spublica ranking, sort mcolor(black*1.2) msize(1) msymbol(circle)), name(gr3)   ///
+>                         title("", size(medium) color(black)) subtitle("", size(2.8)) yline(`p', lpattern(dash))     ///
+>             ytitle("Disease prevention" , size(medsmall)) ylabel(#9, angle(horizontal) format(%12.1f)   ///
+>             labsize(vsmall) nogrid) xtitle("Universities", size(medsmall)) xlabel(none, labsize(3.5))   ///
+>             legend(on  rows(1) symy(1) symxsize(6) bm(small)  pos(6) size(3.2)                          ///
+>             order(1 "One SD. " 2 "Mean") region(lcolor(white))) graphregion(fcolor(white)               ///
+>             style(none) color(white)  margin(r=6 l=3 t=3 b=1)) plotregion(fcolor(white)                 ///
+>             margin(r=7))   note(" ", size(2.5))
+{res}{txt}
+{com}.         
+.         cap drop ranking
+{txt}
+{com}.         sort med_administracion
+{txt}
+{com}.         egen ranking=fill(1/2)
+{txt}
+{com}.         sum med_administracion, det
+
+                     {txt}med_administracion
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res} 9.383478       9.383478
+{txt} 5%    {res} 9.808108          9.726
+{txt}10%    {res}  9.90196       9.808108       {txt}Obs         {res}         43
+{txt}25%    {res} 10.18414       9.878355       {txt}Sum of wgt. {res}         43
+
+{txt}50%    {res} 10.48169                      {txt}Mean          {res} 10.51738
+                        {txt}Largest       Std. dev.     {res} .4495292
+{txt}75%    {res} 10.86277       11.17253
+{txt}90%    {res} 11.14902       11.17561       {txt}Variance      {res} .2020765
+{txt}95%    {res} 11.17561       11.21875       {txt}Skewness      {res} -.164601
+{txt}99%    {res} 11.28571       11.28571       {txt}Kurtosis      {res}  2.65176
+{txt}
+{com}.         local p=r(p50)
+{txt}
+{com}.         
+.         twoway (rcapsym lb_med_administracion ub_med_administracion ranking, sort lcolor(gray*1.2)              ///
+>             mcolor(gray*1.2) msize(0.4) msymbol(square) lwidth(0.25))                                       ///
+>                    (scatter med_administracion ranking, sort mcolor(black*1.2) msize(1) msymbol(circle)), name(gr4) ///
+>                         title("", size(medium) color(black)) subtitle("", size(2.8)) yline(`p', lpattern(dash))         ///
+>             ytitle("Health care" , size(medsmall)) ylabel(#9, angle(horizontal) format(%12.1f)              ///
+>             labsize(vsmall) nogrid) xtitle("Universities", size(medsmall)) xlabel(none, labsize(3.5))       ///
+>             legend(on  rows(1) symy(1) symxsize(6) bm(small)  pos(6) size(3.2)                              ///
+>             order(1 "One SD. " 2 "Mean") region(lcolor(white))) graphregion(fcolor(white) style(none)       ///
+>             color(white)  margin(r=6 l=3 t=3 b=1)) plotregion(fcolor(white)                                 ///
+>             margin(r=7))   note(" ", size(2.5))
+{res}{txt}
+{com}. 
+. 
+.         grc1leg gr4 gr3, leg(gr4) graphregion(fcolor(white) style(none) color(white))
+{res}{txt}
+{com}.         graph export "Results\Figure 1.png", width(1600) height(800) replace
+{txt}{p 0 4 2}
+file {bf}
+Results\Figure 1.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.                 
+.         cap     drop ranking
+{txt}
+{com}.         sort    med_quantitative
+{txt}
+{com}.         egen    ranking=fill(1/2)
+{txt}
+{com}.         sum     med_quantitative, det
+
+                      {txt}med_quantitative
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res} 9.664853       9.664853
+{txt} 5%    {res} 9.846121       9.840268
+{txt}10%    {res}  9.92353       9.846121       {txt}Obs         {res}         43
+{txt}25%    {res} 10.18106       9.873196       {txt}Sum of wgt. {res}         43
+
+{txt}50%    {res} 10.73636                      {txt}Mean          {res} 10.68245
+                        {txt}Largest       Std. dev.     {res} .5817302
+{txt}75%    {res} 11.06064        11.6241
+{txt}90%    {res} 11.52619        11.6566       {txt}Variance      {res}   .33841
+{txt}95%    {res}  11.6566       11.73822       {txt}Skewness      {res} .1965452
+{txt}99%    {res} 11.83333       11.83333       {txt}Kurtosis      {res} 2.082275
+{txt}
+{com}.         local   p=r(p50)
+{txt}
+{com}.         
+.     * Figure A4
+.         twoway (rcapsym lb_med_quantitative ub_med_quantitative ranking, sort lcolor(gray*1.2)                  ///
+>             mcolor(gray*1.2) msize(0.4) msymbol(square) lwidth(0.25))                                       ///
+>                    (scatter med_quantitative ranking, sort mcolor(black*1.2) msize(1) msymbol(circle)), name(gr1)   ///
+>                         title("", size(medium) color(black)) subtitle("", size(2.8)) yline(`p', lpattern(dash))         ///
+>             ytitle("Quantitative" , size(medsmall)) ylabel(#9, angle(horizontal) format(%12.1f)             ///
+>             labsize(vsmall) nogrid) xtitle("Universities", size(medsmall)) xlabel(none, labsize(3.5))       ///
+>             legend(on  rows(1) symy(1) symxsize(6) bm(small)  pos(6) size(3.2)                              ///
+>             order(1 "One SD. " 2 "Mean"  ) region(lcolor(white))) graphregion(fcolor(white) style(none)     ///
+>             color(white)  margin(r=6 l=3 t=3 b=1)) plotregion(fcolor(white)                                 ///
+>             margin(r=7))   note(" ", size(2.5))
+{res}{txt}
+{com}.         
+.         cap     drop ranking
+{txt}
+{com}.         sort    med_reading
+{txt}
+{com}.         egen    ranking=fill(1/2)
+{txt}
+{com}.         sum     med_reading, det
+
+                         {txt}med_reading
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res} 9.705372       9.705372
+{txt} 5%    {res} 10.04902       9.967949
+{txt}10%    {res}   10.155       10.04902       {txt}Obs         {res}         43
+{txt}25%    {res}  10.3766       10.13221       {txt}Sum of wgt. {res}         43
+
+{txt}50%    {res} 10.69615                      {txt}Mean          {res}  10.7641
+                        {txt}Largest       Std. dev.     {res} .4625153
+{txt}75%    {res} 11.15263       11.34557
+{txt}90%    {res} 11.33719       11.37266       {txt}Variance      {res} .2139204
+{txt}95%    {res} 11.37266       11.47558       {txt}Skewness      {res}-.2761115
+{txt}99%    {res}    11.53          11.53       {txt}Kurtosis      {res} 2.086535
+{txt}
+{com}.         local   p=r(p50)
+{txt}
+{com}.         
+.         twoway (rcapsym lb_med_reading ub_med_reading ranking, sort lcolor(gray*1.2) mcolor(gray*1.2)           ///
+>             msize(0.4) msymbol(square) lwidth(0.25))                                                        ///
+>                    (scatter med_reading ranking, sort mcolor(black*1.2) msize(1) msymbol(circle)), name(gr2)        ///
+>                         title("", size(medium) color(black)) subtitle("", size(2.8)) yline(`p', lpattern(dash))         ///
+>             ytitle("Reading" , size(medsmall)) ylabel(#9, angle(horizontal) format(%12.1f) labsize(vsmall)  ///
+>             nogrid) xtitle("Universities", size(medsmall)) xlabel(none, labsize(3.5))                       ///
+>             legend(on  rows(1) symy(1) symxsize(6) bm(small)  pos(6) size(3.2)                              ///
+>             order(1 "One SD. " 2 "Mean"  ) region(lcolor(white))) graphregion(fcolor(white) style(none)     ///
+>             color(white)  margin(r=6 l=3 t=3 b=1)) plotregion(fcolor(white)                                 ///
+>             margin(r=7))   note(" ", size(2.5))
+{res}{txt}
+{com}.         
+.         grc1leg gr1 gr2  , leg(gr2)  graphregion(fcolor(white) style(none) color(white))
+{res}{txt}
+{com}.         graph export "Results\Figure A4.png", width(1600) height(800) replace
+{txt}{p 0 4 2}
+file {bf}
+Results\Figure A4.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.     
+.         
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Figure 1 - Figure A4.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:35:10
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

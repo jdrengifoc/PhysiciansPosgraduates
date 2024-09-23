@@ -1,0 +1,408 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table A1.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:43:19
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+. use "Data/Anonimizada/SaberPro_Medicos_Scores", clear 
+{txt}
+{com}. duplicates drop
+
+{p 0 4}{txt}Duplicates in terms of {txt} all variables{p_end}
+
+(223 observations deleted)
+
+{com}. 
+. replace IND_administracion_puntaje = subinstr(IND_administracion_puntaje, ",", ".", .)
+{txt}(3,966 real changes made)
+
+{com}. replace IND_diagnostico_puntaje    = subinstr(IND_diagnostico_puntaje, ",", ".", .)
+{txt}(3,444 real changes made)
+
+{com}. replace IND_spublica_puntaje       = subinstr(IND_spublica_puntaje, ",", ".", .)
+{txt}(3,961 real changes made)
+
+{com}. 
+. ren (Programa Institucion  ) /// 
+>         (med_Programa med_Institucion  )
+{res}{txt}
+{com}. 
+. rename (IND_administracion_puntaje IND_diagnostico_puntaje IND_spublica_puntaje /// 
+>                 IND_lectura_puntaje IND_ingles_puntaje IND_razonamiento_puntaje IND_competencias_puntaje IND_escritura_puntaje) ///
+>            (ecaes_med_administracion ecaes_med_diagnostico ecaes_med_spublica ecaes_med_reading ecaes_med_english /// 
+>                 ecaes_med_quantitative ecaes_med_social ecaes_med_writing)
+{res}{txt}
+{com}. 
+. destring ecaes_med_administracion ecaes_med_diagnostico ecaes_med_spublica ecaes_med_reading ecaes_med_english /// 
+>                  ecaes_med_quantitative ecaes_med_social ecaes_med_writing, replace
+{txt}ecaes_med_administracion: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(258 missing values generated)
+{res}{txt}ecaes_med_diagnostico: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(806 missing values generated)
+{res}{txt}ecaes_med_spublica: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(289 missing values generated)
+{res}{txt}ecaes_med_reading: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(139 missing values generated)
+{res}{txt}ecaes_med_english: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(143 missing values generated)
+{res}{txt}ecaes_med_quantitative: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(196 missing values generated)
+{res}{txt}ecaes_med_social: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(371 missing values generated)
+{res}{txt}ecaes_med_writing: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(224 missing values generated)
+{res}{txt}
+{com}. 
+. egen prom_4 = rowmean(ecaes_med_reading  ecaes_med_quantitative  ecaes_med_administracion ecaes_med_spublica) ///
+>                    if ecaes_med_reading != .  & ecaes_med_quantitative != . ///
+>                    & ecaes_med_administracion != . & ecaes_med_spublica != .
+{txt}(320 missing values generated)
+
+{com}. 
+. tempfile ecaes_med
+{txt}
+{com}. save     "`ecaes_med'"
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000001.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}. 
+. use "Data\Anonimizada\SSO_estimations_09092019.dta", clear
+{txt}(This file contains: data original de inscritos - master data)
+
+{com}. merge m:1 id using "`ecaes_med'", nogen
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}          13,983
+{txt}{col 9}from master{col 30}{res}          13,983{txt}  
+{col 9}from using{col 30}{res}               0{txt}  
+
+{col 5}Matched{col 30}{res}           4,507{txt}  
+{col 5}{hline 41}
+
+{com}. 
+. keep if treated == 1
+{txt}(12,979 observations deleted)
+
+{com}. 
+. gen codmundep=substr(treat_cod_plaza,1,5)
+{txt}(603 missing values generated)
+
+{com}. 
+. replace treat_cod_habi="0"+treat_cod_habi if length(treat_cod_habi)==9
+{txt}(639 real changes made)
+
+{com}. replace codmundep=substr(treat_cod_habi,1,5) if missing(codmundep)==1
+{txt}(603 real changes made)
+
+{com}. 
+. merge           m:1 codmundep using "Data\Anonimizada\SSO_poblacion_tratados",keep(1 3) nogen
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               2
+{txt}{col 9}from master{col 30}{res}               2{txt}  
+{col 9}from using{col 30}{res}               0{txt}  
+
+{col 5}Matched{col 30}{res}           5,509{txt}  
+{col 5}{hline 41}
+
+{com}. destring codmundep, gen(cod_dane)
+{txt}codmundep: all characters numeric; cod_dane {res}generated {txt}as {res}long
+{txt}
+{com}.         * Areas metropolitanas
+.         recode          cod_dane (11001 25099 25799 25286 25473 25377 25175 25295 25785 25754 ///
+>                                 25899 25269 25126 25817 25214 25740 25430 = 1 "Bogotá Met") ///
+>                                 (5001 5129 5380 5088 5079 5266 5212 5308 5360 5631 = 2 "Medellín Met") ///
+>                                 (76001 76520 76364 76892 76130 = 3 "Cali met") ///
+>                                 (8001 8758 8573 8433 8296 = 4 "Barranquilla Met") ///
+>                                 (13001 = 5 "Cartagena Met") (68001 68307 68276 68547 = 6 "Bucaramanga Met") ///
+>                                 (54001 54261 54553 54673 54405 54874 = 7 "Cúcuta Met") ///
+>                                 (66001 66170 66400 = 8 "Pereira Met") (17001 17873 = 9 "Manizales Met") ///
+>                                 (20001 20013 20443 20621 20750 = 10 "Valledupar") (52001 = 11 "Pasto Met") ///
+>                                 (50001 = 12 "Villavicencio Met") (73001 = 13 "Ibagué") (23001 = 14 "Montería") ///
+>                                 (15001 = 15 "Tunja Met") (63001 = 16 "Armenia Met") (47001 = 17 "Santa Marta") ///
+>                                 (18001 = 18  "Florencia") (19001 = 19 "Popayan") (27001 = 20 "Quibdo") ///
+>                                 (41001 = 21 "Neiva") (44001 = 22 "Riohacha") (70001 = 23 "Sincelejo") ///
+>                                 , gen(Areas_br) label(Areas_met_banrep)
+{txt}(1131 differences between {bf:cod_dane} and {bf:Areas_br})
+
+{com}.         gen             d_area_metro = (Areas_br < 24)
+{txt}
+{com}.         
+.         * Aquí quitamos areas metropolitanas
+.         keep        if d_area_metro ==0
+{txt}(1,131 observations deleted)
+
+{com}.         
+. global covars   ecaes_gender ecaes_car ecaes_family_size ecaes_college_father ///
+>                                 ecaes_college_mother ecaes_strata12 ecaes_strata456 ///
+>                                 ecaes_sisben12 ecaes_internet ecaes_income12 ///
+>                                 ecaes_income3 ecaes_pwork ecaes_wash /// 
+>                                 ecaes_tv ecaes_cellphone ecaes_properfloor ecaes_oven ///
+>                                 ecaes_med_administracion ecaes_med_spublica     ecaes_med_reading ecaes_med_quantitative prom_4
+{txt}
+{com}.                                 
+. sum ecaes_gender ecaes_car ecaes_family_size ecaes_college_father ///
+> ecaes_college_mother ecaes_strata12 ecaes_strata3 ecaes_strata456 ///
+> ecaes_sisben12 ecaes_sisben345 ecaes_internet ecaes_income12 ///
+> ecaes_income3 ecaes_income4mas ecaes_pwork ecaes_wash /// 
+> ecaes_tv ecaes_cellphone ecaes_properfloor ecaes_oven ///
+> ecaes_med_reading ecaes_med_quantitative ecaes_med_administracion ecaes_med_spublica 
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_gender {c |}{res}      4,217    .6801043    .4664912          0          1
+{txt}{space 3}ecaes_car {c |}{res}      4,214    .3853821    .4867432          0          1
+{txt}ecaes_fami~e {c |}{res}      4,212    4.143162    1.697266          1         12
+{txt}ecaes_~ather {c |}{res}      4,214    .5251542    .4994261          0          1
+{txt}ecaes_~other {c |}{res}      4,214    .5287138    .4992341          0          1
+{txt}{hline 13}{c +}{hline 57}
+ecaes_str~12 {c |}{res}      4,219    .3861105    .4869141          0          1
+{txt}ecaes_stra~3 {c |}{res}      4,219    .3626452    .4808206          0          1
+{txt}ecaes_st~456 {c |}{res}      4,219    .2512444    .4337802          0          1
+{txt}ecaes_sis~12 {c |}{res}      4,214     .353346    .4780657          0          1
+{txt}ecaes_si~345 {c |}{res}      4,214     .646654    .4780657          0          1
+{txt}{hline 13}{c +}{hline 57}
+ecaes_inte~t {c |}{res}      4,214    .7781206    .4155598          0          1
+{txt}ecaes_inc~12 {c |}{res}      4,214    .3431419    .4748147          0          1
+{txt}ecaes_inco~3 {c |}{res}      4,214    .2422876    .4285183          0          1
+{txt}ecaes_inco~s {c |}{res}      4,214    .4145705    .4927062          0          1
+{txt}{space 1}ecaes_pwork {c |}{res}      4,214    .8747034    .3310942          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 2}ecaes_wash {c |}{res}      4,213     .813672    .3894174          0          1
+{txt}{space 4}ecaes_tv {c |}{res}      4,214    .8186996    .3853126          0          1
+{txt}ecaes_cell~e {c |}{res}      4,216     .955408    .2064308          0          1
+{txt}ecaes_prop~r {c |}{res}      4,214    .8656858      .34103          0          1
+{txt}{space 2}ecaes_oven {c |}{res}      4,213    .6036079    .4892057          0          1
+{txt}{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}      2,235    10.63096    1.009121          7       14.2
+{txt}ecaes_med_~e {c |}{res}      2,195    10.59321    1.133011        7.2         16
+{txt}ecaes_med_~n {c |}{res}      2,161    10.43193     1.06131        6.2       13.9
+{txt}ecaes_med_~a {c |}{res}      2,149    10.43025    1.009995        6.7       13.4
+{txt}
+{com}. 
+. 
+. qui mean $covars 
+{txt}
+{com}. cap drop power_uno
+{txt}
+{com}. gen power_uno = 1 if e(sample) 
+{txt}(2,254 missing values generated)
+
+{com}. replace power_uno = 0 if power_uno ==.
+{txt}(2,254 real changes made)
+
+{com}. 
+. * Solo tratados
+. keep if power_uno ==1
+{txt}(2,254 observations deleted)
+
+{com}. 
+. 
+. 
+. keep $covars draw_bachelor draw_date draw_state power_uno treated ///
+> ecaes_med_writing ecaes_med_social ecaes_med_english ecaes_med_diagnostico /// 
+> ecaes_med_spublica ecaes_med_quantitative id
+{txt}
+{com}. 
+. 
+. duplicates tag id, gen(dup)
+
+{p 0 4}{txt}Duplicates in terms of {res} id{p_end}
+{txt}
+{com}. sort       id draw_date 
+{txt}
+{com}. 
+. 
+. 
+. forvalues p = 1/1{c -(}
+{txt}  2{com}. 
+.         preserve
+{txt}  3{com}.         keep if draw_bachelor==`p' 
+{txt}  4{com}.         mat vlrp_`p' = J(22,3,.)
+{txt}  5{com}. 
+.         local c =1
+{txt}  6{com}. 
+. foreach var of global covars{c -(}
+{txt}  7{com}. 
+.         sum `var' 
+{txt}  8{com}.         mat vlrp_`p'[`c',1] = r(mean) 
+{txt}  9{com}.         mat vlrp_`p'[`c',2] = r(sd)
+{txt} 10{com}.         mat vlrp_`p'[`c',3] = r(N)
+{txt} 11{com}.                 
+.                 local c = `c'+1 
+{txt} 12{com}. 
+.         dis "`p'"
+{txt} 13{com}. {c )-}
+{txt} 14{com}.         restore
+{txt} 15{com}.         svmat vlrp_`p' // creates variables from matrix
+{txt} 16{com}.         *matrix colnames vlrp_1 = mean_`p' sd_`p' N_`p'
+.         
+. {c )-}
+{txt}(0 observations deleted)
+
+    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_gender {c |}{res}      2,126    .5583255    .4967033          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 3}ecaes_car {c |}{res}      2,126    .4825964    .4998146          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_fami~e {c |}{res}      2,126    4.024929    1.659437          1         12
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_~ather {c |}{res}      2,126    .6444026    .4788066          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_~other {c |}{res}      2,126    .6335842    .4819383          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_str~12 {c |}{res}      2,126    .2916275    .4546186          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_st~456 {c |}{res}      2,126    .3494826    .4769188          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_sis~12 {c |}{res}      2,126    .2624647    .4400774          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_inte~t {c |}{res}      2,126    .8311383    .3747179          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_inc~12 {c |}{res}      2,126    .2285983    .4200287          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_inco~3 {c |}{res}      2,126    .2201317    .4144328          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}ecaes_pwork {c |}{res}      2,126    .8715898    .3346247          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}ecaes_wash {c |}{res}      2,126    .8541863    .3530024          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 4}ecaes_tv {c |}{res}      2,126    .8588899     .348217          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_cell~e {c |}{res}      2,126    .9633114    .1880404          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_prop~r {c |}{res}      2,126    .9078081    .2893647          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}ecaes_oven {c |}{res}      2,126    .6707432    .4700539          0          1
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~n {c |}{res}      2,126    10.42596    1.058502        6.2       13.9
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~a {c |}{res}      2,126    10.43095    1.009616        6.7       13.4
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_m~ding {c |}{res}      2,126     10.6238    1.006654          7       14.2
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ecaes_med_~e {c |}{res}      2,126    10.57168    1.122832        7.2         16
+1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 6}prom_4 {c |}{res}      2,126     10.5131    .8541973       7.65       13.3
+1
+{txt}
+{com}.                                 
+.         *matrix rownames vlrp_1 = $covars
+. 
+. 
+.         mat list vlrp_1 
+{res}
+{txt}vlrp_1[22,3]
+            c1         c2         c3
+ r1 {res} .55832549  .49670331       2126
+{txt} r2 {res} .48259643  .49981459       2126
+{txt} r3 {res} 4.0249294   1.659437       2126
+{txt} r4 {res} .64440263  .47880655       2126
+{txt} r5 {res}  .6335842  .48193829       2126
+{txt} r6 {res} .29162747  .45461863       2126
+{txt} r7 {res}  .3494826  .47691875       2126
+{txt} r8 {res} .26246472  .44007736       2126
+{txt} r9 {res} .83113829  .37471787       2126
+{txt}r10 {res} .22859831   .4200287       2126
+{txt}r11 {res}  .2201317  .41443277       2126
+{txt}r12 {res} .87158984  .33462465       2126
+{txt}r13 {res} .85418627  .35300241       2126
+{txt}r14 {res} .85888993  .34821696       2126
+{txt}r15 {res} .96331138  .18804041       2126
+{txt}r16 {res} .90780809  .28936473       2126
+{txt}r17 {res} .67074318  .47005393       2126
+{txt}r18 {res} 10.425964  1.0585021       2126
+{txt}r19 {res}  10.43095  1.0096158       2126
+{txt}r20 {res} 10.623801  1.0066545       2126
+{txt}r21 {res} 10.571684  1.1228316       2126
+{txt}r22 {res}   10.5131   .8541973       2126
+{reset}
+{com}.         putexcel set "Results/Tables paper matrices replication.xls", sheet("Raw Table A1") modify
+{res}{txt}
+{com}.         putexcel B2=mat(vlrp_1)
+{res}{txt}file {bf:Results/Tables paper matrices replication.xls} saved
+
+{com}. 
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table A1.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:43:21
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

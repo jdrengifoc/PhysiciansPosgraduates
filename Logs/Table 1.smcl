@@ -1,0 +1,179 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table 1.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:35:16
+{txt}
+{com}.         
+. 
+. ********************************************************************************
+. 
+.         use     "Data\base_hospital_cohorte_bebe", replace
+{txt}
+{com}.                 
+.         keep    if p_emb_obs_ave==1 
+{txt}(2,758,064 observations deleted)
+
+{com}. 
+.         egen    tag_id_nacido = tag(id_nacido)
+{txt}
+{com}.         gen     mbpn          = peso_nacido<=2 
+{txt}
+{com}.         gen     apgar1menor7  = apgar1min_7==0
+{txt}
+{com}. 
+.         keep    if tag_id_nacido==1
+{txt}(309,208 observations deleted)
+
+{com}. 
+.         gen     unhealthy=1-(bpn==0&nacer_menos_37==0&apgar1menor7==0)
+{txt}
+{com}. 
+.         replace numconsul4=1-numconsul4
+{txt}(372,609 real changes made)
+
+{com}.         
+.         global  vars bpn nacer_menos_37 apgar1menor7 unhealthy babyfemale numconsul4 adolescent
+{txt}
+{com}. 
+.         mean    $vars
+{res}
+{txt}Mean estimation{col 42}{lalign 13:Number of obs}{col 55} = {res}{ralign 7:372,609}
+
+{txt}{hline 15}{c TT}{hline 11}{hline 11}{hline 14}{hline 12}
+{col 16}{c |}       Mean{col 28}   Std. err.{col 40}     [95% con{col 53}f. interval]
+{hline 15}{c +}{hline 11}{hline 11}{hline 14}{hline 12}
+{space 11}bpn {c |}{col 16}{res}{space 2}  .060122{col 28}{space 2} .0003894{col 39}{space 5} .0593587{col 53}{space 3} .0608853
+{txt}nacer_menos_37 {c |}{col 16}{res}{space 2} .0623039{col 28}{space 2}  .000396{col 39}{space 5} .0615278{col 53}{space 3}   .06308
+{txt}{space 2}apgar1menor7 {c |}{col 16}{res}{space 2} .0378252{col 28}{space 2} .0003125{col 39}{space 5} .0372126{col 53}{space 3} .0384377
+{txt}{space 5}unhealthy {c |}{col 16}{res}{space 2} .1183036{col 28}{space 2} .0005291{col 39}{space 5} .1172666{col 53}{space 3} .1193406
+{txt}{space 4}babyfemale {c |}{col 16}{res}{space 2}  .487664{col 28}{space 2} .0008189{col 39}{space 5} .4860591{col 53}{space 3}  .489269
+{txt}{space 4}numconsul4 {c |}{col 16}{res}{space 2}  .179781{col 28}{space 2} .0006291{col 39}{space 5}  .178548{col 53}{space 3} .1810139
+{txt}{space 4}adolescent {c |}{col 16}{res}{space 2} .2839894{col 28}{space 2} .0007387{col 39}{space 5} .2825415{col 53}{space 3} .2854373
+{txt}{hline 15}{c BT}{hline 11}{hline 11}{hline 14}{hline 12}
+
+{com}.         keep    if e(sample)==1
+{txt}(0 observations deleted)
+
+{com}. 
+.         global  N: word count $vars
+{txt}
+{com}.         mat     table2 = J($N+1 , 4,.)
+{txt}
+{com}. 
+. 
+.         local   r=1
+{txt}
+{com}.         foreach x of global vars {c -(}
+{txt}  2{com}.         
+.                 sum `x'
+{txt}  3{com}.                 mat table2[`r',1] = r(mean)
+{txt}  4{com}.                 mat table2[`r',2] = r(sd)
+{txt}  5{com}.                 
+.                 sum `x' if d_area_metro==0
+{txt}  6{com}.                 mat table2[`r',3] = r(mean)
+{txt}  7{com}.                 mat table2[`r',4] = r(sd)
+{txt}  8{com}.                 
+.                 local r = `r'+1
+{txt}  9{com}.         
+.         {c )-}
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 9}bpn {c |}{res}    372,609     .060122    .2377131          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 9}bpn {c |}{res}    256,806    .0425925    .2019369          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+nacer_men~37 {c |}{res}    372,609    .0623039     .241707          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+nacer_men~37 {c |}{res}    256,806    .0409453    .1981639          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+apgar1menor7 {c |}{res}    372,609    .0378252    .1907735          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+apgar1menor7 {c |}{res}    256,806    .0373979    .1897351          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 3}unhealthy {c |}{res}    372,609    .1183036    .3229677          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 3}unhealthy {c |}{res}    256,806    .0949978    .2932124          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}babyfemale {c |}{res}    372,609     .487664    .4998485          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}babyfemale {c |}{res}    256,806    .4885478    .4998698          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}numconsul4 {c |}{res}    372,609     .179781    .3840054          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}numconsul4 {c |}{res}    256,806    .1628077    .3691909          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}adolescent {c |}{res}    372,609    .2839894    .4509323          0          1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}adolescent {c |}{res}    256,806    .2846117    .4512302          0          1
+{txt}
+{com}. 
+.         count 
+  {res}372,609
+{txt}
+{com}.         mat table2[$N+1, 1] = r(N)
+{txt}
+{com}. 
+.         count if d_area_metro==0
+  {res}256,806
+{txt}
+{com}.         mat table2[$N+1, 3] = r(N)
+{txt}
+{com}. 
+.         mat list table2
+{res}
+{txt}table2[8,4]
+           c1         c2         c3         c4
+r1 {res}   .060122  .23771306  .04259246  .20193688
+{txt}r2 {res} .06230392  .24170704  .04094531  .19816392
+{txt}r3 {res} .03782517   .1907735  .03739788  .18973513
+{txt}r4 {res} .11830364  .32296775  .09499778  .29321244
+{txt}r5 {res} .48766401  .49984847  .48854778   .4998698
+{txt}r6 {res} .17978095  .38400541  .16280772  .36919087
+{txt}r7 {res} .28398938  .45093232  .28461173  .45123019
+{txt}r8 {res}    372609          .     256806          .
+{reset}
+{com}. 
+.         putexcel set "Results\Tables paper matrices replication.xls", sheet("Raw Table 1") modify
+{res}{txt}
+{com}.         putexcel B2=mat(table2)
+{res}{txt}file {bf:Results\Tables paper matrices replication.xls} saved
+
+{com}.     
+.         
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table 1.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:35:21
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

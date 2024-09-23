@@ -1,0 +1,467 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table A9.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:50:27
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+.         use             "Data\base_hospital_cohorte_bebe", replace
+{txt}
+{com}.         
+.         keep            if p_emb_obs_ave==1 
+{txt}(2,758,064 observations deleted)
+
+{com}.         keep        if d_area_metro ==0
+{txt}(211,576 observations deleted)
+
+{com}. 
+.         pca     ave_ecaes_med_administracion ave_ecaes_med_spublica, com(1)
+
+{txt}Principal components/correlation{col 50}Number of obs    = {res}   470,241
+{col 50}{txt}Number of comp.  = {res}         1
+{col 50}{txt}Trace            {col 67}=  {res}        2
+{col 5}{txt}Rotation: (unrotated = principal){col 50}Rho              = {res}    0.8087
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}   Component {c |}   Eigenvalue   Difference         Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 12:Comp1} {c |}{res}      1.61732      1.23463             0.8087       0.8087
+{txt}{col 5}{ralign 12:Comp2} {c |}{res}      .382684            .             0.1913       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+
+Principal components (eigenvectors) 
+
+{space 4}{hline 13}{c  TT}{hline 10}{c  TT}{hline 13}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}{c |}{space 1}{ralign 11:Unexplained}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{c   +}{hline 13}
+{space 4}{space 0}{ralign 12:ave_ecaes_~n}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .1913}}}{space 1}
+{space 4}{space 0}{ralign 12:ave_ecaes_~a}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}{c |}{space 1}{center 11:{res:{sf:      .1913}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{c  BT}{hline 13}
+
+{com}.         predict comp1_health
+{txt}({bf:score} assumed)
+
+Scoring coefficients 
+{col 5}sum of squares(column-loading) = 1
+
+{space 4}{hline 13}{c  TT}{hline 10}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Comp1}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}
+{space 4}{space 0}{ralign 12:ave_ecaes_~n}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}
+{space 4}{space 0}{ralign 12:ave_ecaes_~a}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7071}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}
+
+{com}.          
+.         
+.         *Creating hospital covars (bw and prematurity 3 years before)
+.         egen tag               =  tag(codigo10 codigo12)                
+{txt}
+{com}.         egen p75_bw            =  pctile(h_prop_low_weight)   if tag==1, p(75)
+{txt}(469,623 missing values generated)
+
+{com}.         egen p75_bw1               =  max(p75_bw)
+{txt}
+{com}.         egen p75_prem          =  pctile(h_prop_v_nacer_38_41) if tag==1,p(75)
+{txt}(469,623 missing values generated)
+
+{com}.         egen p75_prem1             =  max(p75_prem)
+{txt}
+{com}.                 egen p75_apgar          =  pctile(h_prop_apgar1_mas7) if tag==1,p(75)
+{txt}(469,623 missing values generated)
+
+{com}.         egen p75_apgar1            =  max(p75_apgar)
+{txt}
+{com}. 
+.         
+.         gen dummy_prematurotop  = (h_prop_v_nacer_38_41<p75_prem1  & h_prop_v_nacer_38_41!=.)
+{txt}
+{com}.         gen dummy_bwtop         = (h_prop_low_weight   >p75_bw1    & h_prop_low_weight!=.)
+{txt}
+{com}.         gen dummy_apgartop         = (h_prop_apgar1_mas7>p75_apgar1 & h_prop_apgar1_mas7!=.)
+{txt}
+{com}. 
+.         drop p75_*
+{txt}
+{com}.         
+.         gen  dummy_1hosp = (tot_hosp==1)
+{txt}
+{com}.         gen  apgar1menor7 = apgar1min_7==0
+{txt}
+{com}.         egen codigo_tot= group(codigo12 codigo10)       
+{txt}
+{com}.         
+.                 sum pop100, det
+
+                           {txt}pop100
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}   .05946         .00794
+{txt} 5%    {res}    .1144         .00794
+{txt}10%    {res}   .16108         .01023       {txt}Obs         {res}    470,241
+{txt}25%    {res}   .28659         .01023       {txt}Sum of wgt. {res}    470,241
+
+{txt}50%    {res}    .5621                      {txt}Mean          {res} .7111537
+                        {txt}Largest       Std. dev.     {res} .5154929
+{txt}75%    {res}   .98491        2.58445
+{txt}90%    {res}  1.38091        2.58445       {txt}Variance      {res} .2657329
+{txt}95%    {res}  1.56942        2.58445       {txt}Skewness      {res} 1.100571
+{txt}99%    {res}  2.58445        2.58445       {txt}Kurtosis      {res} 4.302966
+{txt}
+{com}.         
+.         gen pop=(pop100>=r(p50))
+{txt}
+{com}. 
+.                         
+.         global          c_b      babyfemale adolescent basicedu married 
+{txt}
+{com}.         global          c_m      pop100 dummy_1hosp i.area 
+{txt}
+{com}.         global          c_cd     dummy_female 
+{txt}
+{com}.         global      c_h      dummy_bwtop dummy_prematurotop dummy_apgartop
+{txt}
+{com}.         global      outcomes numconsul4
+{txt}
+{com}.                 
+.         
+.         gen     days_coinc=min(p_fechfi_obs_ave,fechanto)-max(v_fconcep,p_fechin_obs_ave)+1
+{txt}
+{com}.         gen     w_doc=round(days_coinc)*n_docs
+{txt}
+{com}.         egen    id_h=group(codigo12)
+{txt}
+{com}. 
+.         egen    p_drawm=min(p_draw),by(id_nacido)
+{txt}
+{com}.     
+.         collapse (mean) ave_prom_4 comp1_health ave_comp1 ave_prom_health ave_ecaes_med_administracion ave_ecaes_med_spublica ave_ecaes_med_reading ave_ecaes_med_quantitative (max) dummy_female dummy_top dummy_public [fw=w_doc],by($c_b pop100 p_drawm dummy_1hosp area $c_h $outcomes embarazos_madre d_area_metro id_nacido id_h year codigo_tot)
+{res}{txt}
+{com}.                 
+.         /* Table */
+.         
+.         global p_res "d_area_metro==0"
+{txt}
+{com}.         global res1  $c_b $c_m $c_cd $c_h      if         $p_res , abs(p_drawm) cluster(id_h)
+{txt}
+{com}.         global res2                                        if s1==1 & $p_res , abs(p_drawm) cluster(id_h)
+{txt}
+{com}. 
+.         *Standardized scores
+.         egen    tagc=tag(p_drawm codigo_tot)
+{txt}
+{com}.         sum     ave_ecaes_med_administracion if tagc==1 & $p_res
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ave_ecaes_~n {c |}{res}      1,240    10.40298    .8702439        6.5       13.2
+{txt}
+{com}.         replace ave_ecaes_med_administracion=(ave_ecaes_med_administracion-r(mean))/r(sd)
+{txt}(256,806 real changes made)
+
+{com}.         sum     ave_ecaes_med_spublica if tagc==1 & $p_res
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ave_ecaes_~a {c |}{res}      1,240    10.42913     .853083        7.3         13
+{txt}
+{com}.         replace ave_ecaes_med_spublica=(ave_ecaes_med_spublica-r(mean))/r(sd)
+{txt}(256,806 real changes made)
+
+{com}.         sum     ave_prom_health if tagc==1 & $p_res
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+ave_prom_h~h {c |}{res}      1,240    10.41605    .7810953       7.55      12.65
+{txt}
+{com}.         replace ave_prom_health=(ave_prom_health-r(mean))/r(sd)
+{txt}(256,806 real changes made)
+
+{com}.         sum     comp1_health if tagc==1 & $p_res
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+comp1_health {c |}{res}      1,240    .0310375    1.224318  -4.423176   3.573148
+{txt}
+{com}.         replace comp1_health=(comp1_health-r(mean))/r(sd)
+{txt}(256,806 real changes made)
+
+{com}.         sum     ave_prom_4 if tagc==1 & $p_res
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}ave_prom_4 {c |}{res}      1,240    10.50469    .7252798      7.825       12.9
+{txt}
+{com}.         replace ave_prom_4=(ave_prom_4-r(mean))/r(sd)
+{txt}(256,806 real changes made)
+
+{com}.         
+.         
+.         replace numconsul4=1-numconsul4
+{txt}(256,806 real changes made)
+
+{com}.         
+.         gen     s1=0
+{txt}
+{com}. 
+.         mat     table1 = J(8,2,.)
+{txt}
+{com}.         
+.         local c=1
+{txt}
+{com}.         foreach var in $outcomes {c -(}
+{txt}  2{com}.                 
+.                 foreach x in ave_prom_health comp1_health  {c -(}
+{txt}  3{com}. 
+.                 reghdfe `var' `x' if $p_res , abs(p_drawm) cluster(id_h)
+{txt}  4{com}.                 replace s1=(e(sample)==1)
+{txt}  5{com}.                         
+.                 
+.                 reghdfe `var' `x' $res1
+{txt}  6{com}.                 mat     table1[4,`c']  = _b[`x']
+{txt}  7{com}.                 mat     table1[5 ,`c'] = _se[`x']
+{txt}  8{com}.                 
+.                 reghdfe `var' `x' $res2
+{txt}  9{com}.                 mat     table1[1,`c']  = _b[`x']
+{txt} 10{com}.                 mat     table1[2,`c'] = _se[`x']
+{txt} 11{com}.                 
+.                 qui tab codigo_tot if e(sample)==1
+{txt} 12{com}.                 mat table1[8,`c'] = e(N) // obs
+{txt} 13{com}.                                                 
+.                 sum `var' if e(sample)==1
+{txt} 14{com}.                 mat table1[7,`c']  = r(mean)
+{txt} 15{com}.                 mat table1[3,`c'] = table1[1,`c']/table1[7,`c']
+{txt} 16{com}.                 mat table1[6,`c'] = table1[4,`c']/table1[7,`c']                 
+{txt} 17{com}.                 
+.                 local c= `c'+1
+{txt} 18{com}.                 {c )-}
+{txt} 19{com}.         
+.         {c )-}
+{res}{txt}(dropped 1 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}   256,805
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}    617{txt}){col 67}= {res}      0.08
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7809
+{txt}{col 51}R-squared{col 67}= {res}    0.0495
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0488
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}id_h{txt}) {col 30}= {res}       618{txt}{col 51}Root MSE{col 67}= {res}    0.3601
+
+{txt}{ralign 81:(Std. err. adjusted for {res:618} clusters in id_h)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}     numconsul4{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2}-.0019452{col 29}{space 2} .0069915{col 40}{space 1}   -0.28{col 49}{space 3}0.781{col 57}{space 4}-.0156753{col 70}{space 3} .0117848
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .1626991{col 29}{space 2}  .003774{col 40}{space 1}   43.11{col 49}{space 3}0.000{col 57}{space 4} .1552877{col 70}{space 3} .1701105
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_drawm{col 14}{c |}{space 1}      175{col 27}{space 1}        0{col 39}{result}{space 1}      175{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}(256,805 real changes made)
+{res}{txt}(dropped 1 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}   256,805
+{txt}Absorbing 1 HDFE group{col 51}F({res}  14{txt},{res}    617{txt}){col 67}= {res}     22.08
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.0641
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0634
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0154
+{txt}{col 1}Number of clusters ({res}id_h{txt}) {col 30}= {res}       618{txt}{col 51}Root MSE{col 67}= {res}    0.3573
+
+{txt}{ralign 90:(Std. err. adjusted for {res:618} clusters in id_h)}
+{hline 25}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 26}{c |}{col 38}    Robust
+{col 1}              numconsul4{col 26}{c |} Coefficient{col 38}  std. err.{col 50}      t{col 58}   P>|t|{col 66}     [95% con{col 79}f. interval]
+{hline 25}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 9}ave_prom_health {c |}{col 26}{res}{space 2}-.0029091{col 38}{space 2} .0067189{col 49}{space 1}   -0.43{col 58}{space 3}0.665{col 66}{space 4}-.0161037{col 79}{space 3} .0102856
+{txt}{space 14}babyfemale {c |}{col 26}{res}{space 2}-.0034024{col 38}{space 2} .0011823{col 49}{space 1}   -2.88{col 58}{space 3}0.004{col 66}{space 4}-.0057242{col 79}{space 3}-.0010807
+{txt}{space 14}adolescent {c |}{col 26}{res}{space 2} .0280873{col 38}{space 2} .0035641{col 49}{space 1}    7.88{col 58}{space 3}0.000{col 66}{space 4} .0210881{col 79}{space 3} .0350866
+{txt}{space 16}basicedu {c |}{col 26}{res}{space 2} .0303749{col 38}{space 2} .0108302{col 49}{space 1}    2.80{col 58}{space 3}0.005{col 66}{space 4} .0091064{col 79}{space 3} .0516435
+{txt}{space 17}married {c |}{col 26}{res}{space 2}-.0216589{col 38}{space 2} .0046253{col 49}{space 1}   -4.68{col 58}{space 3}0.000{col 66}{space 4} -.030742{col 79}{space 3}-.0125757
+{txt}{space 18}pop100 {c |}{col 26}{res}{space 2} .0675736{col 38}{space 2} .0177814{col 49}{space 1}    3.80{col 58}{space 3}0.000{col 66}{space 4} .0326542{col 79}{space 3} .1024929
+{txt}{space 13}dummy_1hosp {c |}{col 26}{res}{space 2} .0239952{col 38}{space 2} .0160055{col 49}{space 1}    1.50{col 58}{space 3}0.134{col 66}{space 4}-.0074367{col 79}{space 3} .0554271
+{txt}{space 24} {c |}
+{space 20}area {c |}
+{space 5}2 - CENTRO POBLADO  {c |}{col 26}{res}{space 2} .0605758{col 38}{space 2} .0061182{col 49}{space 1}    9.90{col 58}{space 3}0.000{col 66}{space 4} .0485607{col 79}{space 3} .0725908
+{txt}3 - AREA RURAL DISPERSA  {c |}{col 26}{res}{space 2} .0763622{col 38}{space 2} .0071809{col 49}{space 1}   10.63{col 58}{space 3}0.000{col 66}{space 4} .0622603{col 79}{space 3}  .090464
+{txt}{space 8}SIN INFORMACION  {c |}{col 26}{res}{space 2} .1268779{col 38}{space 2} .0526326{col 49}{space 1}    2.41{col 58}{space 3}0.016{col 66}{space 4} .0235171{col 79}{space 3} .2302388
+{txt}{space 24} {c |}
+{space 12}dummy_female {c |}{col 26}{res}{space 2}-.0167086{col 38}{space 2} .0083881{col 49}{space 1}   -1.99{col 58}{space 3}0.047{col 66}{space 4}-.0331813{col 79}{space 3}-.0002359
+{txt}{space 13}dummy_bwtop {c |}{col 26}{res}{space 2}-.0131994{col 38}{space 2} .0129048{col 49}{space 1}   -1.02{col 58}{space 3}0.307{col 66}{space 4}-.0385421{col 79}{space 3} .0121433
+{txt}{space 6}dummy_prematurotop {c |}{col 26}{res}{space 2} .0394022{col 38}{space 2} .0107541{col 49}{space 1}    3.66{col 58}{space 3}0.000{col 66}{space 4} .0182832{col 79}{space 3} .0605212
+{txt}{space 10}dummy_apgartop {c |}{col 26}{res}{space 2}-.0237126{col 38}{space 2} .0114279{col 49}{space 1}   -2.07{col 58}{space 3}0.038{col 66}{space 4}-.0461548{col 79}{space 3}-.0012703
+{txt}{space 19}_cons {c |}{col 26}{res}{space 2} .0445979{col 38}{space 2} .0274254{col 49}{space 1}    1.63{col 58}{space 3}0.104{col 66}{space 4}-.0092605{col 79}{space 3} .0984564
+{txt}{hline 25}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_drawm{col 14}{c |}{space 1}      175{col 27}{space 1}        0{col 39}{result}{space 1}      175{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}   256,805
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}    617{txt}){col 67}= {res}      0.08
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7809
+{txt}{col 51}R-squared{col 67}= {res}    0.0495
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0488
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}id_h{txt}) {col 30}= {res}       618{txt}{col 51}Root MSE{col 67}= {res}    0.3601
+
+{txt}{ralign 81:(Std. err. adjusted for {res:618} clusters in id_h)}
+{hline 16}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 17}{c |}{col 29}    Robust
+{col 1}     numconsul4{col 17}{c |} Coefficient{col 29}  std. err.{col 41}      t{col 49}   P>|t|{col 57}     [95% con{col 70}f. interval]
+{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+ave_prom_health {c |}{col 17}{res}{space 2}-.0019452{col 29}{space 2} .0069915{col 40}{space 1}   -0.28{col 49}{space 3}0.781{col 57}{space 4}-.0156753{col 70}{space 3} .0117848
+{txt}{space 10}_cons {c |}{col 17}{res}{space 2} .1626991{col 29}{space 2}  .003774{col 40}{space 1}   43.11{col 49}{space 3}0.000{col 57}{space 4} .1552877{col 70}{space 3} .1701105
+{txt}{hline 16}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_drawm{col 14}{c |}{space 1}      175{col 27}{space 1}        0{col 39}{result}{space 1}      175{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}numconsul4 {c |}{res}    256,805    .1628045    .3691879          0          1
+{txt}(dropped 1 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}   256,805
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}    617{txt}){col 67}= {res}      0.10
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7566
+{txt}{col 51}R-squared{col 67}= {res}    0.0495
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0488
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}id_h{txt}) {col 30}= {res}       618{txt}{col 51}Root MSE{col 67}= {res}    0.3601
+
+{txt}{ralign 78:(Std. err. adjusted for {res:618} clusters in id_h)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  numconsul4{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+comp1_health {c |}{col 14}{res}{space 2}-.0022072{col 26}{space 2} .0071194{col 37}{space 1}   -0.31{col 46}{space 3}0.757{col 54}{space 4}-.0161883{col 67}{space 3} .0117739
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .1626882{col 26}{space 2} .0037745{col 37}{space 1}   43.10{col 46}{space 3}0.000{col 54}{space 4} .1552757{col 67}{space 3} .1701008
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_drawm{col 14}{c |}{space 1}      175{col 27}{space 1}        0{col 39}{result}{space 1}      175{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}(0 real changes made)
+{res}{txt}(dropped 1 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}   256,805
+{txt}Absorbing 1 HDFE group{col 51}F({res}  14{txt},{res}    617{txt}){col 67}= {res}     22.11
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.0641
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0634
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0154
+{txt}{col 1}Number of clusters ({res}id_h{txt}) {col 30}= {res}       618{txt}{col 51}Root MSE{col 67}= {res}    0.3573
+
+{txt}{ralign 90:(Std. err. adjusted for {res:618} clusters in id_h)}
+{hline 25}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 26}{c |}{col 38}    Robust
+{col 1}              numconsul4{col 26}{c |} Coefficient{col 38}  std. err.{col 50}      t{col 58}   P>|t|{col 66}     [95% con{col 79}f. interval]
+{hline 25}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 12}comp1_health {c |}{col 26}{res}{space 2}-.0031905{col 38}{space 2} .0068269{col 49}{space 1}   -0.47{col 58}{space 3}0.640{col 66}{space 4}-.0165973{col 79}{space 3} .0102163
+{txt}{space 14}babyfemale {c |}{col 26}{res}{space 2}-.0034032{col 38}{space 2} .0011822{col 49}{space 1}   -2.88{col 58}{space 3}0.004{col 66}{space 4} -.005725{col 79}{space 3}-.0010815
+{txt}{space 14}adolescent {c |}{col 26}{res}{space 2}  .028087{col 38}{space 2} .0035647{col 49}{space 1}    7.88{col 58}{space 3}0.000{col 66}{space 4} .0210866{col 79}{space 3} .0350874
+{txt}{space 16}basicedu {c |}{col 26}{res}{space 2} .0303731{col 38}{space 2} .0108332{col 49}{space 1}    2.80{col 58}{space 3}0.005{col 66}{space 4} .0090986{col 79}{space 3} .0516475
+{txt}{space 17}married {c |}{col 26}{res}{space 2}-.0216603{col 38}{space 2} .0046256{col 49}{space 1}   -4.68{col 58}{space 3}0.000{col 66}{space 4}-.0307441{col 79}{space 3}-.0125766
+{txt}{space 18}pop100 {c |}{col 26}{res}{space 2} .0675751{col 38}{space 2} .0177619{col 49}{space 1}    3.80{col 58}{space 3}0.000{col 66}{space 4}  .032694{col 79}{space 3} .1024563
+{txt}{space 13}dummy_1hosp {c |}{col 26}{res}{space 2} .0239896{col 38}{space 2} .0159708{col 49}{space 1}    1.50{col 58}{space 3}0.134{col 66}{space 4}-.0073742{col 79}{space 3} .0553534
+{txt}{space 24} {c |}
+{space 20}area {c |}
+{space 5}2 - CENTRO POBLADO  {c |}{col 26}{res}{space 2} .0605782{col 38}{space 2} .0061208{col 49}{space 1}    9.90{col 58}{space 3}0.000{col 66}{space 4}  .048558{col 79}{space 3} .0725983
+{txt}3 - AREA RURAL DISPERSA  {c |}{col 26}{res}{space 2} .0763667{col 38}{space 2} .0071809{col 49}{space 1}   10.63{col 58}{space 3}0.000{col 66}{space 4} .0622648{col 79}{space 3} .0904686
+{txt}{space 8}SIN INFORMACION  {c |}{col 26}{res}{space 2} .1268495{col 38}{space 2} .0526292{col 49}{space 1}    2.41{col 58}{space 3}0.016{col 66}{space 4} .0234954{col 79}{space 3} .2302037
+{txt}{space 24} {c |}
+{space 12}dummy_female {c |}{col 26}{res}{space 2}-.0167442{col 38}{space 2} .0083758{col 49}{space 1}   -2.00{col 58}{space 3}0.046{col 66}{space 4}-.0331928{col 79}{space 3}-.0002956
+{txt}{space 13}dummy_bwtop {c |}{col 26}{res}{space 2}-.0131721{col 38}{space 2} .0128837{col 49}{space 1}   -1.02{col 58}{space 3}0.307{col 66}{space 4}-.0384734{col 79}{space 3} .0121292
+{txt}{space 6}dummy_prematurotop {c |}{col 26}{res}{space 2}  .039421{col 38}{space 2} .0107534{col 49}{space 1}    3.67{col 58}{space 3}0.000{col 66}{space 4} .0183034{col 79}{space 3} .0605387
+{txt}{space 10}dummy_apgartop {c |}{col 26}{res}{space 2} -.023686{col 38}{space 2} .0114204{col 49}{space 1}   -2.07{col 58}{space 3}0.038{col 66}{space 4}-.0461136{col 79}{space 3}-.0012583
+{txt}{space 19}_cons {c |}{col 26}{res}{space 2} .0445741{col 38}{space 2} .0273856{col 49}{space 1}    1.63{col 58}{space 3}0.104{col 66}{space 4}-.0092063{col 79}{space 3} .0983544
+{txt}{hline 25}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_drawm{col 14}{c |}{space 1}      175{col 27}{space 1}        0{col 39}{result}{space 1}      175{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}   256,805
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}    617{txt}){col 67}= {res}      0.10
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7566
+{txt}{col 51}R-squared{col 67}= {res}    0.0495
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0488
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}id_h{txt}) {col 30}= {res}       618{txt}{col 51}Root MSE{col 67}= {res}    0.3601
+
+{txt}{ralign 78:(Std. err. adjusted for {res:618} clusters in id_h)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  numconsul4{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+comp1_health {c |}{col 14}{res}{space 2}-.0022072{col 26}{space 2} .0071194{col 37}{space 1}   -0.31{col 46}{space 3}0.757{col 54}{space 4}-.0161883{col 67}{space 3} .0117739
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .1626882{col 26}{space 2} .0037745{col 37}{space 1}   43.10{col 46}{space 3}0.000{col 54}{space 4} .1552757{col 67}{space 3} .1701008
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{res}{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}     p_drawm{col 14}{c |}{space 1}      175{col 27}{space 1}        0{col 39}{result}{space 1}      175{col 53}{text} {col 54}{c |}
+{res}{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+{res}
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}numconsul4 {c |}{res}    256,805    .1628045    .3691879          0          1
+{txt}
+{com}.         
+.         mat list table1 
+{res}
+{txt}table1[8,2]
+            c1          c2
+r1 {res} -.00194521   -.0022072
+{txt}r2 {res}  .00699152   .00711935
+{txt}r3 {res} -.01194813  -.01355737
+{txt}r4 {res} -.00290908  -.00319048
+{txt}r5 {res}  .00671889   .00682692
+{txt}r6 {res} -.01786858  -.01959704
+{txt}r7 {res}  .16280446   .16280446
+{txt}r8 {res}     256805      256805
+{reset}
+{com}.         putexcel set "Results\Tables paper matrices replication.xls", sheet("Raw Table A9") modify
+{res}{txt}
+{com}.         putexcel B2=mat(table1)
+{res}{txt}file {bf:Results\Tables paper matrices replication.xls} saved
+
+{com}. 
+.         
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table A9.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:50:39
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

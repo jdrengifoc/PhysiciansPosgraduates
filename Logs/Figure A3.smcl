@@ -1,0 +1,84 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Figure A3.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:35:15
+{txt}
+{com}. 
+. 
+. ********************************************************************************
+. 
+.     use "Data/Anonimizada/Weights_2012.dta", replace
+{txt}
+{com}.     merge m:1 codmundep using "Data/Anonimizada/Municipios_1_hospital", keep(3) nogen
+{res}
+{txt}{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}             549{txt}  
+{col 5}{hline 41}
+
+{com}. 
+.     gen     i=_n
+{txt}
+{com}.     reshape long medico_, i(i)
+{txt}(j = 1 2 3 4 5 6 7 8 9 10 11 12)
+
+Data{col 36}Wide{col 43}->{col 48}Long
+{hline 77}
+Number of observations     {res}         549   {txt}->   {res}6,588       
+{txt}Number of variables        {res}          15   {txt}->   {res}5           
+{txt}j variable (12 values)                    ->   {res}_j
+{txt}xij variables:
+        {res}medico_1 medico_2 ... medico_12   {txt}->   {res}medico_
+{txt}{hline 77}
+
+{com}. 
+.     sum     medico_, det
+
+                           {txt}medico_
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        1              1
+{txt} 5%    {res}        1              1
+{txt}10%    {res}        1              1       {txt}Obs         {res}      5,437
+{txt}25%    {res}        2              1       {txt}Sum of wgt. {res}      5,437
+
+{txt}50%    {res}        3                      {txt}Mean          {res} 12.93029
+                        {txt}Largest       Std. dev.     {res} 33.61148
+{txt}75%    {res}        9            358
+{txt}90%    {res}       24            359       {txt}Variance      {res} 1129.732
+{txt}95%    {res}       59            359       {txt}Skewness      {res} 5.832289
+{txt}99%    {res}      171            363       {txt}Kurtosis      {res} 44.14097
+{txt}
+{com}.     drop if medico_>r(p99)
+{txt}(1,204 observations deleted)
+
+{com}.     rename  medico_ medicos
+{res}{txt}
+{com}.     drop if medicos>20
+{txt}(582 observations deleted)
+
+{com}. 
+.     kdensity    medicos, bwidth(1.5) xtitle("Physicians per municipalities") title("") note("")
+{res}{txt}
+{com}.     graph       export "Results/Figure A3.png",replace wid(1446) hei(1050)
+{txt}{p 0 4 2}
+file {bf}
+Results/Figure A3.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.  
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Figure A3.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:35:16
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

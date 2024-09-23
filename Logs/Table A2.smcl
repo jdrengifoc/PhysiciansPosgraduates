@@ -1,0 +1,500 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table A2.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:43:21
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+.         use        "Data\Anonimizada\base_medico_rural_con_fecha_inicio",replace
+{txt}
+{com}.         cap drop   p_date
+{txt}
+{com}.         gen        p_date =ym(p_year,p_month)
+{txt}
+{com}.         format     p_date %tm
+{txt}
+{com}.         
+.         drop       codigo10
+{txt}
+{com}.         des        ecaes_med_reading ecaes_med_quantitative  ecaes_med_administracion ecaes_med_spublica 
+
+{txt}Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+{hline}
+{p 0 48}{res}{bind:ecaes_med_rea~g}{txt}{bind: double  }{bind:{txt}%10.0g    }{space 1}{bind:         }{bind:  }{res}{res}Puntaje compresion{p_end}
+{p 0 48}{bind:ecaes_med_qua~e}{txt}{bind: double  }{bind:{txt}%10.0g    }{space 1}{bind:         }{bind:  }{res}{res}{p_end}
+{p 0 48}{bind:ecaes_med_adm~n}{txt}{bind: double  }{bind:{txt}%10.0g    }{space 1}{bind:         }{bind:  }{res}{res}{p_end}
+{p 0 48}{bind:ecaes_med_spu~a}{txt}{bind: double  }{bind:{txt}%10.0g    }{space 1}{bind:         }{bind:  }{res}{res}{p_end}
+{txt}
+{com}.         count   if ecaes_med_reading != . &  ecaes_med_quantitative != . & ecaes_med_administracion != . & ecaes_med_spublica != .
+  {res}2,726
+{txt}
+{com}. 
+.         preserve
+{txt}
+{com}.         use "Data\base_hospital_cohorte_bebe", replace
+{txt}
+{com}.         keep    if p_emb_obs_ave==1 & d_area_metro==0 & embarazos_madre==1
+{txt}(3,246,542 observations deleted)
+
+{com}.         tempfile base1
+{txt}
+{com}.         save `base1', replace 
+{txt}{p 0 4 2}
+(file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000002.tmp{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+C:\Users\cpossosu\AppData\Local\Temp\ST_c004_000002.tmp{rm}
+saved
+as .dta format
+{p_end}
+
+{com}.         restore
+{txt}
+{com}.         
+.         joinby  codigo12 p_date using `base1', unm(b) _merge(merge_pru) 
+{txt}
+{com}. 
+.         keep    if p_emb_obs_ave==1 & d_area_metro==0 & embarazos_madre==1
+{txt}(1,286 observations deleted)
+
+{com}.         ren     codigo12 codigo
+{res}{txt}
+{com}. 
+.         
+.         collapse  (mean)  apgar1min_7  bpn nacer_menos_37 prom_4 h_prop_v_apgar1_masy7 h_prop_numconsul4 h_prop_babyfemale h_prop_basicedu   h_prop_married h_prop_adolescent tot_hosp c_population h_prop_low_weight h_prop_v_nacer_38_41 h_born, by(codigo p_state p_cohorte)
+{res}{txt}
+{com}. 
+.         gen     p_mes_inicio=ym(2010,1)
+{txt}
+{com}.         merge   m:1 p_mes_inicio codigo using "Data\Anonimizada\SSO_Hospital_Vitales_GS", keep(3) nogen
+{res}{txt}{p 0 7 2}
+(variable
+{bf:codigo} was {bf:str12}, now {bf:str42} to accommodate using data's values)
+{p_end}
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}               0
+{txt}{col 5}Matched{col 30}{res}           1,202{txt}  
+{col 5}{hline 41}
+
+{com}. 
+.         egen tag               = tag(codigo)
+{txt}
+{com}. 
+.         gen  apgar1men7        = 1-h_prop_v_apgar1_masy7
+{txt}
+{com}.         egen p75_apgar7        =  pctile(apgar1men7)          if tag==1, p(75)
+{txt}(617 missing values generated)
+
+{com}.         egen p75_apgar71       =  max(p75_apgar7)
+{txt}
+{com}.         egen p75_bw            =  pctile(h_prop_low_weight)   if tag==1, p(75)
+{txt}(617 missing values generated)
+
+{com}.         egen p75_bw1               =  max(p75_bw)
+{txt}
+{com}.         egen p75_prem          =  pctile(h_prop_v_nacer_38_41) if tag==1,p(75)
+{txt}(617 missing values generated)
+
+{com}.         egen p75_prem1             =  max(p75_prem)
+{txt}
+{com}.         
+.         gen dummy_prematurotop  = (h_prop_v_nacer_38_41<p75_prem1   & h_prop_v_nacer_38_41!=.)
+{txt}
+{com}.         gen dummy_bwtop         = (h_prop_low_weight   >p75_bw1     & h_prop_low_weight   !=.)
+{txt}
+{com}.         gen dummy_apgartop      = (apgar1men7          >p75_apgar71 & apgar1men7          !=.)
+{txt}
+{com}.         compress 
+  {txt}variable {bf}{res}tot_hosp{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}h_born{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}p_mes_inicio{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}int{sf}
+  {txt}variable {bf}{res}dummy_prematurotop{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_bwtop{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}dummy_apgartop{sf}{txt} was {bf}{res}float{sf}{txt} now {bf}{res}byte{sf}
+  {txt}variable {bf}{res}c_population{sf}{txt} was {bf}{res}double{sf}{txt} now {bf}{res}long{sf}
+  {txt}variable {bf}{res}codigo{sf}{txt} was {bf}{res}str42{sf}{txt} now {bf}{res}str12{sf}
+{txt}  (60,100 bytes saved)
+
+{com}.         gen  dummy_1hosp = (tot_hosp==1)
+{txt}
+{com}.         gen  apgar1menor7 = apgar1min_7==0
+{txt}
+{com}. 
+.         *Hospitals with many babies (more than percentile 75)
+.         sum     h_born, det
+
+                        {txt}(mean) h_born
+{hline 61}
+      Percentiles      Smallest
+ 1%    {res}        9              2
+{txt} 5%    {res}       32              3
+{txt}10%    {res}       50              3       {txt}Obs         {res}      1,202
+{txt}25%    {res}      107              3       {txt}Sum of wgt. {res}      1,202
+
+{txt}50%    {res}      248                      {txt}Mean          {res} 737.0516
+                        {txt}Largest       Std. dev.     {res} 1346.914
+{txt}75%    {res}      605           7212
+{txt}90%    {res}     2035           8111       {txt}Variance      {res}  1814177
+{txt}95%    {res}     4259           8111       {txt}Skewness      {res} 3.108311
+{txt}99%    {res}     6822           8111       {txt}Kurtosis      {res} 12.68809
+{txt}
+{com}.         gen     dummy_Nbabies = (h_born> r(p75))
+{txt}
+{com}.         tab     dummy_Nbabies
+
+{txt}dummy_Nbabi {c |}
+         es {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}        902       75.04       75.04
+{txt}          1 {c |}{res}        300       24.96      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}      1,202      100.00
+{txt}
+{com}.         
+.         gen     unhealthy=1-(bpn==0&nacer_menos_37==0&apgar1menor7==0)
+{txt}
+{com}.                 
+.         global  covars unhealthy h_prop_low_weight h_prop_preterm ///
+>                         apgar1menor7   h_prop_numconsul4 /// 
+>                         h_prop_babyfemale h_prop_basicedu   ///
+>                         h_prop_married h_prop_adolescent ///
+>                         tot_hosp c_population
+{txt}
+{com}.                         
+.         
+.         global  S: word count $covars
+{txt}
+{com}.                 
+.         mat vlrp_b1 = J($S ,2,.)
+{txt}
+{com}. 
+.         local c = 1
+{txt}
+{com}.         foreach var of global covars{c -(}
+{txt}  2{com}. 
+.                 areg `var' prom_4 i.p_cohorte , abs(p_state) cluster(codigo) 
+{txt}  3{com}.                 
+.                 mat vlrp_b1[`c',1] = _b[prom_4] 
+{txt}  4{com}.                 mat vlrp_b1[`c',2] = _se[prom_4]
+{txt}  5{com}.                 
+.                 local c = `c'+1 
+{txt}  6{com}.         {c )-}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.95}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.4595}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.1128}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.0817}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.4218}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}   unhealthy{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0254893{col 26}{space 2} .0180925{col 37}{space 1}    1.41{col 46}{space 3}0.159{col 54}{space 4}-.0100492{col 67}{space 3} .0610278
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2}-.0124384{col 26}{space 2} .0493391{col 37}{space 1}   -0.25{col 46}{space 3}0.801{col 54}{space 4}-.1093534{col 67}{space 3} .0844766
+{txt}{space 10}4  {c |}{col 14}{res}{space 2}-.0009721{col 26}{space 2} .0542073{col 37}{space 1}   -0.02{col 46}{space 3}0.986{col 54}{space 4}-.1074495{col 67}{space 3} .1055053
+{txt}{space 10}5  {c |}{col 14}{res}{space 2} -.055435{col 26}{space 2}  .048389{col 37}{space 1}   -1.15{col 46}{space 3}0.252{col 54}{space 4}-.1504838{col 67}{space 3} .0396138
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-.0604573{col 26}{space 2} .0515483{col 37}{space 1}   -1.17{col 46}{space 3}0.241{col 54}{space 4}-.1617118{col 67}{space 3} .0407972
+{txt}{space 10}7  {c |}{col 14}{res}{space 2}-.0326295{col 26}{space 2} .0499293{col 37}{space 1}   -0.65{col 46}{space 3}0.514{col 54}{space 4}-.1307038{col 67}{space 3} .0654449
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .5011662{col 26}{space 2} .1974145{col 37}{space 1}    2.54{col 46}{space 3}0.011{col 54}{space 4} .1133921{col 67}{space 3} .8889402
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.60}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.7338}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.1351}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.1048}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0234}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_low~t{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2}    .0009{col 26}{space 2}  .001019{col 37}{space 1}    0.88{col 46}{space 3}0.378{col 54}{space 4}-.0011016{col 67}{space 3} .0029016
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2}-.0007008{col 26}{space 2} .0022643{col 37}{space 1}   -0.31{col 46}{space 3}0.757{col 54}{space 4}-.0051484{col 67}{space 3} .0037468
+{txt}{space 10}4  {c |}{col 14}{res}{space 2}-.0004129{col 26}{space 2} .0026274{col 37}{space 1}   -0.16{col 46}{space 3}0.875{col 54}{space 4}-.0055737{col 67}{space 3} .0047479
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}  .000521{col 26}{space 2} .0021811{col 37}{space 1}    0.24{col 46}{space 3}0.811{col 54}{space 4}-.0037632{col 67}{space 3} .0048053
+{txt}{space 10}6  {c |}{col 14}{res}{space 2} .0016145{col 26}{space 2} .0020461{col 37}{space 1}    0.79{col 46}{space 3}0.430{col 54}{space 4}-.0024047{col 67}{space 3} .0056336
+{txt}{space 10}7  {c |}{col 14}{res}{space 2}-.0017557{col 26}{space 2} .0022295{col 37}{space 1}   -0.79{col 46}{space 3}0.431{col 54}{space 4} -.006135{col 67}{space 3} .0026237
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0296232{col 26}{space 2}  .010732{col 37}{space 1}    2.76{col 46}{space 3}0.006{col 54}{space 4} .0085428{col 67}{space 3} .0507037
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.56}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.7616}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.1266}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.0959}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0425}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_pre~m{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0004517{col 26}{space 2} .0017384{col 37}{space 1}    0.26{col 46}{space 3}0.795{col 54}{space 4} -.002963{col 67}{space 3} .0038665
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2} .0038269{col 26}{space 2}  .004712{col 37}{space 1}    0.81{col 46}{space 3}0.417{col 54}{space 4}-.0054287{col 67}{space 3} .0130825
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} .0072439{col 26}{space 2} .0049256{col 37}{space 1}    1.47{col 46}{space 3}0.142{col 54}{space 4}-.0024312{col 67}{space 3} .0169191
+{txt}{space 10}5  {c |}{col 14}{res}{space 2} .0021776{col 26}{space 2} .0043603{col 37}{space 1}    0.50{col 46}{space 3}0.618{col 54}{space 4}-.0063873{col 67}{space 3} .0107424
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-.0005142{col 26}{space 2}   .00383{col 37}{space 1}   -0.13{col 46}{space 3}0.893{col 54}{space 4}-.0080373{col 67}{space 3} .0070089
+{txt}{space 10}7  {c |}{col 14}{res}{space 2} .0027584{col 26}{space 2} .0043931{col 37}{space 1}    0.63{col 46}{space 3}0.530{col 54}{space 4}-.0058709{col 67}{space 3} .0113877
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}  .101415{col 26}{space 2} .0186344{col 37}{space 1}    5.44{col 46}{space 3}0.000{col 54}{space 4} .0648121{col 67}{space 3} .1380178
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.54}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.7772}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.1048}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.0734}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0590}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}apgar1menor7{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0039886{col 26}{space 2} .0029039{col 37}{space 1}    1.37{col 46}{space 3}0.170{col 54}{space 4}-.0017154{col 67}{space 3} .0096927
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2} .0020241{col 26}{space 2} .0038875{col 37}{space 1}    0.52{col 46}{space 3}0.603{col 54}{space 4}-.0056119{col 67}{space 3} .0096602
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} .0010798{col 26}{space 2} .0030347{col 37}{space 1}    0.36{col 46}{space 3}0.722{col 54}{space 4}-.0048812{col 67}{space 3} .0070408
+{txt}{space 10}5  {c |}{col 14}{res}{space 2} .0017559{col 26}{space 2} .0020116{col 37}{space 1}    0.87{col 46}{space 3}0.383{col 54}{space 4}-.0021954{col 67}{space 3} .0057072
+{txt}{space 10}6  {c |}{col 14}{res}{space 2} .0083953{col 26}{space 2} .0086237{col 37}{space 1}    0.97{col 46}{space 3}0.331{col 54}{space 4}-.0085439{col 67}{space 3} .0253344
+{txt}{space 10}7  {c |}{col 14}{res}{space 2} .0028151{col 26}{space 2} .0024346{col 37}{space 1}    1.16{col 46}{space 3}0.248{col 54}{space 4}-.0019671{col 67}{space 3} .0075972
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-.0406617{col 26}{space 2} .0308914{col 37}{space 1}   -1.32{col 46}{space 3}0.189{col 54}{space 4}-.1013405{col 67}{space 3} .0200172
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:1.42}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.2059}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.3832}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.3615}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0958}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_num~4{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0013728{col 26}{space 2} .0038125{col 37}{space 1}    0.36{col 46}{space 3}0.719{col 54}{space 4}-.0061159{col 67}{space 3} .0088616
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2}-.0033758{col 26}{space 2} .0117752{col 37}{space 1}   -0.29{col 46}{space 3}0.774{col 54}{space 4}-.0265054{col 67}{space 3} .0197537
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} .0128951{col 26}{space 2} .0115767{col 37}{space 1}    1.11{col 46}{space 3}0.266{col 54}{space 4}-.0098445{col 67}{space 3} .0356348
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}-.0099314{col 26}{space 2} .0109923{col 37}{space 1}   -0.90{col 46}{space 3}0.367{col 54}{space 4}-.0315232{col 67}{space 3} .0116604
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-.0124401{col 26}{space 2} .0103402{col 37}{space 1}   -1.20{col 46}{space 3}0.229{col 54}{space 4} -.032751{col 67}{space 3} .0078708
+{txt}{space 10}7  {c |}{col 14}{res}{space 2}-.0085693{col 26}{space 2} .0110643{col 37}{space 1}   -0.77{col 46}{space 3}0.439{col 54}{space 4}-.0303025{col 67}{space 3}  .013164
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .8040133{col 26}{space 2} .0418391{col 37}{space 1}   19.22{col 46}{space 3}0.000{col 54}{space 4} .7218302{col 67}{space 3} .8861964
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.89}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.5048}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.0461}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.0126}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0454}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_bab~e{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0007267{col 26}{space 2} .0019077{col 37}{space 1}    0.38{col 46}{space 3}0.703{col 54}{space 4}-.0030206{col 67}{space 3}  .004474
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2} .0053971{col 26}{space 2} .0055402{col 37}{space 1}    0.97{col 46}{space 3}0.330{col 54}{space 4}-.0054853{col 67}{space 3} .0162795
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} .0102934{col 26}{space 2} .0055582{col 37}{space 1}    1.85{col 46}{space 3}0.065{col 54}{space 4}-.0006243{col 67}{space 3} .0212112
+{txt}{space 10}5  {c |}{col 14}{res}{space 2} .0046906{col 26}{space 2} .0050837{col 37}{space 1}    0.92{col 46}{space 3}0.357{col 54}{space 4}-.0052951{col 67}{space 3} .0146763
+{txt}{space 10}6  {c |}{col 14}{res}{space 2} .0068216{col 26}{space 2} .0047559{col 37}{space 1}    1.43{col 46}{space 3}0.152{col 54}{space 4}-.0025202{col 67}{space 3} .0161634
+{txt}{space 10}7  {c |}{col 14}{res}{space 2} .0072401{col 26}{space 2} .0051343{col 37}{space 1}    1.41{col 46}{space 3}0.159{col 54}{space 4}-.0028451{col 67}{space 3} .0173252
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .4805618{col 26}{space 2} .0197583{col 37}{space 1}   24.32{col 46}{space 3}0.000{col 54}{space 4} .4417513{col 67}{space 3} .5193723
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.70}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.6531}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.2604}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.2345}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0998}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_bas~u{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2}-.0021839{col 26}{space 2} .0040311{col 37}{space 1}   -0.54{col 46}{space 3}0.588{col 54}{space 4} -.010102{col 67}{space 3} .0057343
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2} .0165605{col 26}{space 2} .0109083{col 37}{space 1}    1.52{col 46}{space 3}0.130{col 54}{space 4}-.0048662{col 67}{space 3} .0379872
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} .0095563{col 26}{space 2} .0121471{col 37}{space 1}    0.79{col 46}{space 3}0.432{col 54}{space 4}-.0143039{col 67}{space 3} .0334164
+{txt}{space 10}5  {c |}{col 14}{res}{space 2} .0102779{col 26}{space 2} .0099327{col 37}{space 1}    1.03{col 46}{space 3}0.301{col 54}{space 4}-.0092325{col 67}{space 3} .0297882
+{txt}{space 10}6  {c |}{col 14}{res}{space 2} .0080968{col 26}{space 2} .0096467{col 37}{space 1}    0.84{col 46}{space 3}0.402{col 54}{space 4}-.0108519{col 67}{space 3} .0270455
+{txt}{space 10}7  {c |}{col 14}{res}{space 2} .0070082{col 26}{space 2} .0103392{col 37}{space 1}    0.68{col 46}{space 3}0.498{col 54}{space 4}-.0133008{col 67}{space 3} .0273171
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .3859149{col 26}{space 2} .0433926{col 37}{space 1}    8.89{col 46}{space 3}0.000{col 54}{space 4} .3006805{col 67}{space 3} .4711494
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:2.49}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.0221}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.3028}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.2783}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0808}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_mar~d{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0011632{col 26}{space 2} .0034657{col 37}{space 1}    0.34{col 46}{space 3}0.737{col 54}{space 4}-.0056444{col 67}{space 3} .0079709
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2}-.0141148{col 26}{space 2} .0087981{col 37}{space 1}   -1.60{col 46}{space 3}0.109{col 54}{space 4}-.0313965{col 67}{space 3} .0031669
+{txt}{space 10}4  {c |}{col 14}{res}{space 2}-.0001334{col 26}{space 2} .0089226{col 37}{space 1}   -0.01{col 46}{space 3}0.988{col 54}{space 4}-.0176598{col 67}{space 3} .0173929
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}-.0135606{col 26}{space 2} .0078045{col 37}{space 1}   -1.74{col 46}{space 3}0.083{col 54}{space 4}-.0288906{col 67}{space 3} .0017695
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-.0180317{col 26}{space 2} .0074168{col 37}{space 1}   -2.43{col 46}{space 3}0.015{col 54}{space 4}-.0326003{col 67}{space 3} -.003463
+{txt}{space 10}7  {c |}{col 14}{res}{space 2}-.0041202{col 26}{space 2} .0086629{col 37}{space 1}   -0.48{col 46}{space 3}0.635{col 54}{space 4}-.0211363{col 67}{space 3}  .012896
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .3240223{col 26}{space 2} .0369331{col 37}{space 1}    8.77{col 46}{space 3}0.000{col 54}{space 4}  .251476{col 67}{space 3} .3965686
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.67}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.6718}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.2674}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.2417}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.0568}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}h_prop_ado~t{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2} .0009536{col 26}{space 2}  .002581{col 37}{space 1}    0.37{col 46}{space 3}0.712{col 54}{space 4}-.0041161{col 67}{space 3} .0060234
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2}-.0055343{col 26}{space 2} .0059982{col 37}{space 1}   -0.92{col 46}{space 3}0.357{col 54}{space 4}-.0173164{col 67}{space 3} .0062478
+{txt}{space 10}4  {c |}{col 14}{res}{space 2}-.0050783{col 26}{space 2} .0058983{col 37}{space 1}   -0.86{col 46}{space 3}0.390{col 54}{space 4}-.0166641{col 67}{space 3} .0065075
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}-.0095429{col 26}{space 2} .0059142{col 37}{space 1}   -1.61{col 46}{space 3}0.107{col 54}{space 4}  -.02116{col 67}{space 3} .0020741
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-.0078864{col 26}{space 2} .0054078{col 37}{space 1}   -1.46{col 46}{space 3}0.145{col 54}{space 4}-.0185087{col 67}{space 3} .0027359
+{txt}{space 10}7  {c |}{col 14}{res}{space 2}  -.00888{col 26}{space 2} .0063459{col 37}{space 1}   -1.40{col 46}{space 3}0.162{col 54}{space 4}-.0213451{col 67}{space 3}  .003585
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}  .281022{col 26}{space 2} .0276872{col 37}{space 1}   10.15{col 46}{space 3}0.000{col 54}{space 4}  .226637{col 67}{space 3} .3354069
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 53}{lalign 17:Number of obs}{col 70} = {res}{ralign 6:1,063}
+{txt}Absorbed variable: {res:p_state}{col 53}{lalign 17:No. of categories}{col 70} = {res}{ralign 6:31}
+{txt}{col 53}{lalign 17:F({res:6}, {res:553})}{col 70} = {res}{ralign 6:0.94}
+{txt}{col 53}{lalign 17:Prob > F}{col 70} = {res}{ralign 6:0.4639}
+{txt}{col 53}{lalign 17:R-squared}{col 70} = {res}{ralign 6:0.1686}
+{txt}{col 53}{lalign 17:Adj R-squared}{col 70} = {res}{ralign 6:0.1395}
+{txt}{col 53}{lalign 17:Root MSE}{col 70} = {res}{ralign 6:0.3084}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}    tot_hosp{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2}-.0105678{col 26}{space 2} .0148882{col 37}{space 1}   -0.71{col 46}{space 3}0.478{col 54}{space 4}-.0398123{col 67}{space 3} .0186766
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2}-.0550443{col 26}{space 2} .0426867{col 37}{space 1}   -1.29{col 46}{space 3}0.198{col 54}{space 4}-.1388923{col 67}{space 3} .0288036
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} -.040407{col 26}{space 2} .0427445{col 37}{space 1}   -0.95{col 46}{space 3}0.345{col 54}{space 4}-.1243683{col 67}{space 3} .0435544
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}-.0527616{col 26}{space 2} .0417507{col 37}{space 1}   -1.26{col 46}{space 3}0.207{col 54}{space 4}-.1347709{col 67}{space 3} .0292477
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-.0987116{col 26}{space 2} .0448899{col 37}{space 1}   -2.20{col 46}{space 3}0.028{col 54}{space 4}-.1868873{col 67}{space 3}-.0105359
+{txt}{space 10}7  {c |}{col 14}{res}{space 2}-.0604669{col 26}{space 2} .0422517{col 37}{space 1}   -1.43{col 46}{space 3}0.153{col 54}{space 4}-.1434603{col 67}{space 3} .0225265
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 1.260495{col 26}{space 2}  .162176{col 37}{space 1}    7.77{col 46}{space 3}0.000{col 54}{space 4} .9419387{col 67}{space 3} 1.579051
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression, absorbing indicators{col 49}{lalign 17:Number of obs}{col 66} = {res}{ralign 10:1,063}
+{txt}Absorbed variable: {res:p_state}{col 49}{lalign 17:No. of categories}{col 66} = {res}{ralign 10:31}
+{txt}{col 49}{lalign 17:F({res:6}, {res:553})}{col 66} = {res}{ralign 10:0.52}
+{txt}{col 49}{lalign 17:Prob > F}{col 66} = {res}{ralign 10:0.7922}
+{txt}{col 49}{lalign 17:R-squared}{col 66} = {res}{ralign 10:0.1692}
+{txt}{col 49}{lalign 17:Adj R-squared}{col 66} = {res}{ralign 10:0.1401}
+{txt}{col 49}{lalign 17:Root MSE}{col 66} = {res}{ralign 10:31237.4947}
+
+{txt}{ralign 78:(Std. err. adjusted for {res:554} clusters in codigo)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}c_population{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}prom_4 {c |}{col 14}{res}{space 2}-710.5301{col 26}{space 2} 1423.751{col 37}{space 1}   -0.50{col 46}{space 3}0.618{col 54}{space 4}-3507.151{col 67}{space 3} 2086.091
+{txt}{space 12} {c |}
+{space 3}p_cohorte {c |}
+{space 10}3  {c |}{col 14}{res}{space 2} 1936.267{col 26}{space 2} 3640.142{col 37}{space 1}    0.53{col 46}{space 3}0.595{col 54}{space 4} -5213.93{col 67}{space 3} 9086.463
+{txt}{space 10}4  {c |}{col 14}{res}{space 2} 3600.331{col 26}{space 2} 3636.162{col 37}{space 1}    0.99{col 46}{space 3}0.323{col 54}{space 4}-3542.048{col 67}{space 3} 10742.71
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}  201.586{col 26}{space 2} 3460.853{col 37}{space 1}    0.06{col 46}{space 3}0.954{col 54}{space 4}-6596.439{col 67}{space 3} 6999.611
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}-1762.411{col 26}{space 2} 3325.567{col 37}{space 1}   -0.53{col 46}{space 3}0.596{col 54}{space 4}-8294.699{col 67}{space 3} 4769.877
+{txt}{space 10}7  {c |}{col 14}{res}{space 2} 481.0776{col 26}{space 2} 3832.331{col 37}{space 1}    0.13{col 46}{space 3}0.900{col 54}{space 4}-7046.628{col 67}{space 3} 8008.783
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 34244.64{col 26}{space 2} 15209.32{col 37}{space 1}    2.25{col 46}{space 3}0.025{col 54}{space 4} 4369.522{col 67}{space 3} 64119.75
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}.                 
+. 
+.         mat list vlrp_b1
+{res}
+{txt}vlrp_b1[11,2]
+             c1          c2
+ r1 {res}  .02548932   .01809253
+{txt} r2 {res}  .00090001   .00101901
+{txt} r3 {res}  .00045175   .00173842
+{txt} r4 {res}  .00398862   .00290392
+{txt} r5 {res}  .00137283   .00381252
+{txt} r6 {res}  .00072669   .00190773
+{txt} r7 {res} -.00218388    .0040311
+{txt} r8 {res}  .00116324   .00346573
+{txt} r9 {res}  .00095364   .00258099
+{txt}r10 {res} -.01056782   .01488825
+{txt}r11 {res} -710.53006   1423.7509
+{reset}
+{com}. 
+.         putexcel set "Results\Tables paper matrices replication.xls", sheet("Raw Table A2") modify
+{res}{txt}
+{com}.         putexcel B2=mat(vlrp_b1)
+{res}{txt}file {bf:Results\Tables paper matrices replication.xls} saved
+
+{com}.         
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Table A2.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:43:45
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

@@ -1,0 +1,62 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Figure A1.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Aug 2024, 18:35:10
+{txt}
+{com}. 
+. 
+. ********************************************************************************
+. 
+.         use             "Data\base_hospital_cohorte_bebe", replace
+{txt}
+{com}.         set             scheme white_tableau
+{txt}
+{com}.         
+.         /* Note: this database contains treated and placebo babies. For this exercise, 
+>         we use the placebo babies, babies born 3 years before the SSO period we are
+>         analyzing started (2010-2012). */
+.         
+.         keep    if p_emb_n4_obs==1 
+{txt}(2,769,025 observations deleted)
+
+{com}.         keep    if d_area_metro==0      
+{txt}(190,647 observations deleted)
+
+{com}.         keep    if semanas_gestacion > 23 & semanas_gestacion < 44
+{txt}(162 observations deleted)
+
+{com}.         
+.         egen        p_drawm=mode(p_draw),by(id_nacido) minmode
+{txt}
+{com}.         collapse    (mean) bpn, by(semanas_gestacion p_drawm codigo12)
+{res}{txt}
+{com}.         
+.         lpoly   bpn semanas_gestacion, degree(0) bw(2) n(12) pw(1000)                           ///
+>                         noscatter ci l(90) legend(off) scheme(modern)                                           ///
+>                         xtitle(Gestational Weeks) ytitle("") title("")                                          ///
+>                         xlab(24(4)44, nogrid) ylab(0(0.2)1) kernel(gau) yaxis(off)                      ///
+>                         scheme(white_tableau)
+{res}{txt}(note: scheme modern not found, using s2color)
+{res}{txt}
+{com}.                         
+.         graph export "Results/Figure A1.png", replace wid(1200) hei(1000)
+{txt}{p 0 4 2}
+file {bf}
+Results/Figure A1.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.     
+.         
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\wmedesrv\GAMMA\Christian Posso\_banrep_research\Proyectos_finalizados_replicacion\Project The Luck of the Draw\Reproduction - AN\Logs/Figure A1.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Aug 2024, 18:35:15
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
