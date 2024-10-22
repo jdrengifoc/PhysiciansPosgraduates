@@ -62,7 +62,9 @@ open_dataset(file_demographics) %>%
   select(personabasicaid, sex, age) %>% 
   write_parquet(file_demographics)
 
-
+open_dataset(file_demographics) %>% 
+  group_by(sex, age) %>% summarise(n_ = n()) %>% 
+  write_parquet('Output/Tables/sexo_edad_rethus.parquet')
 
 
 # personabasicaid ---------------------------------------------------------
