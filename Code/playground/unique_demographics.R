@@ -47,7 +47,7 @@ open_dataset(file_demographics) %>%
       filter(SEXO %in% c('FEMENINO', 'MASCULINO')) %>% 
       mutate(SEXO = if_else(SEXO == 'FEMENINO', 0, 1)),
     by = 'personabasicaid'
-  ) %>% mutate(sex = coalesce(sexomode, SEXO)) %>% 
+  ) %>% mutate(woman = 0 == coalesce(sexomode, SEXO)) %>% 
   # Merge PILA's age.
   left_join(df_edad_pila, by = 'personabasicaid') %>% 
   # Fill PILA's NA ages with ReTHUS' ages in the PILA's age range.
@@ -58,15 +58,15 @@ open_dataset(file_demographics) %>%
   ) %>% 
   mutate(age = coalesce(age, EDAD)) %>% 
   # Delete individuals with missing demographic attributes.
-  filter(!is.na(age), !is.na(sex)) %>% 
-  select(personabasicaid, sex, age) %>% 
+  filter(!is.na(age), !is.na(woman)) %>% 
+  select(personabasicaid, woman, age) %>% 
   write_parquet(file_demographics)
 
 open_dataset(file_demographics) %>% 
-  group_by(sex, age) %>% summarise(n_ = n()) %>% 
+  group_by(woman, age) %>% summarise(n_ = n()) %>% 
   write_parquet('Output/Tables/sexo_edad_rethus.parquet')
 
-
+read_parquet('Output/Tables/sexo_edad_rethus.parquet')
 # personabasicaid ---------------------------------------------------------
 
 ids_PILA <- df_PILA %>% distinct(personabasicaid) %>% collect() %>% 
