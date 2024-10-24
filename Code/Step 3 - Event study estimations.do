@@ -47,11 +47,14 @@ global treatment_groups treated_1a treated_1b treated_1c treated_1d ///
 * Outcomes
 global outcomes service_mental service_mental2 service_mental3 cardio_risk laboral						///
 				pila_independientes p_cotizaciones pila_salario_r sal_dias_cot
-/*global outcomes service_mental service_mental2 service_mental3 diag_laboral estres_laboral				///
+				
+/*
+global outcomes service_mental service_mental2 service_mental3 diag_laboral estres_laboral				///
 				accidente_laboral enfermedad_laboral acc_enf_laboral laboral							///
 				pregnancy stroke infarct cardiovascular cardio_risk digestive 							///
-				pila_independientes p_cotizaciones pila_salario_r pila_salario_r_max sal_dias_cot*/
-*global outcomes pila_salario_r service_mental		
+				pila_independientes p_cotizaciones pila_salario_r pila_salario_r_max sal_dias_cot
+*/
+	
 					
 ****************************************************************************
 **#						1. Merge data and set-up
