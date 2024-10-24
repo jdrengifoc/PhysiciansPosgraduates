@@ -1,0 +1,318 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\descriptives.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Apr 2024, 13:52:01
+{txt}
+{com}. 
+. ****************************************************************************
+. **#                                             1. Data
+. ****************************************************************************
+. 
+. use "${c -(}data{c )-}\Individual_balanced_all_RIPS", clear
+{txt}
+{com}. rename year_RIPS fecha_pila
+{res}{txt}
+{com}. drop if mi(fechapregrado)
+{txt}(30,170 observations deleted)
+
+{com}. merge 1:1 personabasicaid fecha_pila using "${c -(}data{c )-}\Individual_balanced_all_PILA"
+{res}{txt}{p 0 7 2}
+(variable
+{bf:fecha_pila} was {bf:int}, now {bf:float} to accommodate using data's values)
+{p_end}
+(label {bf:{txt}order5} already defined)
+
+{col 5}Result{col 33}Number of obs
+{col 5}{hline 41}
+{col 5}Not matched{col 30}{res}       2,539,138
+{txt}{col 9}from master{col 30}{res}       2,381,876{txt}  (_merge==1)
+{col 9}from using{col 30}{res}         157,262{txt}  (_merge==2)
+
+{col 5}Matched{col 30}{res}       2,201,668{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. drop if _merge == 2 // Estos son los del 2008
+{txt}(157,262 observations deleted)
+
+{com}. 
+. keep if (year_grado >= 1995)
+{txt}(1,087,982 observations deleted)
+
+{com}. drop if (rethus_sexo != 1 & rethus_sexo != 2)
+{txt}(2,534 observations deleted)
+
+{com}. keep if inrange(posgrado_start, 2011, 2017) | mi(posgrado_start) 
+{txt}(184,590 observations deleted)
+
+{com}. 
+. * Create the distance-to-event dummies
+. gen dist = fecha_pila - posgrado_start
+{txt}(3,167,640 missing values generated)
+
+{com}. gen pre3 = dist < -2
+{txt}
+{com}. gen pos6 = dist >  5
+{txt}
+{com}. 
+. * Esto lo tenemos que borrar cuando corramos rips desde el comienzo
+. keep if rethus_codigoperfilpre1 == "P07"
+{txt}(1,823,640 observations deleted)
+
+{com}. 
+. 
+. ****************************************************************************
+. **#                                             1. General descriptives
+. ****************************************************************************
+. 
+. preserve 
+{txt}
+{com}. 
+.         g posgrado_start_d      = (posgrado_start == fecha_pila)
+{txt}
+{com}. 
+.         collapse (max) posgrado_start_d service_mental, by(personabasicaid)     
+{res}{txt}
+{com}.         
+.         g physicians_total      = 1
+{txt}
+{com}.         g p_posgrados           = posgrado_start_d/physicians_total
+{txt}
+{com}.         g p_mental                      = service_mental/physicians_total
+{txt}
+{com}.         
+.         sum p_posgrados
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}p_posgrados {c |}{res}    106,057    .0948264    .2929763          0          1
+{txt}
+{com}.         
+.         sum p_mental
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 4}p_mental {c |}{res}    106,057    .1388687    .3458111          0          1
+{txt}
+{com}.         
+.         count if p_mental == 1 & p_posgrados == 0
+  {res}13,475
+{txt}
+{com}.         sum p_mental if p_posgrados == 0
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 4}p_mental {c |}{res}     96,000    .1403646    .3473667          0          1
+{txt}
+{com}.         
+.         count if p_mental == 1 & p_posgrados == 1
+  {res}1,253
+{txt}
+{com}.         sum p_mental if p_posgrados == 1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 4}p_mental {c |}{res}     10,057    .1245898    .3302697          0          1
+{txt}
+{com}. 
+. restore
+{txt}
+{com}. 
+. 
+. ****************************************************************************
+. **#                                             2. Figures
+. ****************************************************************************
+. 
+. * Enrollments by year
+. preserve
+{txt}
+{com}. 
+.         g physicians_total      = 1
+{txt}
+{com}.         g posgrado_start_d      = (posgrado_start == fecha_pila)
+{txt}
+{com}. 
+.         collapse (sum) physicians_total posgrado_start_d, by(fecha_pila)
+{res}{txt}
+{com}.         keep if inrange(fecha_pila, 2011, 2017)
+{txt}(7 observations deleted)
+
+{com}.         save "${c -(}output{c )-}\Tables\Des_enrollment", replace
+{txt}{p 0 4 2}
+file {bf}
+\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Output\Tables\Des_enrollment.dta{rm}
+saved
+{p_end}
+
+{com}.         
+.         g p_posgrados = posgrado_start_d*100/physicians_total
+{txt}
+{com}.         sum p_posgrados
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 1}p_posgrados {c |}{res}          7    1.354662    .1360908   1.159754    1.60574
+{txt}
+{com}.         local mean: di %5.2fc r(mean)
+{res}{txt}
+{com}.         
+.         /*
+>         tw (bar physicians_total fecha_pila, barw(0.5) fcolor(gs11) lcolor(gs8))                                                                        ///
+>            (bar posgrado_start_d fecha_pila, barw(0.5) fcolor(gs7)  lcolor(gs4)),                                                                       ///
+>                 ytitle("Number of physicians")                                                                                                                                                  ///
+>                 xtitle("Year")                                                                                                                                                                                  ///
+>                 ylab(#10, format(%12.0fc))                                                                                                                                                              ///
+>                 xlab(2011(1)2017, val angle(360))                                                                                                                                               ///
+>                 legend(order(1 "Physicians" 2 "Graduate enrollments") position(6) col(2))                                                               ///
+>                 note("On average, `mean'% of physicians enrolled in a postgraduate degree during the sample period.")
+>         */
+.         
+.         tw (bar posgrado_start_d fecha_pila, barw(0.5) fcolor(gs11) lcolor(gs8)),                                                                       ///
+>                 ytitle("Number of physicians")                                                                                                                                                  ///
+>                 xtitle("Enrollment per year")                                                                                                                                                   ///
+>                 ylab(0(200)1800, format(%12.0fc))                                                                                                                                               ///
+>                 xlab(2011(1)2017, val angle(360))                                                                                                                                               ///
+>                 note("On average, `mean'% of physicians observed each year enrolled in a postgraduate degree.")         
+{res}{txt}
+{com}.         graph export "${c -(}output{c )-}\Figures\Enroll_year.png", replace
+{txt}{p 0 4 2}
+file {bf}
+\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Output\Figures\Enroll_year.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.         
+. restore
+{txt}
+{com}. 
+. * Mental illness and working while studying, for each year since started postgraduate
+. preserve
+{txt}
+{com}.         
+.         keep if inrange(posgrado_start, 2011, 2017)
+{txt}(1,344,000 observations deleted)
+
+{com}.         
+.         g physicians_total      = 1
+{txt}
+{com}.         g working1                      = (pila_dependientes == 1 | pila_independientes == 1)
+{txt}
+{com}.         g working2                      = (p_cotizaciones == 1)
+{txt}
+{com}.         
+.         collapse (sum) physicians_total service_mental working1 working2, by(dist)
+{res}{txt}
+{com}.         save "${c -(}output{c )-}\Tables\Des_outcomes", replace
+{txt}{p 0 4 2}
+file {bf}
+\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Output\Tables\Des_outcomes.dta{rm}
+saved
+{p_end}
+
+{com}.         
+.         replace dist = dist + 1
+{txt}(20 real changes made)
+
+{com}.         keep if inrange(dist, 1, 6)
+{txt}(14 observations deleted)
+
+{com}.         
+.         g p_mental      = service_mental*100/physicians_total
+{txt}
+{com}.         sum p_mental
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 4}p_mental {c |}{res}          6    1.595903    .1669472   1.352292   1.779855
+{txt}
+{com}.         local mean: di %5.2fc r(mean)
+{res}{txt}
+{com}.         
+.         tw (bar p_mental dist, barw(0.5) fcolor(gs11) lcolor(gs8)),                                                                                                             ///
+>                 ytitle("Percent")                                                                                                                                                                                       ///
+>                 xtitle("Prevalence of Mental Illness by year in graduate program")                                                                                      ///
+>                 ylab(0(0.4)2, format(%5.2fc))                                                                                                                                                           ///
+>                 xlab(1(1)6, val angle(360))                                                                                                                                                                     ///
+>                 note("On average, `mean'% of physicians suffered any mental illness during (and after) graduate school.")
+{res}{txt}
+{com}.         graph export "${c -(}output{c )-}\Figures\Mental_year.png", replace
+{txt}{p 0 4 2}
+file {bf}
+\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Output\Figures\Mental_year.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.         
+.         g p_working1 = working1*100/physicians_total
+{txt}
+{com}.         sum p_working1
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}p_working1 {c |}{res}          6    70.17169    26.85331   31.72914   95.25703
+{txt}
+{com}.         local mean: di %5.2fc r(mean)
+{res}{txt}
+{com}.         
+.         tw (bar p_working1 dist, barw(0.5) fcolor(gs11) lcolor(gs8)),                                                                                                   ///
+>                 ytitle("Percent")                                                                                                                                                                                       ///
+>                 xtitle("Probability of having a formal job by year in graduate program")                                                ///
+>                 ylab(0(20)100, format(%5.0fc))                                                                                                                                                          ///
+>                 xlab(1(1)6, val angle(360))                                                                                                                                                                     ///
+>                 note("On average, `mean'% of physicians had a formal job during (and after) graduate school.")
+{res}{txt}
+{com}.         graph export "${c -(}output{c )-}\Figures\Working1_year.png", replace
+{txt}{p 0 4 2}
+file {bf}
+\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Output\Figures\Working1_year.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.         
+.         g p_working2 = working2*100/physicians_total
+{txt}
+{com}.         sum p_working2
+
+{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 2}p_working2 {c |}{res}          6    51.22966    15.13397   30.73481   67.35607
+{txt}
+{com}.         local mean: di %5.2fc r(mean)
+{res}{txt}
+{com}.         
+.         tw (bar p_working2 dist, barw(0.5) fcolor(gs11) lcolor(gs8)),                                                                                                   ///
+>                 ytitle("Percent")                                                                                                                                                                                       ///
+>                 xtitle("Probability of having more than one cotization by year in graduate program")                                            ///
+>                 ylab(0(20)100, format(%5.0fc))                                                                                                                                                          ///
+>                 xlab(1(1)6, val angle(360))                                                                                                                                                                     ///
+>                 note("On average, `mean'% of physicians had a formal job during (and after) graduate school.")
+{res}{txt}
+{com}.         graph export "${c -(}output{c )-}\Figures\Working2_year.png", replace
+{txt}{p 0 4 2}
+file {bf}
+\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Output\Figures\Working2_year.png{rm}
+saved as
+PNG
+format
+{p_end}
+
+{com}.         
+. restore
+{txt}
+{com}. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}\\sm093119\Proyectos\Banrep research\PhysiciansPosgraduates\Logs\descriptives.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}26 Apr 2024, 13:52:25
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
