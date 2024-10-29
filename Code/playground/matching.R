@@ -1,7 +1,7 @@
 setwd('PhysiciansPosgraduates')
 source('Code/requirements.R')
-library("MatchIt")
-library("ISLR")
+library(MatchIt)
+library(ISLR)
 library(fastDummies)
 library(yardstick)
 
@@ -27,6 +27,7 @@ df <-  open_dataset(file.path(FOLDER_PROYECTO, 'demographics.parquet')) %>%
 # Process by treatment group ----------------------------------------------
 # agrupoar los primeros anos?
 treatment_types <- names(df)[str_detect(names(df), 'treated')]
+treatment_type <- treatment_types[1]
 for (treatment_type in treatment_types) {
   df_treatement <- df %>% 
     rename(treated = !!sym(treatment_type)) %>% 
@@ -118,6 +119,60 @@ match.data(m2) %>% head
   summarise(n_ = n())
 m1$weights %>% View
 m1 %>% summary()
+
+# En el banco
+df_covariates <- df_treatement %>% 
+  select(personabasicaid, woman, age, treated, 
+         semester_graduation = cont_fecha_grado_pregrado)
+
+df_count <- df_covariates %>% group_by(woman, age, treated, semester_graduation) %>% 
+  summarise(n_ = n()) %>% ungroup()
+
+message("total obs: ", df_count$n_ %>% sum)
+message("total treated obs: ", df_count %>% filter(treated) %>% pull(n_) %>% sum)
+
+df_matching <- df_count %>% 
+  filter(treated) %>% rename(n_treated = n_) %>% select(-treated) %>% 
+  left_join(
+    df_count %>% 
+      filter(!treated) %>% rename(n_control = n_) %>% select(-treated),
+    by = c('woman', 'age', 'semester_graduation')
+  ) %>% 
+  mutate(
+    n_control = if_else(is.na(n_control), 0, n_control),
+    controls_per_treated = n_control / n_treated
+    )#filter(!is.na(n_control))
+
+
+df_matching %>% pull(n_treated) %>% sum
+df_matching %>% pull(n_control) %>% sum
+
+df_matching %>% 
+  ggplot(aes(x = n_control)) +
+  geom_density(color = 'red')
+
+df_matching %>% group_by(n_control) %>% summarise(n_ = n()) %>% ungroup() %>% 
+  ggplot(aes(x = n_control, y = n_)) +
+  geom_bar(stat = 'identity')
+
+df_matching %>%  
+  ggplot(aes(x = controls_per_treated)) +
+  geom_histogram(binwidth = 5)
+
+df_matching %>% pull(controls_per_treated) %>% mean
+df_matching %>% pull(controls_per_treated) %>% median()
+prct <- seq(0, 1, 0.05)
+tream <- lapply(
+  prct, 
+  function(x) mean(df_matching %>% pull(controls_per_treated), trim = x)) %>% 
+  unlist
+plot(prct, tream)
+
+
+df %>% filter(treated) %>% 
+  rename(id_treated = personabasicaid) %>% select(-treated) %>% 
+  distinct(woman, age, semester_graduation, .keep_all = T) %>% 
+  distinct(id_treated) %>% nrow
 # Logit -------------------------------------------------------------------
 
 df_logit <- df_treatement %>% 
