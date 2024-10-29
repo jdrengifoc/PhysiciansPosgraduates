@@ -165,7 +165,7 @@ prct <- seq(0, 1, 0.05)
 tream <- lapply(
   prct, 
   function(x) mean(df_matching %>% pull(controls_per_treated), trim = x)) %>% 
-  unlist
+  unlist %>% print
 plot(prct, tream)
 
 
