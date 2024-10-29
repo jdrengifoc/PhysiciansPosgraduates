@@ -2,7 +2,17 @@
 
 The analysiss is carried out in 9 R and Stata files. The folder playground contains code for explaratory analysis and summary statistics. The files *main.do*, *main.R*, and *requirements.R* set the enviroment need to run the entire project. 
 
-**To do**
+## To do
+
+- [ ] Gráfica Christian y Nico (martes)
+- [ ] Escribir lo que ya se hizo (domingo)
+- [ ] Presentación (Lunes)
+- [ ] Escribir matemática (Lunes)
+- [ ] Matching (Sara 1)
+- [ ] Regresiones (Sara 1)
+- [ ] Pasar resultados preliminares (viernes)
+- [ ] Finalizar diapositivas
+
 
 - Harmonize code names in order to know the running order. 
 - Add a description of each code file. 

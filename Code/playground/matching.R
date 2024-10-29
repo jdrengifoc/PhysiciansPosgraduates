@@ -4,7 +4,9 @@ library("MatchIt")
 library("ISLR")
 library(fastDummies)
 library(yardstick)
-?matchit
+
+
+# Preprocessing -----------------------------------------------------------
 
 df <-  open_dataset(file.path(FOLDER_PROYECTO, 'demographics.parquet')) %>% 
   left_join(
@@ -22,7 +24,8 @@ df <-  open_dataset(file.path(FOLDER_PROYECTO, 'demographics.parquet')) %>%
       (diff(range(cont_fecha_grado_pregrado))),
   )
 
-# agrupoar los primeros anos
+# Process by treatment group ----------------------------------------------
+# agrupoar los primeros anos?
 treatment_types <- names(df)[str_detect(names(df), 'treated')]
 for (treatment_type in treatment_types) {
   df_treatement <- df %>% 
@@ -47,22 +50,90 @@ for (treatment_type in treatment_types) {
 }
 
 
-df_logit <- df_treatement %>% 
-  dummy_cols(select_columns = c('cont_fecha_grado_pregrado', 'age'), 
-             remove_first_dummy = T) %>% 
-  select(-personabasicaid, -age, - fecha_grado_pregrado, -control, 
-         -cont_fecha_grado_pregrado, -norm_age, -norm_fecha_grado_pregrado, 
-         -all_of(treatment_types[treatment_types != treatment_type])) 
+# Plots -------------------------------------------------------------------
+
+# Número de tratados y controles por semestre.
 df_treatement %>% 
   group_by(cont_fecha_grado_pregrado, treated) %>% 
   summarise(n_ = n()) %>% 
   ggplot(aes(x = cont_fecha_grado_pregrado, y = n_, fill = treated)) +
   geom_bar(stat = 'identity')
 
+#' Cuando adicionamos una más y otra entonces la dimensionalidad crece mucho
+#' Entonces lo primero es pensar que ese es el problema 
+#' Cuando adicionamos una más y otra entonces la dimensionalidad crece mucho
+#' Entonces lo primero es pensar que ese es el problema 
+#' 
+#' ¿Qué queremos nosotros ? 
+#' Un extremo es que por cada tratado, encontremos un control igual en esas tres dimensiones
+#' Entonces creemos celdas que combinen por cada covariable y contemos cuántas 
+#' observaciones tenemos tanto en controles como tratados 
+#' 
+#' Hagamos una gráfica que se superpongan todas esas celdas con colores 
+#' diferentes para controles y tratados
+#' (color oscuro cuando el tratado tiene menos de 10 obs (o 5 )) en una celda 
+#' 
+#' Puedes quitar de este análisis todos los controles que estén por fuera de los
+#' semestres de graduación que consideramos y los rangos de edad
 
+
+# EJEMPLO CASA.
+graduation_years <- 1995:2017
+semesters <- paste(rep(graduation_years, each = 2), 
+                   rep(1:2, length(graduation_years)), 
+                   sep = '-')
+n <- 9e4
+df <- data.frame(
+  id = 1:n,
+  mujer = sample(c(T, F), n, replace = T),
+  edad = sample(20:72, n, replace = T),
+  semestre_grado = sample(semesters, n, replace = T),
+  treated = runif(n) <= 0.01
+)
+
+df %>% 
+  group_by(treated, mujer, edad, semestre_grado) %>% summarise(n_ = n()) %>% 
+  mutate(bin = paste(c('h', 'm')[mujer + 1], edad, semestre_grado, sep = '/')) %>% 
+  arrange(bin) %>% View
+  ggplot(aes(x = bin, y = n_ * (n_ < 10), fill = treated)) +
+  geom_bar(stat = 'identity') +
+  facet_wrap(~treated, scale = 'free_y', nrow = 2) + 
+  coord_flip()
+df %>% filter(treated) %>% rename(id_treated = id) %>% select(-treated) %>% 
+  left_join(
+    df %>% filter(!treated) %>% rename(id_control = id) %>% select(-treated),
+    by = c('mujer', 'edad', 'semestre_grado')
+  ) %>% View
+df %>% filter(treated) %>% nrow
+m1 <- matchit(formula = treated ~ mujer + edad + semestre_grado, data = df,
+              method = 'exact')
+m2 <- matchit(formula = treated ~ mujer + edad + semestre_grado, data = df,
+              method = 'nearest', distance = "glm")
+match.data(m1) %>% 
+  filter(subclass == 3)
+match.data(m2) %>% head
+  filter(id == 849)
+  arrange(desc(subclass)) %>% 
+  group_by(subclass) %>% 
+  summarise(n_ = n())
+m1$weights %>% View
+m1 %>% summary()
+# Logit -------------------------------------------------------------------
+
+df_logit <- df_treatement %>% 
+  dummy_cols(select_columns = c('cont_fecha_grado_pregrado', 'age'), 
+             remove_first_dummy = T) %>% 
+  select(-personabasicaid, -age, - fecha_grado_pregrado, -control, 
+         -cont_fecha_grado_pregrado, -norm_age, -norm_fecha_grado_pregrado, 
+         -all_of(treatment_types[treatment_types != treatment_type])) 
+
+
+
+# Logit all dummies.
 logit <- glm(treated ~ ., family = binomial(logit), data = df_logit)
 logit %>% summary
 
+# Confusion matrix
 df_treatement %>% 
   mutate(
     !!sym(paste0('fitted_', treatment_type)) := logit$fitted.values,
@@ -78,6 +149,11 @@ df_treatement %>%
 
 df_treatement %>% 
   select(personabasicaid, treated, !!sym(paste0('fitted_', treatment_type))) %>% View
+
+
+
+# Other logits ------------------------------------------------------------
+# Peor AIC
 # df_logit_juan <- df_treatement %>% 
 #   dummy_cols(select_columns = c('cont_fecha_grado_pregrado'), 
 #              remove_first_dummy = T) %>% 
@@ -92,3 +168,7 @@ df_treatement %>%
 #   select(treated, woman, norm_fecha_grado_pregrado, starts_with('age_')) 
 # logit_juan <- glm(treated ~ ., family = binomial(logit), data = df_logit_juan)
 # logit_juan %>% summary
+
+
+# matching ----------------------------------------------------------------
+
