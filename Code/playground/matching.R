@@ -6,9 +6,98 @@ library(fastDummies)
 library(yardstick)
 
 
+df_samples <- open_dataset(file.path(folder, 'treated_samples.parquet')) %>% 
+  right_join(
+    x = open_dataset(file.path(folder, 'RETHUS_demographics.parquet')) %>% 
+      rename_with(tolower, everything()) %>% select(personabasicaid, sexo)
+  ) %>% 
+  rename(
+    rethus_sexo = sexo, fechapregrado = fecha_grado_pregrado
+  )
+  
+
+df <- open_dataset(file.path(FOLDER_PROYECTO, 'demographics.parquet')) %>% 
+  left_join(
+    open_dataset(file.path(FOLDER_PROYECTO, 'Data', 'treated_samples.parquet')) %>% 
+      select(personabasicaid, fecha_grado_pregrado, starts_with('treated_'), control),
+    by = 'personabasicaid'
+  ) %>%
+  mutate(
+    semestre_grado = year(fecha_grado_pregrado) + 
+      0.5 * semester(fecha_grado_pregrado)
+  ) %>% collect
+
+df_new <- NULL
+treatment_types <- df %>% select(starts_with('treated_')) %>% names
+treatment_type <- treatment_types[2]
+
+for (treatment_type in treatment_types) {
+
+  df_treatement <- df %>% 
+    mutate(treated = !!sym(treatment_type)) %>% 
+    filter(control | treated) %>% 
+    replace_na(list(treated = F)) %>% print
+  
+  # Get range of fecha_grado
+  min_treated_fecha_grado_pregrado <- df_treatement %>% 
+    filter(treated) %>% 
+    summarise(min(semestre_grado)) %>% pull %>% print
+  max_treated_fecha_grado_pregrado <- df_treatement %>% 
+    filter(treated) %>% 
+    distinct(semestre_grado) %>% 
+    summarise(max(semestre_grado)) %>% pull %>% print
+  df_treatement <- df_treatement %>% 
+    filter(
+      between(semestre_grado, 
+              min_treated_fecha_grado_pregrado,
+              max_treated_fecha_grado_pregrado)
+    )
+  
+  df_matching <- df_treatement %>% 
+    select(personabasicaid, treated, woman, age, semestre_grado)
+  
+  df0 <- df_treatement %>% 
+    left_join(
+      df_matching %>% filter(treated) %>% rename(id_treated = personabasicaid) %>% 
+        left_join(df_matching %>% filter(!treated), 
+                  by = c('woman', 'age', 'semestre_grado'), 
+                  relationship = 'many-to-many') %>% 
+        distinct(personabasicaid) %>% mutate(control_matching = T),
+      by = 'personabasicaid'
+    ) %>% 
+    filter(control_matching | treated) %>%
+    select(personabasicaid, woman, age, semestre_grado, 
+           !!sym(treatment_type) := treated)
+  
+  if (is.null(df_new)) {
+    df_new <- df0
+  } else {
+    df_new <- df_new %>% 
+      left_join(df0, by = c('personabasicaid', 'woman', 'age', 'semestre_grado'))
+  }
+}
+df_new %>% summarise(across(starts_with('treated_'), ~sum(!is.na(.))))
+
+df_new %>% left_join(
+  df_samples %>% select(-starts_with('treated_'), -control) %>% collect,
+  by = 'personabasicaid')
+
+
+# lab ---------------------------------------------------------------------
+
+  
+  df_matching <- df_treatement %>% 
+    select(personabasicaid, treated, mujer = woman, edad = age, 
+           semestre_grado = cont_fecha_grado_pregrado)
+  
+  df_matching %>% filter(treated) %>% rename(id_treated = personabasicaid) %>% 
+    left_join(df_matching %>% filter(!treated), 
+              by = c('mujer', 'edad', 'semestre_grado'), 
+              relationship = 'many-to-many') %>% distinct(personabasicaid)
+
 # Preprocessing -----------------------------------------------------------
 
-df <-  open_dataset(file.path(FOLDER_PROYECTO, 'demographics.parquet')) %>% 
+df <- open_dataset(file.path(FOLDER_PROYECTO, 'demographics.parquet')) %>% 
   left_join(
     open_dataset(file.path(FOLDER_PROYECTO, 'Data', 'treated_samples.parquet')) %>% 
       select(personabasicaid, fecha_grado_pregrado, starts_with('treated_'), control),
@@ -48,6 +137,15 @@ for (treatment_type in treatment_types) {
               min_treated_fecha_grado_pregrado,
               max_treated_fecha_grado_pregrado)
       )
+  
+  df_matching <- df_treatement %>% 
+    select(personabasicaid, treated, mujer = woman, edad = age, 
+           semestre_grado = cont_fecha_grado_pregrado)
+  
+  df_matching %>% filter(treated) %>% rename(id_treated = personabasicaid) %>% 
+    left_join(df_matching %>% filter(!treated), 
+              by = c('mujer', 'edad', 'semestre_grado'), 
+              relationship = 'many-to-many') %>% distinct(personabasicaid)
 }
 
 
@@ -83,7 +181,7 @@ graduation_years <- 1995:2017
 semesters <- paste(rep(graduation_years, each = 2), 
                    rep(1:2, length(graduation_years)), 
                    sep = '-')
-n <- 9e4
+n <- 9e3
 df <- data.frame(
   id = 1:n,
   mujer = sample(c(T, F), n, replace = T),
@@ -92,24 +190,38 @@ df <- data.frame(
   treated = runif(n) <= 0.01
 )
 
-df %>% 
+df_treatement %>% 
+  rename(mujer = woman, edad = age, semestre_grado = cont_fecha_grado_pregrado) %>% 
   group_by(treated, mujer, edad, semestre_grado) %>% summarise(n_ = n()) %>% 
   mutate(bin = paste(c('h', 'm')[mujer + 1], edad, semestre_grado, sep = '/')) %>% 
-  arrange(bin) %>% View
+  arrange(bin) %>% 
+  filter()
   ggplot(aes(x = bin, y = n_ * (n_ < 10), fill = treated)) +
   geom_bar(stat = 'identity') +
   facet_wrap(~treated, scale = 'free_y', nrow = 2) + 
   coord_flip()
-df %>% filter(treated) %>% rename(id_treated = id) %>% select(-treated) %>% 
+df %>% 
+  filter(treated) %>% rename(id_treated = id) %>% select(-treated) %>% 
   left_join(
     df %>% filter(!treated) %>% rename(id_control = id) %>% select(-treated),
     by = c('mujer', 'edad', 'semestre_grado')
   ) %>% View
-df %>% filter(treated) %>% nrow
+
+match.data(m1)
+df <- df_treatement %>% 
+  select(personabasicaid, treated, mujer = woman, edad = age, 
+         semestre_grado = cont_fecha_grado_pregrado)
+df %>% filter(!treated) %>% nrow
+df %>% filter(treated) %>% rename(id_treated = personabasicaid) %>% 
+  left_join(
+    df %>% filter(!treated), by = c('mujer', 'edad', 'semestre_grado'), 
+    relationship = 'many-to-many') %>% distinct(personabasicaid)
+df %>% filter(!treated) %>% rename(id_control = personabasicaid)
 m1 <- matchit(formula = treated ~ mujer + edad + semestre_grado, data = df,
               method = 'exact')
 m2 <- matchit(formula = treated ~ mujer + edad + semestre_grado, data = df,
               method = 'nearest', distance = "glm")
+m1 %>% summary
 match.data(m1) %>% 
   filter(subclass == 3)
 match.data(m2) %>% head
@@ -119,7 +231,7 @@ match.data(m2) %>% head
   summarise(n_ = n())
 m1$weights %>% View
 m1 %>% summary()
-
+m1$weights
 # En el banco
 df_covariates <- df_treatement %>% 
   select(personabasicaid, woman, age, treated, 
