@@ -23,6 +23,11 @@
           - master_rethus.dta
 
 5) Output:	- Individual_balanced_all_RIPS.dta
+
+PROBLEMS: 
+- diag2 is not diag2, has a mixture between diag and diag2.
+- diag is not a superset of diag2 as diag2 involves Z codes.
+
 *************************************************************************
 *************************************************************************/	
 
