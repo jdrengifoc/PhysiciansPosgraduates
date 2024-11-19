@@ -8,12 +8,12 @@ library(stringr)
 library(haven)
 
 x_min_lim <- -10
-x_max_lim <- 10
+x_max_lim <- 9
 # Define filter variables
 filter_variables <- c('cohort', 'controls', 'wboot', 'estimation', 
                       'outcome', 'treatment_group')
 
-es_results <- read_dta('Output/Tables/CS_results.dta') %>%
+es_results <- read_dta('Output/Tables/CS_results_matching.dta') %>%
   filter(!str_detect(var, '_avg')) %>%
   mutate(
     wboot = as.logical(wboot), 
