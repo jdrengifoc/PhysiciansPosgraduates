@@ -14,17 +14,6 @@ Then, the second part developed in Stata,
 - balance the panel data of RIPS and PILA;
 - make a full event study, i.e., DiD with and without controls for NT, NET and ET.
 
-## Todo
-
-- [ ] Gráfica Christian y Nico (martes)
-- [ ] Escribir lo que ya se hizo (domingo)
-- [ ] Presentación (Lunes)
-- [ ] Escribir matemática (Lunes)
-- [ ] Matching (Sara 1)
-- [ ] Regresiones (Sara 1)
-- [ ] Pasar resultados preliminares (viernes)
-- [ ] Finalizar diapositivas
-
 
 ### Literature Review - Mental Health in Posgraduates:
 
