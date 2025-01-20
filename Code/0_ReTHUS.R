@@ -58,7 +58,13 @@ df_aux %>%
     AUXILIAR = str_detect(TITULO, '^A'),
     TyT = str_detect(TITULO, '^T'),
     EXTRANJERO = ORIGEN_TITULO == 2,
-    ESPECIALIDAD = TIPO_PROGRAMA == 6
+    ESPECIALIDAD = TIPO_PROGRAMA == 6,
+    ESPECIALIDAD_MEDICA = case_when(
+      str_detect(COD_TITULO, '^M(\\d+|C99)') ~ 'clinica',
+      str_detect(COD_TITULO, '^Q\\d+') ~ 'quirurgica',
+      str_detect(COD_TITULO, '^D\\d+') ~ 'diagnostica',
+      COD_TITULO %in% c('E99P07', 'MA99', 'DA99') ~ 'otra'
+    )
     ) %>% collect %>% 
   group_by(PERSONABASICAID) %>% 
   mutate(id_TITULO = row_number()) %>% 
